@@ -2,6 +2,39 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+// ---------------------------------------------------------
+// DEBUG AIRTABLE
+// ---------------------------------------------------------
+if (url.pathname === "/api/airtable-debug") {
+  try {
+    const response = await fetch(
+      "https://api.airtable.com/v0/meta/bases",
+      {
+        headers: {
+          Authorization: `Bearer ${env.AIRTABLE_TOKEN}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    return Response.json({
+      status: response.status,
+      bases: data.bases
+        ? data.bases.map(base => ({
+            id: base.id,
+            nombre: base.name
+          }))
+        : data
+    });
+
+  } catch (error) {
+    return Response.json({
+      error: error.message
+    });
+  }
+}
+    
     // ---------------------------------------------------------
     // API DE PRUEBA
     // ---------------------------------------------------------
