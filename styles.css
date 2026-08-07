@@ -455,3 +455,314 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
   .feature-panel-copy strong { font-size:2.45rem; }
   .whatsapp-float { width:56px; height:56px; right:16px; bottom:16px; }
 }
+
+/* ============================================================
+   CATÁLOGO DINÁMICO
+============================================================ */
+
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 30px;
+}
+
+
+.vehicle-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(18, 18, 20, 0.10);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.07);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+
+.vehicle-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.13);
+}
+
+
+.vehicle-featured {
+  border-top: 3px solid #d71920;
+}
+
+
+/* FOTO */
+
+.vehicle-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(215,25,32,.18), transparent 30%),
+    linear-gradient(145deg, #202124, #0e0f10);
+}
+
+
+.vehicle-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+
+.vehicle-card:hover .vehicle-media img {
+  transform: scale(1.035);
+}
+
+
+.vehicle-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,.55);
+  font-size: 14px;
+  letter-spacing: 0.18em;
+}
+
+
+/* ESTADO */
+
+.vehicle-status {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+
+  padding: 8px 13px;
+
+  background: rgba(10,10,11,.88);
+  backdrop-filter: blur(8px);
+
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+
+.vehicle-status-reserved {
+  background: #d71920;
+}
+
+
+.vehicle-highlight {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+
+  padding: 8px 13px;
+
+  background: #d71920;
+  color: white;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .15em;
+}
+
+
+/* CONTENIDO */
+
+.vehicle-content {
+  padding: 25px;
+}
+
+
+.vehicle-title {
+  margin: 0 0 8px;
+
+  color: #121214;
+
+  font-size: 25px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+
+.vehicle-price {
+  margin-bottom: 21px;
+
+  color: #d71920;
+
+  font-size: 28px;
+  font-weight: 700;
+}
+
+
+.vehicle-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+
+  margin-bottom: 18px;
+}
+
+
+.vehicle-specs span {
+  padding: 7px 10px;
+
+  background: #f1f1f2;
+  color: #292a2d;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.vehicle-origin {
+  margin-bottom: 16px;
+
+  color: #d71920;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+
+.vehicle-description {
+  margin: 0 0 25px;
+
+  color: #55565a;
+
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+
+/* WHATSAPP */
+
+.vehicle-whatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 15px 18px;
+
+  background: #151618;
+  color: #fff;
+
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  transition:
+    background .25s ease,
+    color .25s ease;
+}
+
+
+.vehicle-whatsapp:hover {
+  background: #d71920;
+  color: #fff;
+}
+
+
+.vehicle-whatsapp-arrow {
+  font-size: 19px;
+}
+
+
+/* CARGA / VACÍO / ERROR */
+
+.catalog-loading,
+.catalog-error,
+.catalog-empty {
+  grid-column: 1 / -1;
+
+  padding: 60px 30px;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20,20,22,.98),
+      rgba(45,45,48,.97)
+    );
+
+  color: white;
+}
+
+
+.catalog-error span {
+  display: block;
+  margin-top: 10px;
+  opacity: .75;
+}
+
+
+.catalog-empty {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+
+.catalog-empty-small {
+  color: #d71920;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .2em;
+}
+
+
+.catalog-empty h2 {
+  margin: 15px 0;
+
+  font-size: 34px;
+}
+
+
+.catalog-empty p {
+  margin: 0 auto 25px;
+
+  max-width: 600px;
+
+  color: rgba(255,255,255,.7);
+
+  line-height: 1.7;
+}
+
+
+.catalog-empty .vehicle-whatsapp {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+  .vehicle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 650px) {
+  .vehicle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-title {
+    font-size: 23px;
+  }
+
+  .vehicle-price {
+    font-size: 25px;
+  }
+}
