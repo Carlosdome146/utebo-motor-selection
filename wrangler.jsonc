@@ -5,7 +5,7 @@
   "keep_vars": true,
 
   "vars": {
-    "AIRTABLE_BASE_ID": "app7KSrlPf0iSINW5",
+    "AIRTABLE_BASE_ID": "app7KSrIPf0iSlNW5",
     "AIRTABLE_TABLE_VEHICULOS": "tblm2mM5yM4hLPUFf",
     "AIRTABLE_VIEW_VEHICULOS": "viwsxqoebtIDiPDmY"
   },
