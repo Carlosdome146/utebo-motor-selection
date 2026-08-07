@@ -1,5 +1,5 @@
 {
-  "name": "Utebo_Motor_Selection",
+  "name": "utebo-motor-selection",
   "main": "./worker.js",
   "compatibility_date": "2026-08-08",
 
