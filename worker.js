@@ -46,20 +46,19 @@ export default {
           }
         });
 
-        if (!airtableResponse.ok) {
-          const errorText = await airtableResponse.text();
+if (!airtableResponse.ok) {
+  const errorText = await airtableResponse.text();
 
-          console.error("Error Airtable:", errorText);
-
-          return Response.json(
-            {
-              ok: false,
-              error: "No se pudieron obtener los vehículos de Airtable",
-              status: airtableResponse.status
-            },
-            { status: 502 }
-          );
-        }
+  return Response.json(
+    {
+      ok: false,
+      error: "No se pudieron obtener los vehículos de Airtable",
+      status: airtableResponse.status,
+      detalle: errorText
+    },
+    { status: 502 }
+  );
+}
 
         const data = await airtableResponse.json();
 
