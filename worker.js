@@ -34,11 +34,10 @@ export default {
         }
 
         const airtableUrl =
-          `https://api.airtable.com/v0/` +
-          `${env.AIRTABLE_BASE_ID}/` +
-          `${env.AIRTABLE_TABLE_VEHICULOS}` +
-          `?view=${encodeURIComponent(env.AIRTABLE_VIEW_VEHICULOS)}` +
-          `&pageSize=100`;
+  `https://api.airtable.com/v0/` +
+  `${env.AIRTABLE_BASE_ID}/` +
+  `${encodeURIComponent("Vehículos")}` +
+  `?pageSize=100`;
 
         const airtableResponse = await fetch(airtableUrl, {
           headers: {
