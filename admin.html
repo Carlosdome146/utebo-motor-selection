@@ -2762,6 +2762,26 @@ vehiclesContainer.addEventListener(
 
 function abrirNuevoVehiculo() {
 
+vehiculoFotosActual =
+  null;
+
+fotosActuales =
+  [];
+
+vehiclePhotos.innerHTML =
+  `
+    <div class="vehicle-photos-empty">
+      Selecciona fotografías y se subirán
+      al guardar el vehículo.
+    </div>
+  `;
+
+formFotos.value =
+  "";
+
+photoSelectionText.textContent =
+  "";
+  
   vehicleForm.reset();
 
 
@@ -2865,6 +2885,10 @@ async function abrirEditarVehiculo(
     );
 
 
+await cargarFotosVehiculo(
+  data.vehiculo.id
+);
+    
     document.getElementById(
       "vehicleModalTitle"
     ).textContent =
@@ -3147,23 +3171,77 @@ vehicleForm.addEventListener(
 
 
       const data =
-        await response.json();
+  await response.json();
 
 
-      if (!response.ok) {
+if (!response.ok) {
 
-        throw new Error(
-          data.error ||
-          "No se pudo guardar"
-        );
+  throw new Error(
+    data.error ||
+    "No se pudo guardar"
+  );
 
-      }
-
-
-      cerrarModalVehiculo();
+}
 
 
-      await cargarVehiculos();
+// ----------------------------------------------------------
+// ID DEL VEHÍCULO GUARDADO
+// ----------------------------------------------------------
+
+const vehiculoId =
+  Number(
+    data.vehiculo?.id
+  );
+
+
+if (!vehiculoId) {
+
+  throw new Error(
+    "No se pudo obtener el vehículo guardado"
+  );
+
+}
+
+
+// ----------------------------------------------------------
+// SUBIR FOTOGRAFÍAS SELECCIONADAS
+// ----------------------------------------------------------
+
+const archivos =
+  Array.from(
+    formFotos.files || []
+  );
+
+
+if (archivos.length) {
+
+  vehicleFormSave.textContent =
+    "Subiendo fotos...";
+
+
+  await subirFotosAdmin(
+    vehiculoId,
+    archivos
+  );
+
+}
+
+
+// ----------------------------------------------------------
+// TERMINAR
+// ----------------------------------------------------------
+
+formFotos.value =
+  "";
+
+photoSelectionText.textContent =
+  "";
+
+
+cerrarModalVehiculo();
+
+
+await cargarVehiculos();
 
 
     } catch (error) {
