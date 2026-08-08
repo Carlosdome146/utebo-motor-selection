@@ -1,0 +1,1519 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="robots"
+    content="noindex,nofollow"
+  >
+
+  <title>
+    Gestión de stock | Utebo Motor Selection
+  </title>
+
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    :root {
+      --black: #101113;
+      --black-soft: #191a1d;
+      --red: #d71920;
+      --white: #ffffff;
+      --grey: #f3f3f4;
+      --text-grey: #696a6e;
+      --border: rgba(18,18,20,.10);
+    }
+
+
+    body {
+      margin: 0;
+
+      min-height: 100vh;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background:
+        radial-gradient(
+          circle at 85% 5%,
+          rgba(215,25,32,.12),
+          transparent 28%
+        ),
+        linear-gradient(
+          140deg,
+          #f8f8f8 0%,
+          #ffffff 45%,
+          #ededee 100%
+        );
+
+      color: var(--black);
+    }
+
+
+    button,
+    input {
+      font: inherit;
+    }
+
+
+    button {
+      cursor: pointer;
+    }
+
+
+    /* ======================================================
+       LOGIN
+    ====================================================== */
+
+    .login-screen {
+
+      min-height: 100vh;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      padding: 30px;
+
+    }
+
+
+    .login-card {
+
+      width: 100%;
+      max-width: 440px;
+
+      padding: 45px;
+
+      background:
+        rgba(255,255,255,.94);
+
+      border:
+        1px solid var(--border);
+
+      box-shadow:
+        0 35px 100px
+        rgba(0,0,0,.12);
+
+    }
+
+
+    .login-logo {
+
+      display: block;
+
+      width: 210px;
+      max-width: 80%;
+
+      margin:
+        0 auto
+        40px;
+
+    }
+
+
+    .login-label {
+
+      color: var(--red);
+
+      font-size: 11px;
+      font-weight: 800;
+
+      letter-spacing: .2em;
+
+      text-transform: uppercase;
+
+    }
+
+
+    .login-card h1 {
+
+      margin:
+        10px 0
+        8px;
+
+      font-size: 31px;
+
+      line-height: 1.1;
+
+    }
+
+
+    .login-description {
+
+      margin:
+        0 0
+        30px;
+
+      color: var(--text-grey);
+
+      line-height: 1.6;
+
+      font-size: 14px;
+
+    }
+
+
+    .form-field {
+
+      margin-bottom: 18px;
+
+    }
+
+
+    .form-field label {
+
+      display: block;
+
+      margin-bottom: 8px;
+
+      font-size: 12px;
+      font-weight: 700;
+
+    }
+
+
+    .form-field input {
+
+      width: 100%;
+
+      padding:
+        15px
+        16px;
+
+      border:
+        1px solid
+        rgba(0,0,0,.15);
+
+      background: white;
+
+      outline: none;
+
+      transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+
+    }
+
+
+    .form-field input:focus {
+
+      border-color: var(--red);
+
+      box-shadow:
+        0 0 0 3px
+        rgba(215,25,32,.08);
+
+    }
+
+
+    .login-button {
+
+      width: 100%;
+
+      padding: 16px;
+
+      border: 0;
+
+      background: var(--black);
+
+      color: white;
+
+      font-weight: 800;
+
+      transition:
+        background .2s ease;
+
+    }
+
+
+    .login-button:hover {
+      background: var(--red);
+    }
+
+
+    .login-error {
+
+      min-height: 20px;
+
+      margin-top: 15px;
+
+      color: var(--red);
+
+      font-size: 13px;
+      font-weight: 700;
+
+    }
+
+
+
+    /* ======================================================
+       ADMIN
+    ====================================================== */
+
+    .admin-screen {
+      display: none;
+    }
+
+
+    .admin-header {
+
+      background:
+        rgba(15,16,18,.98);
+
+      color: white;
+
+      border-bottom:
+        3px solid var(--red);
+
+    }
+
+
+    .admin-header-inner {
+
+      max-width: 1450px;
+
+      margin: auto;
+
+      padding:
+        17px
+        30px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 30px;
+
+    }
+
+
+    .admin-brand {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 20px;
+
+    }
+
+
+    .admin-brand img {
+
+      width: 135px;
+
+      background: white;
+
+      padding: 7px 10px;
+
+    }
+
+
+    .admin-brand-text strong {
+
+      display: block;
+
+      font-size: 14px;
+      letter-spacing: .04em;
+
+    }
+
+
+    .admin-brand-text span {
+
+      display: block;
+
+      margin-top: 3px;
+
+      color:
+        rgba(255,255,255,.55);
+
+      font-size: 11px;
+
+      text-transform: uppercase;
+
+      letter-spacing: .14em;
+
+    }
+
+
+    .logout-button {
+
+      padding:
+        11px
+        18px;
+
+      border:
+        1px solid
+        rgba(255,255,255,.18);
+
+      background: transparent;
+
+      color: white;
+
+      font-size: 12px;
+      font-weight: 700;
+
+    }
+
+
+    .logout-button:hover {
+
+      border-color: var(--red);
+
+      background: var(--red);
+
+    }
+
+
+    /* ======================================================
+       CONTENT
+    ====================================================== */
+
+    .admin-container {
+
+      max-width: 1450px;
+
+      margin: auto;
+
+      padding:
+        45px
+        30px
+        80px;
+
+    }
+
+
+    .admin-top {
+
+      display: flex;
+
+      justify-content: space-between;
+      align-items: flex-end;
+
+      gap: 30px;
+
+      margin-bottom: 35px;
+
+    }
+
+
+    .admin-kicker {
+
+      color: var(--red);
+
+      font-size: 11px;
+      font-weight: 800;
+
+      letter-spacing: .2em;
+
+      text-transform: uppercase;
+
+    }
+
+
+    .admin-top h1 {
+
+      margin:
+        8px 0
+        4px;
+
+      font-size: 38px;
+
+    }
+
+
+    .admin-top p {
+
+      margin: 0;
+
+      color: var(--text-grey);
+
+    }
+
+
+    .new-vehicle-button {
+
+      padding:
+        15px
+        22px;
+
+      border: 0;
+
+      background: var(--red);
+
+      color: white;
+
+      font-weight: 800;
+
+      opacity: .45;
+
+      cursor: not-allowed;
+
+    }
+
+
+    /* ======================================================
+       STATS
+    ====================================================== */
+
+    .stats {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 15px;
+
+      margin-bottom: 35px;
+
+    }
+
+
+    .stat {
+
+      padding: 20px;
+
+      background: white;
+
+      border:
+        1px solid var(--border);
+
+    }
+
+
+    .stat-label {
+
+      margin-bottom: 8px;
+
+      color: var(--text-grey);
+
+      font-size: 11px;
+      font-weight: 700;
+
+      text-transform: uppercase;
+
+      letter-spacing: .1em;
+
+    }
+
+
+    .stat-value {
+
+      font-size: 30px;
+      font-weight: 800;
+
+    }
+
+
+    /* ======================================================
+       VEHÍCULOS
+    ====================================================== */
+
+    .vehicles {
+
+      display: grid;
+
+      gap: 12px;
+
+    }
+
+
+    .vehicle {
+
+      display: grid;
+
+      grid-template-columns:
+        minmax(220px, 2fr)
+        minmax(130px, 1fr)
+        minmax(120px, .8fr)
+        minmax(100px, .7fr)
+        minmax(100px, .7fr)
+        120px;
+
+      align-items: center;
+
+      gap: 20px;
+
+      padding:
+        18px
+        20px;
+
+      background: white;
+
+      border:
+        1px solid var(--border);
+
+      transition:
+        box-shadow .2s ease,
+        transform .2s ease;
+
+    }
+
+
+    .vehicle:hover {
+
+      transform:
+        translateY(-2px);
+
+      box-shadow:
+        0 16px 40px
+        rgba(0,0,0,.07);
+
+    }
+
+
+    .vehicle-name {
+
+      font-size: 16px;
+      font-weight: 800;
+
+    }
+
+
+    .vehicle-sub {
+
+      margin-top: 5px;
+
+      color: var(--text-grey);
+
+      font-size: 12px;
+
+    }
+
+
+    .vehicle-price {
+
+      font-weight: 800;
+
+      font-size: 17px;
+
+    }
+
+
+    .badge {
+
+      display: inline-flex;
+
+      width: fit-content;
+
+      padding:
+        7px
+        10px;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      text-transform: uppercase;
+
+      letter-spacing: .08em;
+
+    }
+
+
+    .available {
+
+      background: #e8f6ed;
+
+      color: #166534;
+
+    }
+
+
+    .reserved {
+
+      background: #fff3dc;
+
+      color: #8a5300;
+
+    }
+
+
+    .sold {
+
+      background: #fbe9ea;
+
+      color: #a0181e;
+
+    }
+
+
+    .published {
+
+      color: #166534;
+
+      font-size: 12px;
+      font-weight: 700;
+
+    }
+
+
+    .not-published {
+
+      color: #999;
+
+      font-size: 12px;
+      font-weight: 700;
+
+    }
+
+
+    .edit-button {
+
+      padding:
+        10px
+        15px;
+
+      border:
+        1px solid
+        rgba(0,0,0,.13);
+
+      background: white;
+
+      color: var(--black);
+
+      font-size: 12px;
+      font-weight: 800;
+
+      opacity: .55;
+
+      cursor: not-allowed;
+
+    }
+
+
+    /* ======================================================
+       LOADING
+    ====================================================== */
+
+    .admin-message {
+
+      padding: 45px;
+
+      background: white;
+
+      border:
+        1px solid var(--border);
+
+      text-align: center;
+
+      color: var(--text-grey);
+
+    }
+
+
+    /* ======================================================
+       MOBILE
+    ====================================================== */
+
+    @media (max-width: 950px) {
+
+      .stats {
+        grid-template-columns:
+          repeat(2,1fr);
+      }
+
+
+      .vehicle {
+
+        grid-template-columns:
+          1fr 1fr;
+
+      }
+
+
+      .admin-top {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+      }
+
+    }
+
+
+    @media (max-width: 600px) {
+
+      .admin-header-inner,
+      .admin-container {
+
+        padding-left: 18px;
+        padding-right: 18px;
+
+      }
+
+
+      .admin-brand-text {
+        display: none;
+      }
+
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+
+      .vehicle {
+
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+
+      }
+
+
+      .login-card {
+        padding: 30px 25px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<!-- ==========================================================
+     LOGIN
+========================================================== -->
+
+<section
+  id="loginScreen"
+  class="login-screen"
+>
+
+  <div class="login-card">
+
+    <img
+      class="login-logo"
+      src="/assets/logo-utebo-motor-selection.jpeg"
+      alt="Utebo Motor Selection"
+    >
+
+
+    <div class="login-label">
+      Área privada
+    </div>
+
+
+    <h1>
+      Gestión de stock
+    </h1>
+
+
+    <p class="login-description">
+
+      Acceso exclusivo para la gestión
+      de vehículos de Utebo Motor Selection.
+
+    </p>
+
+
+    <form id="loginForm">
+
+      <div class="form-field">
+
+        <label for="password">
+          Contraseña
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
+
+      </div>
+
+
+      <button
+        class="login-button"
+        type="submit"
+      >
+        Acceder al panel
+      </button>
+
+
+      <div
+        id="loginError"
+        class="login-error"
+      ></div>
+
+    </form>
+
+  </div>
+
+</section>
+
+
+
+<!-- ==========================================================
+     ADMIN
+========================================================== -->
+
+<section
+  id="adminScreen"
+  class="admin-screen"
+>
+
+
+  <header class="admin-header">
+
+    <div class="admin-header-inner">
+
+      <div class="admin-brand">
+
+        <img
+          src="/assets/logo-utebo-motor-selection.jpeg"
+          alt="Utebo Motor Selection"
+        >
+
+        <div class="admin-brand-text">
+
+          <strong>
+            Utebo Motor Selection
+          </strong>
+
+          <span>
+            Administración
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <button
+        id="logoutButton"
+        class="logout-button"
+      >
+        Cerrar sesión
+      </button>
+
+    </div>
+
+  </header>
+
+
+
+  <main class="admin-container">
+
+
+    <div class="admin-top">
+
+      <div>
+
+        <div class="admin-kicker">
+          Gestión
+        </div>
+
+        <h1>
+          Vehículos
+        </h1>
+
+        <p>
+          Gestiona el stock publicado en la web.
+        </p>
+
+      </div>
+
+
+      <button
+        class="new-vehicle-button"
+        disabled
+        title="Lo activaremos en el siguiente paso"
+      >
+        + Añadir vehículo
+      </button>
+
+    </div>
+
+
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <div class="stat-label">
+          Total
+        </div>
+
+        <div
+          id="statTotal"
+          class="stat-value"
+        >
+          —
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-label">
+          Disponibles
+        </div>
+
+        <div
+          id="statDisponibles"
+          class="stat-value"
+        >
+          —
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-label">
+          Reservados
+        </div>
+
+        <div
+          id="statReservados"
+          class="stat-value"
+        >
+          —
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-label">
+          Vendidos
+        </div>
+
+        <div
+          id="statVendidos"
+          class="stat-value"
+        >
+          —
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      id="vehicles"
+      class="vehicles"
+    >
+
+      <div class="admin-message">
+        Cargando vehículos...
+      </div>
+
+    </div>
+
+
+  </main>
+
+</section>
+
+
+
+<script>
+
+
+// ============================================================
+// ELEMENTOS
+// ============================================================
+
+const loginScreen =
+  document.getElementById("loginScreen");
+
+const adminScreen =
+  document.getElementById("adminScreen");
+
+const loginForm =
+  document.getElementById("loginForm");
+
+const loginError =
+  document.getElementById("loginError");
+
+const logoutButton =
+  document.getElementById("logoutButton");
+
+const vehiclesContainer =
+  document.getElementById("vehicles");
+
+
+
+// ============================================================
+// INICIO
+// ============================================================
+
+comprobarSesion();
+
+
+
+// ============================================================
+// COMPROBAR SESIÓN
+// ============================================================
+
+async function comprobarSesion() {
+
+  try {
+
+    const response =
+      await fetch(
+        "/admin/api/session",
+        {
+          credentials: "same-origin",
+          cache: "no-store"
+        }
+      );
+
+
+    if (!response.ok) {
+
+      mostrarLogin();
+
+      return;
+
+    }
+
+
+    mostrarAdmin();
+
+    await cargarVehiculos();
+
+
+  } catch (error) {
+
+    mostrarLogin();
+
+  }
+
+}
+
+
+
+// ============================================================
+// LOGIN
+// ============================================================
+
+loginForm.addEventListener(
+  "submit",
+  async (event) => {
+
+    event.preventDefault();
+
+
+    loginError.textContent = "";
+
+
+    const password =
+      document
+        .getElementById("password")
+        .value;
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/admin/api/login",
+          {
+
+            method: "POST",
+
+            credentials:
+              "same-origin",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                password
+              })
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        loginError.textContent =
+          data.error ||
+          "Contraseña incorrecta.";
+
+        return;
+
+      }
+
+
+      document
+        .getElementById("password")
+        .value = "";
+
+
+      mostrarAdmin();
+
+      await cargarVehiculos();
+
+
+    } catch (error) {
+
+      loginError.textContent =
+        "No se ha podido iniciar sesión.";
+
+    }
+
+  }
+);
+
+
+
+// ============================================================
+// LOGOUT
+// ============================================================
+
+logoutButton.addEventListener(
+  "click",
+  async () => {
+
+    await fetch(
+      "/admin/api/logout",
+      {
+        method: "POST",
+        credentials: "same-origin"
+      }
+    );
+
+
+    mostrarLogin();
+
+  }
+);
+
+
+
+// ============================================================
+// MOSTRAR PANTALLAS
+// ============================================================
+
+function mostrarLogin() {
+
+  adminScreen.style.display =
+    "none";
+
+  loginScreen.style.display =
+    "flex";
+
+}
+
+
+function mostrarAdmin() {
+
+  loginScreen.style.display =
+    "none";
+
+  adminScreen.style.display =
+    "block";
+
+}
+
+
+
+// ============================================================
+// VEHÍCULOS
+// ============================================================
+
+async function cargarVehiculos() {
+
+  vehiclesContainer.innerHTML =
+    `
+      <div class="admin-message">
+        Cargando vehículos...
+      </div>
+    `;
+
+
+  const response =
+    await fetch(
+      "/admin/api/vehiculos",
+      {
+        credentials: "same-origin",
+        cache: "no-store"
+      }
+    );
+
+
+  if (response.status === 401) {
+
+    mostrarLogin();
+
+    return;
+
+  }
+
+
+  const data =
+    await response.json();
+
+
+  if (!data.ok) {
+
+    vehiclesContainer.innerHTML =
+      `
+        <div class="admin-message">
+          No se pudieron cargar los vehículos.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  pintarVehiculos(
+    data.vehiculos
+  );
+
+}
+
+
+
+// ============================================================
+// PINTAR VEHÍCULOS
+// ============================================================
+
+function pintarVehiculos(vehiculos) {
+
+  vehiclesContainer.innerHTML = "";
+
+
+  actualizarEstadisticas(
+    vehiculos
+  );
+
+
+  if (!vehiculos.length) {
+
+    vehiclesContainer.innerHTML =
+      `
+        <div class="admin-message">
+          Todavía no hay vehículos.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  for (const v of vehiculos) {
+
+    const article =
+      document.createElement("article");
+
+
+    article.className =
+      "vehicle";
+
+
+    const estadoClase =
+      v.estado === "Vendido"
+        ? "sold"
+        : v.estado === "Reservado"
+          ? "reserved"
+          : "available";
+
+
+    article.innerHTML = `
+
+      <div>
+
+        <div class="vehicle-name">
+          ${escapar(v.vehiculo)}
+        </div>
+
+        <div class="vehicle-sub">
+          ${escapar(v.marca || "")}
+          ${escapar(v.modelo || "")}
+          · ${v.fotos} fotos
+        </div>
+
+      </div>
+
+
+      <div class="vehicle-price">
+        ${formatearPrecio(v.precio)}
+      </div>
+
+
+      <div>
+
+        <span class="badge ${estadoClase}">
+          ${escapar(v.estado)}
+        </span>
+
+      </div>
+
+
+      <div>
+
+        ${
+          v.publicado
+            ? `<span class="published">● Publicado</span>`
+            : `<span class="not-published">○ Oculto</span>`
+        }
+
+      </div>
+
+
+      <div>
+        Orden ${v.orden ?? "—"}
+      </div>
+
+
+      <div>
+
+        <button
+          class="edit-button"
+          disabled
+        >
+          Editar
+        </button>
+
+      </div>
+
+    `;
+
+
+    vehiclesContainer
+      .appendChild(article);
+
+  }
+
+}
+
+
+
+// ============================================================
+// ESTADÍSTICAS
+// ============================================================
+
+function actualizarEstadisticas(
+  vehiculos
+) {
+
+  document.getElementById(
+    "statTotal"
+  ).textContent =
+    vehiculos.length;
+
+
+  document.getElementById(
+    "statDisponibles"
+  ).textContent =
+    vehiculos.filter(
+      v => v.estado === "Disponible"
+    ).length;
+
+
+  document.getElementById(
+    "statReservados"
+  ).textContent =
+    vehiculos.filter(
+      v => v.estado === "Reservado"
+    ).length;
+
+
+  document.getElementById(
+    "statVendidos"
+  ).textContent =
+    vehiculos.filter(
+      v => v.estado === "Vendido"
+    ).length;
+
+}
+
+
+
+// ============================================================
+// FORMATO
+// ============================================================
+
+function formatearPrecio(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "Consultar";
+
+  }
+
+
+  return new Intl.NumberFormat(
+    "es-ES",
+    {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0
+    }
+  ).format(value);
+
+}
+
+
+
+// ============================================================
+// SEGURIDAD HTML
+// ============================================================
+
+function escapar(value) {
+
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+</script>
+
+
+</body>
+</html>
