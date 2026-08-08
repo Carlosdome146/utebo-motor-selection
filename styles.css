@@ -766,3 +766,528 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
     font-size: 25px;
   }
 }
+
+/* ============================================================
+   INDICADOR DE GALERÍA EN TARJETA
+============================================================ */
+
+.vehicle-media-clickable {
+  cursor: pointer;
+}
+
+
+.vehicle-media-clickable::after {
+  content: "Ver fotografías";
+
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+
+  transform: translate(-50%, 8px);
+
+  padding: 9px 15px;
+
+  background: rgba(10, 10, 11, .88);
+  backdrop-filter: blur(10px);
+
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+
+  opacity: 0;
+
+  transition:
+    opacity .25s ease,
+    transform .25s ease;
+
+  pointer-events: none;
+
+  z-index: 3;
+}
+
+
+.vehicle-media-clickable:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+
+/* NÚMERO DE FOTOS */
+
+.vehicle-photo-count {
+
+  position: absolute;
+
+  right: 15px;
+  bottom: 15px;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 8px 11px;
+
+  background: rgba(10, 10, 11, .82);
+
+  backdrop-filter: blur(8px);
+
+  color: #fff;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  z-index: 4;
+
+  pointer-events: none;
+}
+
+
+.vehicle-photo-count svg {
+
+  width: 15px;
+  height: 15px;
+
+  fill: currentColor;
+
+}
+
+
+/* ============================================================
+   GALERÍA PANTALLA COMPLETA
+============================================================ */
+
+.gallery-open {
+  overflow: hidden;
+}
+
+
+.vehicle-gallery-modal {
+
+  position: fixed;
+  inset: 0;
+
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+
+}
+
+
+.vehicle-gallery-backdrop {
+
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at 50% 25%,
+      rgba(50, 50, 52, .85),
+      rgba(4, 4, 5, .98) 65%
+    );
+
+  backdrop-filter: blur(10px);
+
+}
+
+
+/* VENTANA */
+
+.vehicle-gallery-window {
+
+  position: relative;
+
+  z-index: 2;
+
+  width: min(1400px, 96vw);
+  height: min(900px, 92vh);
+
+  display: flex;
+  flex-direction: column;
+
+  background: #0d0e0f;
+
+  border: 1px solid rgba(255, 255, 255, .12);
+
+  box-shadow:
+    0 40px 120px rgba(0, 0, 0, .7);
+
+}
+
+
+/* HEADER */
+
+.vehicle-gallery-header {
+
+  min-height: 66px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 22px;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, .10);
+
+}
+
+
+.vehicle-gallery-title {
+
+  color: #fff;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  letter-spacing: .04em;
+
+}
+
+
+.vehicle-gallery-close {
+
+  width: 42px;
+  height: 42px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #fff;
+
+  font-size: 37px;
+  font-weight: 200;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    color .2s ease,
+    transform .2s ease;
+
+}
+
+
+.vehicle-gallery-close:hover {
+
+  color: #d71920;
+
+  transform: rotate(5deg);
+
+}
+
+
+/* ============================================================
+   FOTO PRINCIPAL
+============================================================ */
+
+.vehicle-gallery-main {
+
+  flex: 1;
+
+  min-height: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    75px
+    minmax(0, 1fr)
+    75px;
+
+  align-items: center;
+
+}
+
+
+.vehicle-gallery-image-wrap {
+
+  width: 100%;
+  height: 100%;
+
+  min-height: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  padding: 20px;
+
+}
+
+
+.vehicle-gallery-image {
+
+  display: block;
+
+  max-width: 100%;
+  max-height: 100%;
+
+  width: auto;
+  height: auto;
+
+  object-fit: contain;
+
+  user-select: none;
+
+}
+
+
+/* FLECHAS */
+
+.vehicle-gallery-arrow {
+
+  width: 52px;
+  height: 70px;
+
+  margin: auto;
+
+  border: 1px solid
+    rgba(255, 255, 255, .13);
+
+  background:
+    rgba(255, 255, 255, .04);
+
+  color: #fff;
+
+  font-size: 48px;
+  font-weight: 200;
+
+  cursor: pointer;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease;
+
+}
+
+
+.vehicle-gallery-arrow:hover {
+
+  background: #d71920;
+
+  border-color: #d71920;
+
+  color: #fff;
+
+}
+
+
+/* ============================================================
+   FOOTER GALERÍA
+============================================================ */
+
+.vehicle-gallery-footer {
+
+  min-height: 110px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 22px;
+
+  padding: 12px 20px;
+
+  border-top:
+    1px solid rgba(255, 255, 255, .10);
+
+}
+
+
+.vehicle-gallery-counter {
+
+  flex: 0 0 auto;
+
+  color:
+    rgba(255, 255, 255, .75);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  letter-spacing: .08em;
+
+}
+
+
+/* MINIATURAS */
+
+.vehicle-gallery-thumbnails {
+
+  flex: 1;
+
+  display: flex;
+
+  gap: 9px;
+
+  overflow-x: auto;
+
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    rgba(255,255,255,.30)
+    transparent;
+
+}
+
+
+.vehicle-gallery-thumb {
+
+  flex: 0 0 105px;
+
+  height: 72px;
+
+  padding: 0;
+
+  border:
+    2px solid transparent;
+
+  background: #18191b;
+
+  opacity: .48;
+
+  overflow: hidden;
+
+  cursor: pointer;
+
+  transition:
+    opacity .2s ease,
+    border-color .2s ease;
+
+}
+
+
+.vehicle-gallery-thumb img {
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+}
+
+
+.vehicle-gallery-thumb:hover {
+
+  opacity: .8;
+
+}
+
+
+.vehicle-gallery-thumb.active {
+
+  opacity: 1;
+
+  border-color: #d71920;
+
+}
+
+
+/* ============================================================
+   MÓVIL
+============================================================ */
+
+@media (max-width: 700px) {
+
+  .vehicle-media-clickable::after {
+    display: none;
+  }
+
+
+  .vehicle-gallery-modal {
+    padding: 0;
+  }
+
+
+  .vehicle-gallery-window {
+
+    width: 100vw;
+    height: 100dvh;
+
+    border: 0;
+
+  }
+
+
+  .vehicle-gallery-header {
+
+    min-height: 58px;
+
+    padding: 0 15px;
+
+  }
+
+
+  .vehicle-gallery-title {
+
+    max-width: calc(100vw - 80px);
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+  }
+
+
+  .vehicle-gallery-main {
+
+    grid-template-columns:
+      48px
+      minmax(0, 1fr)
+      48px;
+
+  }
+
+
+  .vehicle-gallery-image-wrap {
+
+    padding: 5px;
+
+  }
+
+
+  .vehicle-gallery-arrow {
+
+    width: 40px;
+    height: 55px;
+
+    font-size: 38px;
+
+    border: 0;
+
+    background:
+      rgba(0, 0, 0, .4);
+
+  }
+
+
+  .vehicle-gallery-footer {
+
+    min-height: 92px;
+
+    gap: 12px;
+
+    padding: 10px;
+
+  }
+
+
+  .vehicle-gallery-thumb {
+
+    flex-basis: 82px;
+
+    height: 58px;
+
+  }
+
+}
