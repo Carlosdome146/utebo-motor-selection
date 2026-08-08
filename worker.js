@@ -30,27 +30,6 @@ if (
 
 }
     
-if (
-  url.pathname === "/admin" ||
-  url.pathname === "/admin/"
-) {
-
-  const adminUrl =
-    new URL(
-      "/admin.html",
-      request.url
-    );
-
-
-  return env.ASSETS.fetch(
-    new Request(
-      adminUrl,
-      request
-    )
-  );
-
-}
-
 
 if (
   url.pathname ===
