@@ -1291,3 +1291,33 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
   }
 
 }
+
+.vehicle-form-delete {
+
+  margin-right: auto;
+
+  padding:
+    13px
+    20px;
+
+  border:
+    1px solid #d71920;
+
+  background: transparent;
+
+  color: #d71920;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+}
+
+
+.vehicle-form-delete:hover {
+
+  background: #d71920;
+
+  color: white;
+
+}
