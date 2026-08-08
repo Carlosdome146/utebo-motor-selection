@@ -2281,9 +2281,26 @@ async function adminVehiculo(
   // ----------------------------------------------------------
 
   if (
-    request.method === "POST" ||
-    request.method === "PUT"
-  ) {
+  request.method === "POST" ||
+  request.method === "PUT" ||
+  request.method === "DELETE"
+) {
+
+  if (!origenAdminValido(request)) {
+
+    return Response.json(
+      {
+        ok: false,
+        error: "Origen no permitido"
+      },
+      {
+        status: 403
+      }
+    );
+
+  }
+
+}
 
     if (
       !origenAdminValido(
@@ -2641,6 +2658,172 @@ async function adminVehiculo(
 
   }
 
+
+// ==========================================================
+// DELETE - ELIMINAR VEHÍCULO
+// ==========================================================
+
+if (request.method === "DELETE") {
+
+  const id =
+    Number(body.id);
+
+
+  if (
+    !Number.isInteger(id) ||
+    id <= 0
+  ) {
+
+    return Response.json(
+      {
+        ok: false,
+        error: "ID incorrecto"
+      },
+      {
+        status: 400
+      }
+    );
+
+  }
+
+
+  try {
+
+    // ------------------------------------------------------
+    // OBTENER TODAS SUS FOTOS
+    // ------------------------------------------------------
+
+    const fotosResultado =
+      await env.DB
+        .prepare(`
+          SELECT r2_key
+
+          FROM fotos_vehiculos
+
+          WHERE vehiculo_id = ?
+        `)
+
+        .bind(id)
+
+        .all();
+
+
+    const fotos =
+      fotosResultado.results || [];
+
+
+    // ------------------------------------------------------
+    // COMPROBAR QUE EXISTE
+    // ------------------------------------------------------
+
+    const vehiculo =
+      await env.DB
+        .prepare(`
+          SELECT id, vehiculo
+
+          FROM vehiculos
+
+          WHERE id = ?
+
+          LIMIT 1
+        `)
+
+        .bind(id)
+
+        .first();
+
+
+    if (!vehiculo) {
+
+      return Response.json(
+        {
+          ok: false,
+          error: "Vehículo no encontrado"
+        },
+        {
+          status: 404
+        }
+      );
+
+    }
+
+
+    // ------------------------------------------------------
+    // ELIMINAR DATOS DE D1
+    // ------------------------------------------------------
+
+    await env.DB.batch([
+      env.DB
+        .prepare(`
+          DELETE FROM fotos_vehiculos
+          WHERE vehiculo_id = ?
+        `)
+        .bind(id),
+
+      env.DB
+        .prepare(`
+          DELETE FROM vehiculos
+          WHERE id = ?
+        `)
+        .bind(id)
+    ]);
+
+
+    // ------------------------------------------------------
+    // ELIMINAR ARCHIVOS DE R2
+    // ------------------------------------------------------
+
+    for (const foto of fotos) {
+
+      try {
+
+        await env.IMAGES.delete(
+          foto.r2_key
+        );
+
+      } catch (error) {
+
+        console.error(
+          "No se pudo borrar objeto R2:",
+          foto.r2_key,
+          error
+        );
+
+      }
+
+    }
+
+
+    return Response.json({
+      ok: true,
+      eliminado: id,
+      vehiculo: vehiculo.vehiculo,
+      fotosEliminadas: fotos.length
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      "Eliminar vehículo:",
+      error
+    );
+
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No se pudo eliminar el vehículo"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
 
   return Response.json(
     {
