@@ -8,26 +8,27 @@
     "AIRTABLE_BASE_ID": "app7KSrIPf0iSlNW5"
   },
 
-"d1_databases": [
-  {
-    "binding": "DB",
-    "database_name": "utebo-motor-db",
-    "database_id": "5112057d-fdd1-48fd-95f9-69076daba787"
-  }
-],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "utebo-motor-db",
+      "database_id": "5112057d-fdd1-48fd-95f9-69076daba787"
+    }
+  ],
 
-"r2_buckets": [
-  {
-    "binding": "IMAGES",
-    "bucket_name": "utebo-motor-images"
-  }
-],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "utebo-motor-images"
+    }
+  ],
 
-"assets": {
-  "directory": "./",
-  "binding": "ASSETS",
-  "run_worker_first": [
-    "/api/*",
-    "/media/*"
-  ]
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*",
+      "/media/*"
+    ]
+  }
 }
