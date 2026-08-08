@@ -22,6 +22,27 @@
 
   <style>
 
+.vehicle-form-delete {
+  margin-right: auto;
+
+  padding: 13px 20px;
+
+  border: 1px solid #d71920;
+
+  background: transparent;
+
+  color: #d71920;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.vehicle-form-delete:hover {
+  background: #d71920;
+  color: white;
+}
+    
 /* ======================================================
    FOTOGRAFÍAS
 ====================================================== */
@@ -2134,33 +2155,32 @@ body.modal-open {
 
       <div class="vehicle-form-actions">
 
-<button
-  id="vehicleDeleteButton"
-  class="vehicle-form-delete"
-  type="button"
-  style="display:none"
->
-  Eliminar vehículo
-</button>
-        
-        <button
-          id="vehicleFormCancel"
-          class="vehicle-form-cancel"
-          type="button"
-        >
-          Cancelar
-        </button>
+  <button
+    id="vehicleDeleteButton"
+    class="vehicle-form-delete"
+    type="button"
+    style="display: none;"
+  >
+    Eliminar vehículo
+  </button>
 
+  <button
+    id="vehicleFormCancel"
+    class="vehicle-form-cancel"
+    type="button"
+  >
+    Cancelar
+  </button>
 
-        <button
-          id="vehicleFormSave"
-          class="vehicle-form-save"
-          type="submit"
-        >
-          Guardar vehículo
-        </button>
+  <button
+    id="vehicleFormSave"
+    class="vehicle-form-save"
+    type="submit"
+  >
+    Guardar vehículo
+  </button>
 
-      </div>
+</div>
 
 
     </form>
@@ -2896,9 +2916,11 @@ async function abrirEditarVehiculo(
 
 
     rellenarFormulario(
-      data.vehiculo
-    );
+  data.vehiculo
+);
 
+vehicleDeleteButton.style.display =
+  "block";
 
 await cargarFotosVehiculo(
   data.vehiculo.id
