@@ -85,28 +85,61 @@ function crearTarjetaVehiculo(v) {
     article.classList.add("vehicle-featured");
   }
 
-  // ----------------------------------------------------------
-  // IMAGEN
-  // ----------------------------------------------------------
+// ----------------------------------------------------------
+// IMAGEN / GALERÍA
+// ----------------------------------------------------------
 
-  const media = document.createElement("div");
-  media.className = "vehicle-media";
+const media = document.createElement("div");
+media.className = "vehicle-media";
 
-  if (v.fotos && v.fotos.length > 0) {
-    const img = document.createElement("img");
+if (v.fotos && v.fotos.length > 0) {
 
-    img.src = v.fotos[0].url;
-    img.alt = v.vehiculo || `${v.marca} ${v.modelo}`;
-    img.loading = "lazy";
+  const img = document.createElement("img");
 
-    media.appendChild(img);
-  } else {
-    const noImage = document.createElement("div");
-    noImage.className = "vehicle-no-image";
-    noImage.textContent = "UTEBO MOTOR SELECTION";
+  img.src = v.fotos[0].url;
+  img.alt = v.vehiculo || `${v.marca} ${v.modelo}`;
+  img.loading = "lazy";
 
-    media.appendChild(noImage);
+  media.appendChild(img);
+
+  // Si hay fotografías, permitimos abrir la galería
+  media.classList.add("vehicle-media-clickable");
+
+  media.addEventListener("click", () => {
+    abrirGaleriaVehiculo(
+      v.fotos,
+      v.vehiculo || `${v.marca} ${v.modelo}`
+    );
+  });
+
+  // Indicador del número de fotografías
+  if (v.fotos.length > 1) {
+
+    const photoCount = document.createElement("span");
+
+    photoCount.className = "vehicle-photo-count";
+
+    photoCount.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6.5h3l1.5-2h7l1.5 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Zm8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/>
+      </svg>
+
+      ${v.fotos.length} fotos
+    `;
+
+    media.appendChild(photoCount);
   }
+
+} else {
+
+  const noImage = document.createElement("div");
+
+  noImage.className = "vehicle-no-image";
+
+  noImage.textContent = "UTEBO MOTOR SELECTION";
+
+  media.appendChild(noImage);
+}
 
   // ----------------------------------------------------------
   // ESTADO
@@ -296,4 +329,380 @@ function formatearPrecio(numero) {
 
 function formatearNumero(numero) {
   return new Intl.NumberFormat("es-ES").format(numero);
+}
+
+// ============================================================
+// GALERÍA DE FOTOGRAFÍAS DE VEHÍCULOS
+// ============================================================
+
+function abrirGaleriaVehiculo(fotos, tituloVehiculo) {
+
+  if (!fotos || fotos.length === 0) return;
+
+  let indiceActual = 0;
+
+  // ----------------------------------------------------------
+  // MODAL
+  // ----------------------------------------------------------
+
+  const modal = document.createElement("div");
+
+  modal.className = "vehicle-gallery-modal";
+
+  modal.innerHTML = `
+    <div class="vehicle-gallery-backdrop"></div>
+
+    <div class="vehicle-gallery-window">
+
+      <div class="vehicle-gallery-header">
+
+        <div class="vehicle-gallery-title"></div>
+
+        <button
+          class="vehicle-gallery-close"
+          type="button"
+          aria-label="Cerrar galería"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="vehicle-gallery-main">
+
+        <button
+          class="vehicle-gallery-arrow vehicle-gallery-prev"
+          type="button"
+          aria-label="Foto anterior"
+        >
+          ‹
+        </button>
+
+
+        <div class="vehicle-gallery-image-wrap">
+
+          <img
+            class="vehicle-gallery-image"
+            src=""
+            alt=""
+          >
+
+        </div>
+
+
+        <button
+          class="vehicle-gallery-arrow vehicle-gallery-next"
+          type="button"
+          aria-label="Foto siguiente"
+        >
+          ›
+        </button>
+
+      </div>
+
+
+      <div class="vehicle-gallery-footer">
+
+        <div class="vehicle-gallery-counter"></div>
+
+        <div class="vehicle-gallery-thumbnails"></div>
+
+      </div>
+
+    </div>
+  `;
+
+
+  document.body.appendChild(modal);
+
+  document.body.classList.add("gallery-open");
+
+
+  // ----------------------------------------------------------
+  // ELEMENTOS
+  // ----------------------------------------------------------
+
+  const imagen =
+    modal.querySelector(".vehicle-gallery-image");
+
+  const contador =
+    modal.querySelector(".vehicle-gallery-counter");
+
+  const titulo =
+    modal.querySelector(".vehicle-gallery-title");
+
+  const thumbnails =
+    modal.querySelector(".vehicle-gallery-thumbnails");
+
+  const anterior =
+    modal.querySelector(".vehicle-gallery-prev");
+
+  const siguiente =
+    modal.querySelector(".vehicle-gallery-next");
+
+  const cerrar =
+    modal.querySelector(".vehicle-gallery-close");
+
+  const backdrop =
+    modal.querySelector(".vehicle-gallery-backdrop");
+
+
+  titulo.textContent = tituloVehiculo;
+
+
+  // ----------------------------------------------------------
+  // MINIATURAS
+  // ----------------------------------------------------------
+
+  fotos.forEach((foto, index) => {
+
+    const thumb = document.createElement("button");
+
+    thumb.type = "button";
+    thumb.className = "vehicle-gallery-thumb";
+
+    const thumbImg = document.createElement("img");
+
+    thumbImg.src = foto.url;
+    thumbImg.alt =
+      `${tituloVehiculo} - fotografía ${index + 1}`;
+
+    thumb.appendChild(thumbImg);
+
+    thumb.addEventListener("click", () => {
+
+      indiceActual = index;
+
+      mostrarFoto();
+
+    });
+
+    thumbnails.appendChild(thumb);
+
+  });
+
+
+  // ----------------------------------------------------------
+  // MOSTRAR FOTO
+  // ----------------------------------------------------------
+
+  function mostrarFoto() {
+
+    const foto = fotos[indiceActual];
+
+    imagen.src = foto.url;
+
+    imagen.alt =
+      `${tituloVehiculo} - fotografía ${indiceActual + 1}`;
+
+    contador.textContent =
+      `${indiceActual + 1} / ${fotos.length}`;
+
+
+    // Miniatura activa
+
+    const thumbs =
+      modal.querySelectorAll(".vehicle-gallery-thumb");
+
+    thumbs.forEach((thumb, index) => {
+
+      thumb.classList.toggle(
+        "active",
+        index === indiceActual
+      );
+
+    });
+
+
+    // Llevar miniatura activa a la zona visible
+
+    if (thumbs[indiceActual]) {
+
+      thumbs[indiceActual].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center"
+      });
+
+    }
+
+  }
+
+
+  // ----------------------------------------------------------
+  // ANTERIOR
+  // ----------------------------------------------------------
+
+  function fotoAnterior() {
+
+    indiceActual--;
+
+    if (indiceActual < 0) {
+      indiceActual = fotos.length - 1;
+    }
+
+    mostrarFoto();
+
+  }
+
+
+  // ----------------------------------------------------------
+  // SIGUIENTE
+  // ----------------------------------------------------------
+
+  function fotoSiguiente() {
+
+    indiceActual++;
+
+    if (indiceActual >= fotos.length) {
+      indiceActual = 0;
+    }
+
+    mostrarFoto();
+
+  }
+
+
+  anterior.addEventListener(
+    "click",
+    fotoAnterior
+  );
+
+
+  siguiente.addEventListener(
+    "click",
+    fotoSiguiente
+  );
+
+
+  // Si solo hay una fotografía, no necesitamos flechas
+
+  if (fotos.length <= 1) {
+
+    anterior.style.display = "none";
+    siguiente.style.display = "none";
+    thumbnails.style.display = "none";
+
+  }
+
+
+  // ----------------------------------------------------------
+  // CERRAR
+  // ----------------------------------------------------------
+
+  function cerrarGaleria() {
+
+    document.body.classList.remove("gallery-open");
+
+    document.removeEventListener(
+      "keydown",
+      controlTeclado
+    );
+
+    modal.remove();
+
+  }
+
+
+  cerrar.addEventListener(
+    "click",
+    cerrarGaleria
+  );
+
+
+  backdrop.addEventListener(
+    "click",
+    cerrarGaleria
+  );
+
+
+  // ----------------------------------------------------------
+  // TECLADO
+  // ----------------------------------------------------------
+
+  function controlTeclado(event) {
+
+    if (event.key === "Escape") {
+
+      cerrarGaleria();
+
+    }
+
+    if (event.key === "ArrowLeft") {
+
+      fotoAnterior();
+
+    }
+
+    if (event.key === "ArrowRight") {
+
+      fotoSiguiente();
+
+    }
+
+  }
+
+
+  document.addEventListener(
+    "keydown",
+    controlTeclado
+  );
+
+
+  // ----------------------------------------------------------
+  // SWIPE EN MÓVIL
+  // ----------------------------------------------------------
+
+  let touchInicio = 0;
+
+  imagen.addEventListener(
+    "touchstart",
+    (event) => {
+
+      touchInicio =
+        event.changedTouches[0].screenX;
+
+    },
+    { passive: true }
+  );
+
+
+  imagen.addEventListener(
+    "touchend",
+    (event) => {
+
+      const touchFin =
+        event.changedTouches[0].screenX;
+
+      const diferencia =
+        touchInicio - touchFin;
+
+
+      if (Math.abs(diferencia) < 50) {
+        return;
+      }
+
+
+      if (diferencia > 0) {
+
+        fotoSiguiente();
+
+      } else {
+
+        fotoAnterior();
+
+      }
+
+    },
+    { passive: true }
+  );
+
+
+  // ----------------------------------------------------------
+  // PRIMERA FOTO
+  // ----------------------------------------------------------
+
+  mostrarFoto();
+
 }
