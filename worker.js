@@ -19,6 +19,18 @@ export default {
 // ============================================================
 
 if (
+  url.pathname ===
+  "/admin/api/vehiculo"
+) {
+
+  return adminVehiculo(
+    request,
+    env
+  );
+
+}
+    
+if (
   url.pathname === "/admin" ||
   url.pathname === "/admin/"
 ) {
@@ -2164,5 +2176,802 @@ function bytesToBase64Url(
     .replaceAll("+", "-")
     .replaceAll("/", "_")
     .replaceAll("=", "");
+
+}
+
+// ============================================================
+// ADMIN - OBTENER / CREAR / EDITAR VEHÍCULO
+// ============================================================
+
+async function adminVehiculo(
+  request,
+  env
+) {
+
+  // ----------------------------------------------------------
+  // COMPROBAR SESIÓN
+  // ----------------------------------------------------------
+
+  const autorizado =
+    await adminAutorizado(
+      request,
+      env
+    );
+
+
+  if (!autorizado) {
+
+    return Response.json(
+      {
+        ok: false,
+        error: "No autorizado"
+      },
+      {
+        status: 401
+      }
+    );
+
+  }
+
+
+  // ----------------------------------------------------------
+  // GET - OBTENER UN VEHÍCULO
+  // ----------------------------------------------------------
+
+  if (request.method === "GET") {
+
+    const url =
+      new URL(request.url);
+
+
+    const id =
+      Number(
+        url.searchParams.get("id")
+      );
+
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "ID de vehículo incorrecto"
+        },
+        {
+          status: 400
+        }
+      );
+
+    }
+
+
+    const vehiculo =
+      await obtenerVehiculoAdmin(
+        env,
+        id
+      );
+
+
+    if (!vehiculo) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "Vehículo no encontrado"
+        },
+        {
+          status: 404
+        }
+      );
+
+    }
+
+
+    return Response.json(
+      {
+        ok: true,
+        vehiculo
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+  }
+
+
+  // ----------------------------------------------------------
+  // ESCRITURA:
+  // SOLO MISMO ORIGEN
+  // ----------------------------------------------------------
+
+  if (
+    request.method === "POST" ||
+    request.method === "PUT"
+  ) {
+
+    if (
+      !origenAdminValido(
+        request
+      )
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "Origen no permitido"
+        },
+        {
+          status: 403
+        }
+      );
+
+    }
+
+  }
+
+
+  // ----------------------------------------------------------
+  // LEER JSON
+  // ----------------------------------------------------------
+
+  let body;
+
+
+  try {
+
+    body =
+      await request.json();
+
+  } catch {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Datos incorrectos"
+      },
+      {
+        status: 400
+      }
+    );
+
+  }
+
+
+  const datos =
+    normalizarDatosVehiculo(
+      body
+    );
+
+
+  if (!datos.vehiculo) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "El nombre del vehículo es obligatorio"
+      },
+      {
+        status: 400
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // POST - CREAR
+  // ==========================================================
+
+  if (request.method === "POST") {
+
+    try {
+
+      const resultado =
+        await env.DB
+          .prepare(`
+            INSERT INTO vehiculos (
+
+              vehiculo,
+
+              publicado,
+              estado,
+              destacado,
+
+              marca,
+              modelo,
+              version,
+
+              precio,
+              ano,
+              kilometros,
+
+              combustible,
+              cambio,
+              potencia,
+              procedencia,
+
+              descripcion,
+              orden,
+
+              updated_at
+
+            )
+
+            VALUES (
+              ?, ?, ?, ?, ?, ?, ?, ?,
+              ?, ?, ?, ?, ?, ?, ?, ?,
+              CURRENT_TIMESTAMP
+            )
+          `)
+
+          .bind(
+
+            datos.vehiculo,
+
+            datos.publicado,
+            datos.estado,
+            datos.destacado,
+
+            datos.marca,
+            datos.modelo,
+            datos.version,
+
+            datos.precio,
+            datos.ano,
+            datos.kilometros,
+
+            datos.combustible,
+            datos.cambio,
+            datos.potencia,
+            datos.procedencia,
+
+            datos.descripcion,
+            datos.orden
+
+          )
+
+          .run();
+
+
+      const id =
+        Number(
+          resultado.meta
+            ?.last_row_id
+        );
+
+
+      if (!id) {
+
+        throw new Error(
+          "No se ha podido obtener el ID del vehículo"
+        );
+
+      }
+
+
+      const vehiculo =
+        await obtenerVehiculoAdmin(
+          env,
+          id
+        );
+
+
+      return Response.json({
+        ok: true,
+        accion: "creado",
+        vehiculo
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Crear vehículo:",
+        error
+      );
+
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo crear el vehículo"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // PUT - ACTUALIZAR
+  // ==========================================================
+
+  if (request.method === "PUT") {
+
+    const id =
+      Number(body.id);
+
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "ID incorrecto"
+        },
+        {
+          status: 400
+        }
+      );
+
+    }
+
+
+    try {
+
+      const resultado =
+        await env.DB
+          .prepare(`
+            UPDATE vehiculos
+
+            SET
+
+              vehiculo = ?,
+
+              publicado = ?,
+              estado = ?,
+              destacado = ?,
+
+              marca = ?,
+              modelo = ?,
+              version = ?,
+
+              precio = ?,
+              ano = ?,
+              kilometros = ?,
+
+              combustible = ?,
+              cambio = ?,
+              potencia = ?,
+              procedencia = ?,
+
+              descripcion = ?,
+              orden = ?,
+
+              updated_at =
+                CURRENT_TIMESTAMP
+
+            WHERE id = ?
+          `)
+
+          .bind(
+
+            datos.vehiculo,
+
+            datos.publicado,
+            datos.estado,
+            datos.destacado,
+
+            datos.marca,
+            datos.modelo,
+            datos.version,
+
+            datos.precio,
+            datos.ano,
+            datos.kilometros,
+
+            datos.combustible,
+            datos.cambio,
+            datos.potencia,
+            datos.procedencia,
+
+            datos.descripcion,
+            datos.orden,
+
+            id
+
+          )
+
+          .run();
+
+
+      if (
+        Number(
+          resultado.meta
+            ?.changes || 0
+        ) === 0
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Vehículo no encontrado"
+          },
+          {
+            status: 404
+          }
+        );
+
+      }
+
+
+      const vehiculo =
+        await obtenerVehiculoAdmin(
+          env,
+          id
+        );
+
+
+      return Response.json({
+        ok: true,
+        accion: "actualizado",
+        vehiculo
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Actualizar vehículo:",
+        error
+      );
+
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo actualizar el vehículo"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  return Response.json(
+    {
+      ok: false,
+      error:
+        "Método no permitido"
+    },
+    {
+      status: 405
+    }
+  );
+
+}
+
+
+
+// ============================================================
+// ADMIN - LEER UN VEHÍCULO
+// ============================================================
+
+async function obtenerVehiculoAdmin(
+  env,
+  id
+) {
+
+  const v =
+    await env.DB
+      .prepare(`
+        SELECT
+
+          v.id,
+          v.vehiculo,
+
+          v.publicado,
+          v.estado,
+          v.destacado,
+
+          v.marca,
+          v.modelo,
+          v.version,
+
+          v.precio,
+          v.ano,
+          v.kilometros,
+
+          v.combustible,
+          v.cambio,
+          v.potencia,
+          v.procedencia,
+
+          v.descripcion,
+          v.orden,
+
+          (
+            SELECT COUNT(*)
+
+            FROM fotos_vehiculos f
+
+            WHERE
+              f.vehiculo_id =
+              v.id
+          ) AS fotos
+
+        FROM vehiculos v
+
+        WHERE
+          v.id = ?
+
+        LIMIT 1
+      `)
+
+      .bind(id)
+
+      .first();
+
+
+  if (!v) {
+
+    return null;
+
+  }
+
+
+  return {
+
+    ...v,
+
+    publicado:
+      Boolean(v.publicado),
+
+    destacado:
+      Boolean(v.destacado),
+
+    fotos:
+      Number(v.fotos || 0)
+
+  };
+
+}
+
+
+
+// ============================================================
+// ADMIN - NORMALIZAR DATOS
+// ============================================================
+
+function normalizarDatosVehiculo(
+  body
+) {
+
+  const estadosPermitidos = [
+    "Disponible",
+    "Reservado",
+    "Vendido"
+  ];
+
+
+  let estado =
+    textoAdmin(
+      body.estado
+    );
+
+
+  if (
+    !estadosPermitidos.includes(
+      estado
+    )
+  ) {
+
+    estado =
+      "Disponible";
+
+  }
+
+
+  return {
+
+    vehiculo:
+      textoAdmin(
+        body.vehiculo
+      ),
+
+    publicado:
+      body.publicado
+        ? 1
+        : 0,
+
+    estado,
+
+    destacado:
+      body.destacado
+        ? 1
+        : 0,
+
+    marca:
+      textoNullableAdmin(
+        body.marca
+      ),
+
+    modelo:
+      textoNullableAdmin(
+        body.modelo
+      ),
+
+    version:
+      textoNullableAdmin(
+        body.version
+      ),
+
+    precio:
+      numeroNullableAdmin(
+        body.precio
+      ),
+
+    ano:
+      numeroNullableAdmin(
+        body.ano
+      ),
+
+    kilometros:
+      numeroNullableAdmin(
+        body.kilometros
+      ),
+
+    combustible:
+      textoNullableAdmin(
+        body.combustible
+      ),
+
+    cambio:
+      textoNullableAdmin(
+        body.cambio
+      ),
+
+    potencia:
+      numeroNullableAdmin(
+        body.potencia
+      ),
+
+    procedencia:
+      textoNullableAdmin(
+        body.procedencia
+      ),
+
+    descripcion:
+      textoNullableAdmin(
+        body.descripcion,
+        10000
+      ),
+
+    orden:
+      numeroNullableAdmin(
+        body.orden
+      ) ?? 999
+
+  };
+
+}
+
+
+
+// ============================================================
+// HELPERS ADMIN
+// ============================================================
+
+function textoAdmin(
+  value,
+  max = 500
+) {
+
+  return String(
+    value ?? ""
+  )
+    .trim()
+    .slice(
+      0,
+      max
+    );
+
+}
+
+
+function textoNullableAdmin(
+  value,
+  max = 500
+) {
+
+  const valueNormalizado =
+    textoAdmin(
+      value,
+      max
+    );
+
+
+  return valueNormalizado
+    ? valueNormalizado
+    : null;
+
+}
+
+
+function numeroNullableAdmin(
+  value
+) {
+
+  if (
+    value === "" ||
+    value === null ||
+    value === undefined
+  ) {
+
+    return null;
+
+  }
+
+
+  const numero =
+    Number(value);
+
+
+  if (
+    !Number.isFinite(numero)
+  ) {
+
+    return null;
+
+  }
+
+
+  return Math.round(
+    numero
+  );
+
+}
+
+
+function origenAdminValido(
+  request
+) {
+
+  const origin =
+    request.headers.get(
+      "Origin"
+    );
+
+
+  if (!origin) {
+
+    return true;
+
+  }
+
+
+  return (
+    origin ===
+    new URL(
+      request.url
+    ).origin
+  );
 
 }
