@@ -14,6 +14,82 @@ export default {
 
     const url = new URL(request.url);
 
+// ============================================================
+// ADMIN
+// ============================================================
+
+if (
+  url.pathname === "/admin" ||
+  url.pathname === "/admin/"
+) {
+
+  const adminUrl =
+    new URL(
+      "/admin.html",
+      request.url
+    );
+
+
+  return env.ASSETS.fetch(
+    new Request(
+      adminUrl,
+      request
+    )
+  );
+
+}
+
+
+if (
+  url.pathname ===
+  "/admin/api/login"
+) {
+
+  return adminLogin(
+    request,
+    env
+  );
+
+}
+
+
+if (
+  url.pathname ===
+  "/admin/api/logout"
+) {
+
+  return adminLogout(
+    request
+  );
+
+}
+
+
+if (
+  url.pathname ===
+  "/admin/api/session"
+) {
+
+  return adminSession(
+    request,
+    env
+  );
+
+}
+
+
+if (
+  url.pathname ===
+  "/admin/api/vehiculos"
+) {
+
+  return adminVehiculos(
+    request,
+    env
+  );
+
+}
+    
 
     // ========================================================
     // TEST SIMPLE
@@ -1420,5 +1496,673 @@ async function servirImagenR2(url, env) {
     );
 
   }
+
+}
+
+// ============================================================
+// ADMIN - LOGIN
+// ============================================================
+
+async function adminLogin(
+  request,
+  env
+) {
+
+  if (request.method !== "POST") {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Método no permitido"
+      },
+      {
+        status: 405
+      }
+    );
+
+  }
+
+
+  try {
+
+    const body =
+      await request.json();
+
+
+    const password =
+      String(
+        body.password || ""
+      );
+
+
+    if (
+      !env.ADMIN_PASSWORD ||
+      !env.ADMIN_SESSION_SECRET
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "Administración no configurada"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+
+    const correcto =
+      await compararSeguro(
+        password,
+        env.ADMIN_PASSWORD
+      );
+
+
+    if (!correcto) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "Contraseña incorrecta"
+        },
+        {
+          status: 401
+        }
+      );
+
+    }
+
+
+    const expira =
+      Date.now() +
+      (
+        8 *
+        60 *
+        60 *
+        1000
+      );
+
+
+    const payload =
+      String(expira);
+
+
+    const firma =
+      await firmarAdmin(
+        payload,
+        env.ADMIN_SESSION_SECRET
+      );
+
+
+    const cookie =
+      `utebo_admin=` +
+      `${payload}.${firma}; ` +
+      `Path=/admin; ` +
+      `HttpOnly; ` +
+      `Secure; ` +
+      `SameSite=Strict; ` +
+      `Max-Age=28800`;
+
+
+    return Response.json(
+      {
+        ok: true
+      },
+      {
+        headers: {
+          "Set-Cookie":
+            cookie,
+
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+
+  } catch (error) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Error iniciando sesión"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
+
+
+
+// ============================================================
+// ADMIN - LOGOUT
+// ============================================================
+
+function adminLogout(
+  request
+) {
+
+  if (request.method !== "POST") {
+
+    return Response.json(
+      {
+        ok: false
+      },
+      {
+        status: 405
+      }
+    );
+
+  }
+
+
+  return Response.json(
+    {
+      ok: true
+    },
+    {
+      headers: {
+
+        "Set-Cookie":
+          "utebo_admin=; " +
+          "Path=/admin; " +
+          "HttpOnly; " +
+          "Secure; " +
+          "SameSite=Strict; " +
+          "Max-Age=0",
+
+        "Cache-Control":
+          "no-store"
+
+      }
+    }
+  );
+
+}
+
+
+
+// ============================================================
+// ADMIN - SESIÓN
+// ============================================================
+
+async function adminSession(
+  request,
+  env
+) {
+
+  const autorizado =
+    await adminAutorizado(
+      request,
+      env
+    );
+
+
+  if (!autorizado) {
+
+    return Response.json(
+      {
+        ok: false
+      },
+      {
+        status: 401,
+        headers: {
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+  }
+
+
+  return Response.json(
+    {
+      ok: true
+    },
+    {
+      headers: {
+        "Cache-Control":
+          "no-store"
+      }
+    }
+  );
+
+}
+
+
+
+// ============================================================
+// ADMIN - LISTADO VEHÍCULOS
+// ============================================================
+
+async function adminVehiculos(
+  request,
+  env
+) {
+
+  if (request.method !== "GET") {
+
+    return Response.json(
+      {
+        ok: false
+      },
+      {
+        status: 405
+      }
+    );
+
+  }
+
+
+  const autorizado =
+    await adminAutorizado(
+      request,
+      env
+    );
+
+
+  if (!autorizado) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No autorizado"
+      },
+      {
+        status: 401
+      }
+    );
+
+  }
+
+
+  try {
+
+    const resultado =
+      await env.DB
+        .prepare(`
+          SELECT
+
+            v.id,
+            v.vehiculo,
+
+            v.publicado,
+            v.estado,
+            v.destacado,
+
+            v.marca,
+            v.modelo,
+            v.version,
+
+            v.precio,
+            v.ano,
+            v.kilometros,
+
+            v.combustible,
+            v.cambio,
+            v.potencia,
+            v.procedencia,
+
+            v.descripcion,
+            v.orden,
+
+            COUNT(f.id)
+              AS fotos
+
+          FROM vehiculos v
+
+          LEFT JOIN
+            fotos_vehiculos f
+
+          ON
+            f.vehiculo_id =
+            v.id
+
+          GROUP BY
+            v.id
+
+          ORDER BY
+            v.orden ASC,
+            v.id ASC
+        `)
+
+        .all();
+
+
+    const vehiculos =
+      (
+        resultado.results || []
+      ).map(
+        v => ({
+
+          ...v,
+
+          publicado:
+            Boolean(v.publicado),
+
+          destacado:
+            Boolean(v.destacado),
+
+          fotos:
+            Number(v.fotos || 0)
+
+        })
+      );
+
+
+    return Response.json(
+      {
+        ok: true,
+        total:
+          vehiculos.length,
+        vehiculos
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Admin vehículos:",
+      error
+    );
+
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No se pudieron cargar los vehículos"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
+
+
+
+// ============================================================
+// ADMIN - VALIDAR SESIÓN
+// ============================================================
+
+async function adminAutorizado(
+  request,
+  env
+) {
+
+  if (
+    !env.ADMIN_SESSION_SECRET
+  ) {
+
+    return false;
+
+  }
+
+
+  const cookies =
+    request.headers.get(
+      "Cookie"
+    ) || "";
+
+
+  const cookie =
+    cookies
+      .split(";")
+      .map(
+        item =>
+          item.trim()
+      )
+      .find(
+        item =>
+          item.startsWith(
+            "utebo_admin="
+          )
+      );
+
+
+  if (!cookie) {
+
+    return false;
+
+  }
+
+
+  const value =
+    cookie.substring(
+      "utebo_admin=".length
+    );
+
+
+  const punto =
+    value.indexOf(".");
+
+
+  if (punto === -1) {
+
+    return false;
+
+  }
+
+
+  const payload =
+    value.substring(
+      0,
+      punto
+    );
+
+
+  const firma =
+    value.substring(
+      punto + 1
+    );
+
+
+  const expiracion =
+    Number(payload);
+
+
+  if (
+    !Number.isFinite(
+      expiracion
+    ) ||
+    Date.now() >
+      expiracion
+  ) {
+
+    return false;
+
+  }
+
+
+  const firmaEsperada =
+    await firmarAdmin(
+      payload,
+      env.ADMIN_SESSION_SECRET
+    );
+
+
+  return compararSeguro(
+    firma,
+    firmaEsperada
+  );
+
+}
+
+
+
+// ============================================================
+// ADMIN - FIRMA HMAC
+// ============================================================
+
+async function firmarAdmin(
+  contenido,
+  secreto
+) {
+
+  const encoder =
+    new TextEncoder();
+
+
+  const key =
+    await crypto.subtle.importKey(
+
+      "raw",
+
+      encoder.encode(
+        secreto
+      ),
+
+      {
+        name: "HMAC",
+        hash: "SHA-256"
+      },
+
+      false,
+
+      ["sign"]
+
+    );
+
+
+  const firma =
+    await crypto.subtle.sign(
+
+      "HMAC",
+
+      key,
+
+      encoder.encode(
+        contenido
+      )
+
+    );
+
+
+  return bytesToBase64Url(
+    new Uint8Array(
+      firma
+    )
+  );
+
+}
+
+
+
+// ============================================================
+// ADMIN - COMPARACIÓN SEGURA
+// ============================================================
+
+async function compararSeguro(
+  a,
+  b
+) {
+
+  const encoder =
+    new TextEncoder();
+
+
+  const hashA =
+    new Uint8Array(
+      await crypto.subtle.digest(
+        "SHA-256",
+        encoder.encode(
+          String(a)
+        )
+      )
+    );
+
+
+  const hashB =
+    new Uint8Array(
+      await crypto.subtle.digest(
+        "SHA-256",
+        encoder.encode(
+          String(b)
+        )
+      )
+    );
+
+
+  if (
+    hashA.length !==
+    hashB.length
+  ) {
+
+    return false;
+
+  }
+
+
+  let diferencia = 0;
+
+
+  for (
+    let i = 0;
+    i < hashA.length;
+    i++
+  ) {
+
+    diferencia |=
+      hashA[i] ^
+      hashB[i];
+
+  }
+
+
+  return diferencia === 0;
+
+}
+
+
+
+// ============================================================
+// BASE64 URL
+// ============================================================
+
+function bytesToBase64Url(
+  bytes
+) {
+
+  let binary = "";
+
+
+  for (
+    const byte of bytes
+  ) {
+
+    binary +=
+      String.fromCharCode(
+        byte
+      );
+
+  }
+
+
+  return btoa(binary)
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
 
 }
