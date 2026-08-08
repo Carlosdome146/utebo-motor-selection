@@ -139,71 +139,83 @@ async function obtenerVehiculosD1(env) {
 
   try {
 
-    const consulta = await env.DB
-      .prepare(`
-        SELECT
+    const consulta =
+      await env.DB
+        .prepare(`
+          SELECT
 
-          v.id,
-          v.vehiculo,
-          v.publicado,
-          v.estado,
-          v.destacado,
+            v.id,
+            v.vehiculo,
+            v.publicado,
+            v.estado,
+            v.destacado,
 
-          v.marca,
-          v.modelo,
-          v.version,
+            v.marca,
+            v.modelo,
+            v.version,
 
-          v.precio,
-          v.ano,
-          v.kilometros,
+            v.precio,
+            v.ano,
+            v.kilometros,
 
-          v.combustible,
-          v.cambio,
-          v.potencia,
-          v.procedencia,
+            v.combustible,
+            v.cambio,
+            v.potencia,
+            v.procedencia,
 
-          v.descripcion,
-          v.orden,
+            v.descripcion,
+            v.orden,
 
-          f.id AS foto_id,
-          f.r2_key,
-          f.nombre_archivo,
-          f.mime_type,
-          f.orden AS foto_orden
+            f.id AS foto_id,
+            f.r2_key,
+            f.nombre_archivo,
+            f.mime_type,
+            f.orden AS foto_orden
 
-        FROM vehiculos v
+          FROM vehiculos v
 
-        LEFT JOIN fotos_vehiculos f
-          ON f.vehiculo_id = v.id
+          LEFT JOIN fotos_vehiculos f
+            ON f.vehiculo_id = v.id
 
-        WHERE
-          v.publicado = 1
+          WHERE
+            v.publicado = 1
 
-          AND (
-            v.estado IS NULL
-            OR v.estado <> 'Vendido'
-          )
+            AND (
+              v.estado IS NULL
+              OR v.estado <> 'Vendido'
+            )
 
-        ORDER BY
-          v.orden ASC,
-          v.id ASC,
-          f.orden ASC,
-          f.id ASC
-      `)
-      .all();
+          ORDER BY
+            v.orden ASC,
+            v.id ASC,
+            f.orden ASC,
+            f.id ASC
+        `)
 
-
-    const mapaVehiculos = new Map();
+        .all();
 
 
-    for (const fila of consulta.results || []) {
+    const mapaVehiculos =
+      new Map();
 
-      if (!mapaVehiculos.has(fila.id)) {
+
+    for (
+      const fila
+      of consulta.results || []
+    ) {
+
+      if (
+        !mapaVehiculos.has(
+          fila.id
+        )
+      ) {
 
         mapaVehiculos.set(
           fila.id,
           {
-            id: String(fila.id),
+
+            id:
+              String(fila.id),
 
             vehiculo:
               fila.vehiculo || "",
@@ -212,7 +224,9 @@ async function obtenerVehiculosD1(env) {
               fila.estado || "Disponible",
 
             destacado:
-              Boolean(fila.destacado),
+              Boolean(
+                fila.destacado
+              ),
 
             marca:
               fila.marca || "",
@@ -251,29 +265,26 @@ async function obtenerVehiculosD1(env) {
               fila.orden ?? 999,
 
             fotos: []
+
           }
         );
 
       }
 
 
-
       // ------------------------------------------------------
-      // FOTOGRAFÍA
+      // AÑADIR FOTOGRAFÍA
       // ------------------------------------------------------
 
       if (fila.r2_key) {
 
-        const reposicion =
-          mapaReposiciones.get(
+        const vehiculo =
+          mapaVehiculos.get(
             fila.id
           );
 
 
-        reposicion.fotos.push({
-
-          id:
-            fila.foto_id,
+        vehiculo.fotos.push({
 
           url:
             rutaPublicaR2(
@@ -290,88 +301,6 @@ async function obtenerVehiculosD1(env) {
     }
 
 
-    const reposiciones =
-      Array.from(
-        mapaReposiciones.values()
-      );
-
-
-    return Response.json(
-      {
-
-        ok: true,
-
-        total:
-          reposiciones.length,
-
-        reposiciones
-
-      },
-      {
-        headers: {
-          "Cache-Control":
-            "no-store"
-        }
-      }
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Error obteniendo reposiciones D1:",
-      error
-    );
-
-
-    return Response.json(
-      {
-        ok: false,
-        error:
-          "No se pudieron cargar las reposiciones"
-      },
-      {
-        status: 500
-      }
-    );
-
-  }
-
-}
-      
-
-      // ------------------------------------------------------
-      // AÑADIR FOTOGRAFÍA
-      // ------------------------------------------------------
-
-      if (fila.r2_key) {
-
-        const vehiculo =
-          mapaVehiculos.get(fila.id);
-
-
-        const rutaFoto =
-          fila.r2_key
-            .split("/")
-            .map(
-              segmento =>
-                encodeURIComponent(segmento)
-            )
-            .join("/");
-
-
-        vehiculo.fotos.push({
-          url: `/media/${rutaFoto}`,
-
-          nombre:
-            fila.nombre_archivo || ""
-        });
-
-      }
-
-    }
-
-
     const vehiculos =
       Array.from(
         mapaVehiculos.values()
@@ -381,12 +310,14 @@ async function obtenerVehiculosD1(env) {
     return Response.json(
       {
         ok: true,
-        total: vehiculos.length,
+        total:
+          vehiculos.length,
         vehiculos
       },
       {
         headers: {
-          "Cache-Control": "no-store"
+          "Cache-Control":
+            "no-store"
         }
       }
     );
@@ -414,6 +345,7 @@ async function obtenerVehiculosD1(env) {
   }
 
 }
+
 
 // ============================================================
 // OBTENER REPOSICIONES DESDE D1
@@ -498,6 +430,83 @@ async function obtenerReposicionesD1(
 
       }
 
+
+      // ------------------------------------------------------
+      // AÑADIR FOTOGRAFÍA
+      // ------------------------------------------------------
+
+      if (fila.r2_key) {
+
+        const reposicion =
+          mapaReposiciones.get(
+            fila.id
+          );
+
+
+        reposicion.fotos.push({
+
+          id:
+            fila.foto_id,
+
+          url:
+            rutaPublicaR2(
+              fila.r2_key
+            ),
+
+          nombre:
+            fila.nombre_archivo || ""
+
+        });
+
+      }
+
+    }
+
+
+    const reposiciones =
+      Array.from(
+        mapaReposiciones.values()
+      );
+
+
+    return Response.json(
+      {
+        ok: true,
+        total:
+          reposiciones.length,
+        reposiciones
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Error obteniendo reposiciones D1:",
+      error
+    );
+
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No se pudieron cargar las reposiciones"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
 
 // ============================================================
 // SERVIR IMÁGENES DESDE R2
