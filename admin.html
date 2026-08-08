@@ -22,6 +22,326 @@
 
   <style>
 
+/* ======================================================
+   MODAL VEHÍCULO
+====================================================== */
+
+.vehicle-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: none;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+}
+
+
+.vehicle-modal.open {
+  display: flex;
+}
+
+
+.vehicle-modal-backdrop {
+  position: absolute;
+  inset: 0;
+
+  background:
+    rgba(8, 9, 10, .82);
+
+  backdrop-filter:
+    blur(8px);
+}
+
+
+.vehicle-modal-window {
+  position: relative;
+  z-index: 2;
+
+  width: min(
+    900px,
+    96vw
+  );
+
+  max-height: 92vh;
+  overflow-y: auto;
+
+  background: white;
+
+  box-shadow:
+    0 40px 120px
+    rgba(0,0,0,.35);
+}
+
+
+.vehicle-modal-header {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding:
+    28px
+    30px;
+
+  border-bottom:
+    1px solid
+    rgba(0,0,0,.10);
+}
+
+
+.vehicle-modal-header h2 {
+  margin:
+    7px 0
+    0;
+
+  font-size: 28px;
+}
+
+
+.vehicle-modal-close {
+  width: 42px;
+  height: 42px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #101113;
+
+  font-size: 36px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+
+.vehicle-modal-close:hover {
+  color: #d71920;
+}
+
+
+#vehicleForm {
+  padding: 30px;
+}
+
+
+.vehicle-form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+}
+
+
+.vehicle-form-field.full,
+.vehicle-form-checks.full {
+  grid-column: 1 / -1;
+}
+
+
+.vehicle-form-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+
+.vehicle-form-field input,
+.vehicle-form-field select,
+.vehicle-form-field textarea {
+  width: 100%;
+
+  padding:
+    13px
+    14px;
+
+  border:
+    1px solid
+    rgba(0,0,0,.16);
+
+  background: white;
+
+  color: #101113;
+
+  font: inherit;
+
+  outline: none;
+}
+
+
+.vehicle-form-field textarea {
+  resize: vertical;
+}
+
+
+.vehicle-form-field input:focus,
+.vehicle-form-field select:focus,
+.vehicle-form-field textarea:focus {
+  border-color: #d71920;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(215,25,32,.08);
+}
+
+
+.vehicle-form-checks {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 25px;
+
+  padding:
+    18px
+    0;
+}
+
+
+.vehicle-form-checks label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.vehicle-form-checks input {
+  width: 18px;
+  height: 18px;
+
+  accent-color: #d71920;
+}
+
+
+.vehicle-form-note {
+  margin-top: 25px;
+
+  padding: 15px;
+
+  background: #f4f4f5;
+
+  color: #68696d;
+
+  font-size: 12px;
+}
+
+
+.vehicle-form-message {
+  min-height: 20px;
+
+  margin-top: 15px;
+
+  color: #d71920;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+.vehicle-form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 12px;
+}
+
+
+.vehicle-form-cancel,
+.vehicle-form-save {
+  padding:
+    13px
+    20px;
+
+  border: 0;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.vehicle-form-cancel {
+  background: #ededee;
+  color: #101113;
+}
+
+
+.vehicle-form-save {
+  background: #d71920;
+  color: white;
+}
+
+
+.vehicle-form-save:hover {
+  background: #101113;
+}
+
+
+.vehicle-form-save:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+
+body.modal-open {
+  overflow: hidden;
+}
+
+
+@media (max-width: 650px) {
+
+  .vehicle-modal {
+    padding: 0;
+  }
+
+
+  .vehicle-modal-window {
+    width: 100vw;
+    max-height: 100dvh;
+    min-height: 100dvh;
+  }
+
+
+  .vehicle-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .vehicle-form-field.full,
+  .vehicle-form-checks.full {
+    grid-column: auto;
+  }
+
+
+  #vehicleForm,
+  .vehicle-modal-header {
+    padding:
+      22px
+      18px;
+  }
+
+}
+    
     * {
       box-sizing: border-box;
     }
@@ -464,9 +784,9 @@
 
       font-weight: 800;
 
-      opacity: .45;
-
-      cursor: not-allowed;
+     .new-vehicle-button:hover {
+  background: #101113;
+}
 
     }
 
@@ -694,9 +1014,19 @@
       font-size: 12px;
       font-weight: 800;
 
-      opacity: .55;
+      .edit-button {
+  cursor: pointer;
+  transition:
+    background .2s ease,
+    color .2s ease,
+    border-color .2s ease;
+}
 
-      cursor: not-allowed;
+.edit-button:hover {
+  background: #101113;
+  color: white;
+  border-color: #101113;
+}
 
     }
 
@@ -943,12 +1273,11 @@
 
 
       <button
-        class="new-vehicle-button"
-        disabled
-        title="Lo activaremos en el siguiente paso"
-      >
-        + Añadir vehículo
-      </button>
+  id="newVehicleButton"
+  class="new-vehicle-button"
+>
+  + Añadir vehículo
+</button>
 
     </div>
 
@@ -1039,7 +1368,418 @@
 
 </section>
 
+<!-- ==========================================================
+     MODAL VEHÍCULO
+========================================================== -->
 
+<div
+  id="vehicleModal"
+  class="vehicle-modal"
+>
+
+  <div
+    id="vehicleModalBackdrop"
+    class="vehicle-modal-backdrop"
+  ></div>
+
+
+  <div class="vehicle-modal-window">
+
+
+    <div class="vehicle-modal-header">
+
+      <div>
+
+        <div class="admin-kicker">
+          Gestión de stock
+        </div>
+
+        <h2 id="vehicleModalTitle">
+          Añadir vehículo
+        </h2>
+
+      </div>
+
+
+      <button
+        id="vehicleModalClose"
+        class="vehicle-modal-close"
+        type="button"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="vehicleForm">
+
+      <input
+        id="formVehicleId"
+        type="hidden"
+      >
+
+
+      <div class="vehicle-form-grid">
+
+
+        <div class="vehicle-form-field full">
+
+          <label for="formVehiculo">
+            Nombre del vehículo *
+          </label>
+
+          <input
+            id="formVehiculo"
+            type="text"
+            required
+            placeholder="BMW 320d M Sport"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formMarca">
+            Marca
+          </label>
+
+          <input
+            id="formMarca"
+            type="text"
+            placeholder="BMW"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formModelo">
+            Modelo
+          </label>
+
+          <input
+            id="formModelo"
+            type="text"
+            placeholder="320d"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formVersion">
+            Versión
+          </label>
+
+          <input
+            id="formVersion"
+            type="text"
+            placeholder="M Sport"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formPrecio">
+            Precio €
+          </label>
+
+          <input
+            id="formPrecio"
+            type="number"
+            min="0"
+            step="1"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formAno">
+            Año
+          </label>
+
+          <input
+            id="formAno"
+            type="number"
+            min="1900"
+            max="2100"
+            step="1"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formKilometros">
+            Kilómetros
+          </label>
+
+          <input
+            id="formKilometros"
+            type="number"
+            min="0"
+            step="1"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formPotencia">
+            Potencia (CV)
+          </label>
+
+          <input
+            id="formPotencia"
+            type="number"
+            min="0"
+            step="1"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formEstado">
+            Estado
+          </label>
+
+          <select id="formEstado">
+
+            <option value="Disponible">
+              Disponible
+            </option>
+
+            <option value="Reservado">
+              Reservado
+            </option>
+
+            <option value="Vendido">
+              Vendido
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formCombustible">
+            Combustible
+          </label>
+
+          <select id="formCombustible">
+
+            <option value="">
+              —
+            </option>
+
+            <option value="Gasolina">
+              Gasolina
+            </option>
+
+            <option value="Diésel">
+              Diésel
+            </option>
+
+            <option value="Híbrido">
+              Híbrido
+            </option>
+
+            <option value="Híbrido enchufable">
+              Híbrido enchufable
+            </option>
+
+            <option value="Eléctrico">
+              Eléctrico
+            </option>
+
+            <option value="GLP">
+              GLP
+            </option>
+
+            <option value="Otro">
+              Otro
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formCambio">
+            Cambio
+          </label>
+
+          <select id="formCambio">
+
+            <option value="">
+              —
+            </option>
+
+            <option value="Manual">
+              Manual
+            </option>
+
+            <option value="Automático">
+              Automático
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formProcedencia">
+            Procedencia
+          </label>
+
+          <select id="formProcedencia">
+
+            <option value="">
+              —
+            </option>
+
+            <option value="España">
+              España
+            </option>
+
+            <option value="Alemania">
+              Alemania
+            </option>
+
+            <option value="Otro">
+              Otro
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="formOrden">
+            Orden
+          </label>
+
+          <input
+            id="formOrden"
+            type="number"
+            min="0"
+            step="1"
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field full">
+
+          <label for="formDescripcion">
+            Descripción
+          </label>
+
+          <textarea
+            id="formDescripcion"
+            rows="6"
+          ></textarea>
+
+        </div>
+
+
+        <div class="vehicle-form-checks full">
+
+          <label>
+
+            <input
+              id="formPublicado"
+              type="checkbox"
+            >
+
+            <span>
+              Publicado en la web
+            </span>
+
+          </label>
+
+
+          <label>
+
+            <input
+              id="formDestacado"
+              type="checkbox"
+            >
+
+            <span>
+              Vehículo destacado
+            </span>
+
+          </label>
+
+        </div>
+
+
+      </div>
+
+
+      <div class="vehicle-form-note">
+
+        Las fotografías se gestionarán
+        en el siguiente paso.
+
+      </div>
+
+
+      <div
+        id="vehicleFormMessage"
+        class="vehicle-form-message"
+      ></div>
+
+
+      <div class="vehicle-form-actions">
+
+        <button
+          id="vehicleFormCancel"
+          class="vehicle-form-cancel"
+          type="button"
+        >
+          Cancelar
+        </button>
+
+
+        <button
+          id="vehicleFormSave"
+          class="vehicle-form-save"
+          type="submit"
+        >
+          Guardar vehículo
+        </button>
+
+      </div>
+
+
+    </form>
+
+  </div>
+
+</div>
 
 <script>
 
@@ -1407,11 +2147,11 @@ function pintarVehiculos(vehiculos) {
       <div>
 
         <button
-          class="edit-button"
-          disabled
-        >
-          Editar
-        </button>
+  class="edit-button"
+  data-vehicle-id="${v.id}"
+>
+  Editar
+</button>
 
       </div>
 
@@ -1512,6 +2252,619 @@ function escapar(value) {
 
 }
 
+// ============================================================
+// FORMULARIO DE VEHÍCULOS
+// ============================================================
+
+const newVehicleButton =
+  document.getElementById(
+    "newVehicleButton"
+  );
+
+const vehicleModal =
+  document.getElementById(
+    "vehicleModal"
+  );
+
+const vehicleModalBackdrop =
+  document.getElementById(
+    "vehicleModalBackdrop"
+  );
+
+const vehicleModalClose =
+  document.getElementById(
+    "vehicleModalClose"
+  );
+
+const vehicleFormCancel =
+  document.getElementById(
+    "vehicleFormCancel"
+  );
+
+const vehicleForm =
+  document.getElementById(
+    "vehicleForm"
+  );
+
+const vehicleFormMessage =
+  document.getElementById(
+    "vehicleFormMessage"
+  );
+
+const vehicleFormSave =
+  document.getElementById(
+    "vehicleFormSave"
+  );
+
+
+
+// ============================================================
+// NUEVO VEHÍCULO
+// ============================================================
+
+newVehicleButton.addEventListener(
+  "click",
+  () => {
+
+    abrirNuevoVehiculo();
+
+  }
+);
+
+
+
+// ============================================================
+// EDITAR DESDE LISTADO
+// ============================================================
+
+vehiclesContainer.addEventListener(
+  "click",
+  async (event) => {
+
+    const boton =
+      event.target.closest(
+        ".edit-button"
+      );
+
+
+    if (!boton) {
+
+      return;
+
+    }
+
+
+    const id =
+      Number(
+        boton.dataset
+          .vehicleId
+      );
+
+
+    if (!id) {
+
+      return;
+
+    }
+
+
+    await abrirEditarVehiculo(
+      id
+    );
+
+  }
+);
+
+
+
+// ============================================================
+// ABRIR NUEVO
+// ============================================================
+
+function abrirNuevoVehiculo() {
+
+  vehicleForm.reset();
+
+
+  document.getElementById(
+    "formVehicleId"
+  ).value = "";
+
+
+  document.getElementById(
+    "formEstado"
+  ).value =
+    "Disponible";
+
+
+  document.getElementById(
+    "formOrden"
+  ).value =
+    999;
+
+
+  document.getElementById(
+    "formPublicado"
+  ).checked =
+    true;
+
+
+  document.getElementById(
+    "formDestacado"
+  ).checked =
+    false;
+
+
+  document.getElementById(
+    "vehicleModalTitle"
+  ).textContent =
+    "Añadir vehículo";
+
+
+  vehicleFormMessage.textContent =
+    "";
+
+
+  abrirModalVehiculo();
+
+}
+
+
+
+// ============================================================
+// ABRIR EDICIÓN
+// ============================================================
+
+async function abrirEditarVehiculo(
+  id
+) {
+
+  vehicleFormMessage.textContent =
+    "";
+
+
+  abrirModalVehiculo();
+
+
+  document.getElementById(
+    "vehicleModalTitle"
+  ).textContent =
+    "Cargando vehículo...";
+
+
+  try {
+
+    const response =
+      await fetch(
+        `/admin/api/vehiculo?id=${id}`,
+        {
+          credentials:
+            "same-origin",
+
+          cache:
+            "no-store"
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "No se pudo cargar el vehículo"
+      );
+
+    }
+
+
+    rellenarFormulario(
+      data.vehiculo
+    );
+
+
+    document.getElementById(
+      "vehicleModalTitle"
+    ).textContent =
+      "Editar vehículo";
+
+
+  } catch (error) {
+
+    vehicleFormMessage.textContent =
+      error.message;
+
+  }
+
+}
+
+
+
+// ============================================================
+// RELLENAR FORMULARIO
+// ============================================================
+
+function rellenarFormulario(v) {
+
+  document.getElementById(
+    "formVehicleId"
+  ).value =
+    v.id ?? "";
+
+
+  document.getElementById(
+    "formVehiculo"
+  ).value =
+    v.vehiculo ?? "";
+
+
+  document.getElementById(
+    "formMarca"
+  ).value =
+    v.marca ?? "";
+
+
+  document.getElementById(
+    "formModelo"
+  ).value =
+    v.modelo ?? "";
+
+
+  document.getElementById(
+    "formVersion"
+  ).value =
+    v.version ?? "";
+
+
+  document.getElementById(
+    "formPrecio"
+  ).value =
+    v.precio ?? "";
+
+
+  document.getElementById(
+    "formAno"
+  ).value =
+    v.ano ?? "";
+
+
+  document.getElementById(
+    "formKilometros"
+  ).value =
+    v.kilometros ?? "";
+
+
+  document.getElementById(
+    "formPotencia"
+  ).value =
+    v.potencia ?? "";
+
+
+  document.getElementById(
+    "formEstado"
+  ).value =
+    v.estado ||
+    "Disponible";
+
+
+  document.getElementById(
+    "formCombustible"
+  ).value =
+    v.combustible ?? "";
+
+
+  document.getElementById(
+    "formCambio"
+  ).value =
+    v.cambio ?? "";
+
+
+  document.getElementById(
+    "formProcedencia"
+  ).value =
+    v.procedencia ?? "";
+
+
+  document.getElementById(
+    "formOrden"
+  ).value =
+    v.orden ?? 999;
+
+
+  document.getElementById(
+    "formDescripcion"
+  ).value =
+    v.descripcion ?? "";
+
+
+  document.getElementById(
+    "formPublicado"
+  ).checked =
+    Boolean(
+      v.publicado
+    );
+
+
+  document.getElementById(
+    "formDestacado"
+  ).checked =
+    Boolean(
+      v.destacado
+    );
+
+}
+
+
+
+// ============================================================
+// GUARDAR
+// ============================================================
+
+vehicleForm.addEventListener(
+  "submit",
+  async (event) => {
+
+    event.preventDefault();
+
+
+    vehicleFormMessage.textContent =
+      "";
+
+
+    const id =
+      document.getElementById(
+        "formVehicleId"
+      ).value;
+
+
+    const datos = {
+
+      id:
+        id
+          ? Number(id)
+          : undefined,
+
+      vehiculo:
+        document.getElementById(
+          "formVehiculo"
+        ).value,
+
+      marca:
+        document.getElementById(
+          "formMarca"
+        ).value,
+
+      modelo:
+        document.getElementById(
+          "formModelo"
+        ).value,
+
+      version:
+        document.getElementById(
+          "formVersion"
+        ).value,
+
+      precio:
+        document.getElementById(
+          "formPrecio"
+        ).value,
+
+      ano:
+        document.getElementById(
+          "formAno"
+        ).value,
+
+      kilometros:
+        document.getElementById(
+          "formKilometros"
+        ).value,
+
+      potencia:
+        document.getElementById(
+          "formPotencia"
+        ).value,
+
+      estado:
+        document.getElementById(
+          "formEstado"
+        ).value,
+
+      combustible:
+        document.getElementById(
+          "formCombustible"
+        ).value,
+
+      cambio:
+        document.getElementById(
+          "formCambio"
+        ).value,
+
+      procedencia:
+        document.getElementById(
+          "formProcedencia"
+        ).value,
+
+      orden:
+        document.getElementById(
+          "formOrden"
+        ).value,
+
+      descripcion:
+        document.getElementById(
+          "formDescripcion"
+        ).value,
+
+      publicado:
+        document.getElementById(
+          "formPublicado"
+        ).checked,
+
+      destacado:
+        document.getElementById(
+          "formDestacado"
+        ).checked
+
+    };
+
+
+    vehicleFormSave.disabled =
+      true;
+
+
+    vehicleFormSave.textContent =
+      "Guardando...";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/admin/api/vehiculo",
+          {
+
+            method:
+              id
+                ? "PUT"
+                : "POST",
+
+            credentials:
+              "same-origin",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify(
+                datos
+              )
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          "No se pudo guardar"
+        );
+
+      }
+
+
+      cerrarModalVehiculo();
+
+
+      await cargarVehiculos();
+
+
+    } catch (error) {
+
+      vehicleFormMessage.textContent =
+        error.message;
+
+    } finally {
+
+      vehicleFormSave.disabled =
+        false;
+
+
+      vehicleFormSave.textContent =
+        "Guardar vehículo";
+
+    }
+
+  }
+);
+
+
+
+// ============================================================
+// MODAL
+// ============================================================
+
+function abrirModalVehiculo() {
+
+  vehicleModal.classList.add(
+    "open"
+  );
+
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+}
+
+
+function cerrarModalVehiculo() {
+
+  vehicleModal.classList.remove(
+    "open"
+  );
+
+
+  document.body.classList.remove(
+    "modal-open"
+  );
+
+
+  vehicleFormMessage.textContent =
+    "";
+
+}
+
+
+
+// ============================================================
+// CERRAR
+// ============================================================
+
+vehicleModalClose.addEventListener(
+  "click",
+  cerrarModalVehiculo
+);
+
+
+vehicleModalBackdrop.addEventListener(
+  "click",
+  cerrarModalVehiculo
+);
+
+
+vehicleFormCancel.addEventListener(
+  "click",
+  cerrarModalVehiculo
+);
+
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+
+    if (
+      event.key === "Escape" &&
+      vehicleModal.classList.contains(
+        "open"
+      )
+    ) {
+
+      cerrarModalVehiculo();
+
+    }
+
+  }
+);
+  
 </script>
 
 
