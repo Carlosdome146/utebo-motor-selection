@@ -107,6 +107,16 @@ if (
   return obtenerVehiculosD1(env);
 }
 
+// ========================================================
+// REPOSICIONES PÚBLICAS - D1 + R2
+// ========================================================
+
+if (url.pathname === "/api/reposiciones") {
+
+  return obtenerReposicionesD1(env);
+
+}
+    
 // ============================================================
 // IMÁGENES PRIVADAS DESDE R2
 // ============================================================
@@ -246,6 +256,171 @@ async function obtenerVehiculosD1(env) {
 
       }
 
+// ============================================================
+// OBTENER REPOSICIONES DESDE D1
+// ============================================================
+
+async function obtenerReposicionesD1(
+  env
+) {
+
+  try {
+
+    const consulta =
+      await env.DB
+        .prepare(`
+          SELECT
+
+            r.id,
+            r.nombre,
+            r.precio,
+            r.publicado,
+            r.orden,
+
+            f.id AS foto_id,
+            f.r2_key,
+            f.nombre_archivo,
+            f.mime_type,
+            f.orden AS foto_orden
+
+          FROM reposiciones r
+
+          LEFT JOIN fotos_reposiciones f
+            ON f.reposicion_id = r.id
+
+          WHERE
+            r.publicado = 1
+
+          ORDER BY
+            r.orden ASC,
+            r.id ASC,
+            f.orden ASC,
+            f.id ASC
+        `)
+
+        .all();
+
+
+    const mapaReposiciones =
+      new Map();
+
+
+    for (
+      const fila
+      of consulta.results || []
+    ) {
+
+      if (
+        !mapaReposiciones.has(
+          fila.id
+        )
+      ) {
+
+        mapaReposiciones.set(
+          fila.id,
+          {
+
+            id:
+              String(fila.id),
+
+            nombre:
+              fila.nombre || "",
+
+            precio:
+              fila.precio ?? null,
+
+            orden:
+              fila.orden ?? 999,
+
+            fotos: []
+
+          }
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // FOTOGRAFÍA
+      // ------------------------------------------------------
+
+      if (fila.r2_key) {
+
+        const reposicion =
+          mapaReposiciones.get(
+            fila.id
+          );
+
+
+        reposicion.fotos.push({
+
+          id:
+            fila.foto_id,
+
+          url:
+            rutaPublicaR2(
+              fila.r2_key
+            ),
+
+          nombre:
+            fila.nombre_archivo || ""
+
+        });
+
+      }
+
+    }
+
+
+    const reposiciones =
+      Array.from(
+        mapaReposiciones.values()
+      );
+
+
+    return Response.json(
+      {
+
+        ok: true,
+
+        total:
+          reposiciones.length,
+
+        reposiciones
+
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Error obteniendo reposiciones D1:",
+      error
+    );
+
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No se pudieron cargar las reposiciones"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
+      
 
       // ------------------------------------------------------
       // AÑADIR FOTOGRAFÍA
