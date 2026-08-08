@@ -2167,7 +2167,7 @@ function bytesToBase64Url(
 }
 
 // ============================================================
-// ADMIN - OBTENER / CREAR / EDITAR VEHÍCULO
+// ADMIN - OBTENER / CREAR / EDITAR / ELIMINAR VEHÍCULO
 // ============================================================
 
 async function adminVehiculo(
@@ -2185,7 +2185,6 @@ async function adminVehiculo(
       env
     );
 
-
   if (!autorizado) {
 
     return Response.json(
@@ -2201,9 +2200,9 @@ async function adminVehiculo(
   }
 
 
-  // ----------------------------------------------------------
-  // GET - OBTENER UN VEHÍCULO
-  // ----------------------------------------------------------
+  // ==========================================================
+  // GET - OBTENER VEHÍCULO
+  // ==========================================================
 
   if (request.method === "GET") {
 
@@ -2275,23 +2274,45 @@ async function adminVehiculo(
   }
 
 
-  // ----------------------------------------------------------
-  // ESCRITURA:
-  // SOLO MISMO ORIGEN
-  // ----------------------------------------------------------
+  // ==========================================================
+  // SOLO PERMITIMOS POST / PUT / DELETE
+  // ==========================================================
 
   if (
-  request.method === "POST" ||
-  request.method === "PUT" ||
-  request.method === "DELETE"
-) {
-
-  if (!origenAdminValido(request)) {
+    request.method !== "POST" &&
+    request.method !== "PUT" &&
+    request.method !== "DELETE"
+  ) {
 
     return Response.json(
       {
         ok: false,
-        error: "Origen no permitido"
+        error:
+          "Método no permitido"
+      },
+      {
+        status: 405
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // SEGURIDAD DE ESCRITURA
+  // ==========================================================
+
+  if (
+    !origenAdminValido(
+      request
+    )
+  ) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Origen no permitido"
       },
       {
         status: 403
@@ -2300,33 +2321,10 @@ async function adminVehiculo(
 
   }
 
-}
 
-    if (
-      !origenAdminValido(
-        request
-      )
-    ) {
-
-      return Response.json(
-        {
-          ok: false,
-          error:
-            "Origen no permitido"
-        },
-        {
-          status: 403
-        }
-      );
-
-    }
-
-  }
-
-
-  // ----------------------------------------------------------
-  // LEER JSON
-  // ----------------------------------------------------------
+  // ==========================================================
+  // LEER BODY
+  // ==========================================================
 
   let body;
 
@@ -2352,6 +2350,192 @@ async function adminVehiculo(
   }
 
 
+  // ==========================================================
+  // DELETE - ELIMINAR VEHÍCULO
+  // ==========================================================
+
+  if (
+    request.method === "DELETE"
+  ) {
+
+    const id =
+      Number(
+        body.id
+      );
+
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "ID incorrecto"
+        },
+        {
+          status: 400
+        }
+      );
+
+    }
+
+
+    try {
+
+      // ------------------------------------------------------
+      // COMPROBAR QUE EXISTE
+      // ------------------------------------------------------
+
+      const vehiculo =
+        await env.DB
+          .prepare(`
+            SELECT
+              id,
+              vehiculo
+
+            FROM vehiculos
+
+            WHERE id = ?
+
+            LIMIT 1
+          `)
+
+          .bind(id)
+
+          .first();
+
+
+      if (!vehiculo) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Vehículo no encontrado"
+          },
+          {
+            status: 404
+          }
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // OBTENER FOTOS
+      // ------------------------------------------------------
+
+      const fotosResultado =
+        await env.DB
+          .prepare(`
+            SELECT
+              r2_key
+
+            FROM fotos_vehiculos
+
+            WHERE vehiculo_id = ?
+          `)
+
+          .bind(id)
+
+          .all();
+
+
+      const fotos =
+        fotosResultado.results || [];
+
+
+      // ------------------------------------------------------
+      // ELIMINAR DE D1
+      // ------------------------------------------------------
+
+      await env.DB.batch([
+
+        env.DB
+          .prepare(`
+            DELETE FROM fotos_vehiculos
+            WHERE vehiculo_id = ?
+          `)
+          .bind(id),
+
+        env.DB
+          .prepare(`
+            DELETE FROM vehiculos
+            WHERE id = ?
+          `)
+          .bind(id)
+
+      ]);
+
+
+      // ------------------------------------------------------
+      // ELIMINAR FOTOS DE R2
+      // ------------------------------------------------------
+
+      for (
+        const foto of fotos
+      ) {
+
+        try {
+
+          await env.IMAGES.delete(
+            foto.r2_key
+          );
+
+        } catch (error) {
+
+          console.error(
+            "No se pudo borrar objeto R2:",
+            foto.r2_key,
+            error
+          );
+
+        }
+
+      }
+
+
+      return Response.json({
+        ok: true,
+        eliminado: id,
+        vehiculo:
+          vehiculo.vehiculo,
+        fotosEliminadas:
+          fotos.length
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Eliminar vehículo:",
+        error
+      );
+
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo eliminar el vehículo"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // POST / PUT: NORMALIZAR DATOS
+  // ==========================================================
+
   const datos =
     normalizarDatosVehiculo(
       body
@@ -2375,10 +2559,12 @@ async function adminVehiculo(
 
 
   // ==========================================================
-  // POST - CREAR
+  // POST - CREAR VEHÍCULO
   // ==========================================================
 
-  if (request.method === "POST") {
+  if (
+    request.method === "POST"
+  ) {
 
     try {
 
@@ -2474,7 +2660,8 @@ async function adminVehiculo(
 
       return Response.json({
         ok: true,
-        accion: "creado",
+        accion:
+          "creado",
         vehiculo
       });
 
@@ -2504,13 +2691,17 @@ async function adminVehiculo(
 
 
   // ==========================================================
-  // PUT - ACTUALIZAR
+  // PUT - ACTUALIZAR VEHÍCULO
   // ==========================================================
 
-  if (request.method === "PUT") {
+  if (
+    request.method === "PUT"
+  ) {
 
     const id =
-      Number(body.id);
+      Number(
+        body.id
+      );
 
 
     if (
@@ -2630,7 +2821,8 @@ async function adminVehiculo(
 
       return Response.json({
         ok: true,
-        accion: "actualizado",
+        accion:
+          "actualizado",
         vehiculo
       });
 
@@ -2659,172 +2851,6 @@ async function adminVehiculo(
   }
 
 
-// ==========================================================
-// DELETE - ELIMINAR VEHÍCULO
-// ==========================================================
-
-if (request.method === "DELETE") {
-
-  const id =
-    Number(body.id);
-
-
-  if (
-    !Number.isInteger(id) ||
-    id <= 0
-  ) {
-
-    return Response.json(
-      {
-        ok: false,
-        error: "ID incorrecto"
-      },
-      {
-        status: 400
-      }
-    );
-
-  }
-
-
-  try {
-
-    // ------------------------------------------------------
-    // OBTENER TODAS SUS FOTOS
-    // ------------------------------------------------------
-
-    const fotosResultado =
-      await env.DB
-        .prepare(`
-          SELECT r2_key
-
-          FROM fotos_vehiculos
-
-          WHERE vehiculo_id = ?
-        `)
-
-        .bind(id)
-
-        .all();
-
-
-    const fotos =
-      fotosResultado.results || [];
-
-
-    // ------------------------------------------------------
-    // COMPROBAR QUE EXISTE
-    // ------------------------------------------------------
-
-    const vehiculo =
-      await env.DB
-        .prepare(`
-          SELECT id, vehiculo
-
-          FROM vehiculos
-
-          WHERE id = ?
-
-          LIMIT 1
-        `)
-
-        .bind(id)
-
-        .first();
-
-
-    if (!vehiculo) {
-
-      return Response.json(
-        {
-          ok: false,
-          error: "Vehículo no encontrado"
-        },
-        {
-          status: 404
-        }
-      );
-
-    }
-
-
-    // ------------------------------------------------------
-    // ELIMINAR DATOS DE D1
-    // ------------------------------------------------------
-
-    await env.DB.batch([
-      env.DB
-        .prepare(`
-          DELETE FROM fotos_vehiculos
-          WHERE vehiculo_id = ?
-        `)
-        .bind(id),
-
-      env.DB
-        .prepare(`
-          DELETE FROM vehiculos
-          WHERE id = ?
-        `)
-        .bind(id)
-    ]);
-
-
-    // ------------------------------------------------------
-    // ELIMINAR ARCHIVOS DE R2
-    // ------------------------------------------------------
-
-    for (const foto of fotos) {
-
-      try {
-
-        await env.IMAGES.delete(
-          foto.r2_key
-        );
-
-      } catch (error) {
-
-        console.error(
-          "No se pudo borrar objeto R2:",
-          foto.r2_key,
-          error
-        );
-
-      }
-
-    }
-
-
-    return Response.json({
-      ok: true,
-      eliminado: id,
-      vehiculo: vehiculo.vehiculo,
-      fotosEliminadas: fotos.length
-    });
-
-
-  } catch (error) {
-
-    console.error(
-      "Eliminar vehículo:",
-      error
-    );
-
-
-    return Response.json(
-      {
-        ok: false,
-        error:
-          "No se pudo eliminar el vehículo"
-      },
-      {
-        status: 500
-      }
-    );
-
-  }
-
-}
-
   return Response.json(
     {
       ok: false,
@@ -2836,6 +2862,7 @@ if (request.method === "DELETE") {
     }
   );
 
+}
 
 // ============================================================
 // ADMIN - LEER UN VEHÍCULO
