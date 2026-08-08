@@ -256,88 +256,6 @@ async function obtenerVehiculosD1(env) {
 
       }
 
-// ============================================================
-// OBTENER REPOSICIONES DESDE D1
-// ============================================================
-
-async function obtenerReposicionesD1(
-  env
-) {
-
-  try {
-
-    const consulta =
-      await env.DB
-        .prepare(`
-          SELECT
-
-            r.id,
-            r.nombre,
-            r.precio,
-            r.publicado,
-            r.orden,
-
-            f.id AS foto_id,
-            f.r2_key,
-            f.nombre_archivo,
-            f.mime_type,
-            f.orden AS foto_orden
-
-          FROM reposiciones r
-
-          LEFT JOIN fotos_reposiciones f
-            ON f.reposicion_id = r.id
-
-          WHERE
-            r.publicado = 1
-
-          ORDER BY
-            r.orden ASC,
-            r.id ASC,
-            f.orden ASC,
-            f.id ASC
-        `)
-
-        .all();
-
-
-    const mapaReposiciones =
-      new Map();
-
-
-    for (
-      const fila
-      of consulta.results || []
-    ) {
-
-      if (
-        !mapaReposiciones.has(
-          fila.id
-        )
-      ) {
-
-        mapaReposiciones.set(
-          fila.id,
-          {
-
-            id:
-              String(fila.id),
-
-            nombre:
-              fila.nombre || "",
-
-            precio:
-              fila.precio ?? null,
-
-            orden:
-              fila.orden ?? 999,
-
-            fotos: []
-
-          }
-        );
-
-      }
 
 
       // ------------------------------------------------------
@@ -496,6 +414,89 @@ async function obtenerReposicionesD1(
   }
 
 }
+
+// ============================================================
+// OBTENER REPOSICIONES DESDE D1
+// ============================================================
+
+async function obtenerReposicionesD1(
+  env
+) {
+
+  try {
+
+    const consulta =
+      await env.DB
+        .prepare(`
+          SELECT
+
+            r.id,
+            r.nombre,
+            r.precio,
+            r.publicado,
+            r.orden,
+
+            f.id AS foto_id,
+            f.r2_key,
+            f.nombre_archivo,
+            f.mime_type,
+            f.orden AS foto_orden
+
+          FROM reposiciones r
+
+          LEFT JOIN fotos_reposiciones f
+            ON f.reposicion_id = r.id
+
+          WHERE
+            r.publicado = 1
+
+          ORDER BY
+            r.orden ASC,
+            r.id ASC,
+            f.orden ASC,
+            f.id ASC
+        `)
+
+        .all();
+
+
+    const mapaReposiciones =
+      new Map();
+
+
+    for (
+      const fila
+      of consulta.results || []
+    ) {
+
+      if (
+        !mapaReposiciones.has(
+          fila.id
+        )
+      ) {
+
+        mapaReposiciones.set(
+          fila.id,
+          {
+
+            id:
+              String(fila.id),
+
+            nombre:
+              fila.nombre || "",
+
+            precio:
+              fila.precio ?? null,
+
+            orden:
+              fila.orden ?? 999,
+
+            fotos: []
+
+          }
+        );
+
+      }
 
 
 // ============================================================
