@@ -2,6 +2,51 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+// ---------------------------------------------------------
+// TEST D1 + R2
+// ---------------------------------------------------------
+
+if (url.pathname === "/api/storage-test") {
+  try {
+
+    // Comprobar D1
+    const dbTest = await env.DB
+      .prepare("SELECT COUNT(*) AS total FROM vehiculos")
+      .first();
+
+    // Comprobar R2 sin escribir nada
+    const r2Test = await env.IMAGES.list({
+      limit: 1
+    });
+
+    return Response.json({
+      ok: true,
+
+      d1: {
+        conectado: true,
+        vehiculos: dbTest?.total ?? 0
+      },
+
+      r2: {
+        conectado: true,
+        objetos: r2Test.objects.length
+      }
+    });
+
+  } catch (error) {
+
+    return Response.json(
+      {
+        ok: false,
+        error: error.message
+      },
+      {
+        status: 500
+      }
+    );
+  }
+}
+    
     // ---------------------------------------------------------
     // TEST
     // ---------------------------------------------------------
