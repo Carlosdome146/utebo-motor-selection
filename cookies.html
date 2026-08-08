@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <title>Política de cookies | Utebo Motor Selection</title>
+  <meta name="description" content="Política de cookies de Utebo Motor Selection.">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    :root {
+      --bg: #0c0d0f;
+      --panel: #15171a;
+      --panel-2: #1b1d21;
+      --text: #f5f5f5;
+      --muted: #b7b9bd;
+      --line: rgba(255,255,255,.10);
+      --red: #d71920;
+      --max: 980px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top right, rgba(215,25,32,.12), transparent 32%), var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.7;
+    }
+    a { color: inherit; }
+    .legal-topbar {
+      border-bottom: 1px solid var(--line);
+      background: rgba(12,13,15,.94);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
+    .legal-topbar-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .legal-brand {
+      text-decoration: none;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 15px;
+    }
+    .legal-brand span { color: var(--red); }
+    .legal-back {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .legal-back:hover { color: #fff; }
+    .legal-hero {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 78px 0 34px;
+    }
+    .legal-kicker {
+      color: var(--red);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .legal-hero h1 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 64px);
+      line-height: 1;
+      letter-spacing: -.04em;
+      text-transform: uppercase;
+    }
+    .legal-hero p {
+      max-width: 720px;
+      margin: 18px 0 0;
+      color: var(--muted);
+    }
+    .legal-content {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0 72px;
+    }
+    .legal-card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      padding: clamp(24px, 5vw, 46px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+    }
+    .legal-card section + section {
+      margin-top: 36px;
+      padding-top: 34px;
+      border-top: 1px solid var(--line);
+    }
+    .legal-card h2 {
+      margin: 0 0 12px;
+      font-size: 21px;
+      line-height: 1.25;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+    .legal-card p { margin: 0 0 13px; color: #e3e4e6; }
+    .legal-card ul { margin: 12px 0 0; padding-left: 20px; color: #e3e4e6; }
+    .legal-card li + li { margin-top: 7px; }
+    .legal-data {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 9px 18px;
+      padding: 20px;
+      background: rgba(255,255,255,.035);
+      border-left: 3px solid var(--red);
+      margin-top: 16px;
+    }
+    .legal-data strong { color: #fff; }
+    .legal-data span { color: var(--muted); }
+    .legal-note {
+      margin-top: 20px;
+      padding: 15px 17px;
+      background: rgba(215,25,32,.09);
+      border: 1px solid rgba(215,25,32,.25);
+      color: #f0d8d9;
+      font-size: 13px;
+    }
+    .cookie-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 14px;
+    }
+    .cookie-table th, .cookie-table td {
+      text-align: left;
+      vertical-align: top;
+      padding: 13px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .cookie-table th { color: #fff; background: rgba(255,255,255,.045); }
+    .cookie-table td { color: #d8d9dc; }
+    .legal-footer { border-top: 1px solid var(--line); background: #090a0c; }
+    .legal-footer-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      justify-content: space-between;
+      color: #96989d;
+      font-size: 12px;
+    }
+    .legal-footer-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+    .legal-footer a { color: #b8bac0; text-decoration: none; }
+    .legal-footer a:hover { color: #fff; }
+    @media (max-width: 650px) {
+      .legal-topbar-inner { min-height: 64px; }
+      .legal-hero { padding-top: 54px; }
+      .legal-data { grid-template-columns: 1fr; gap: 2px; }
+      .legal-data span { margin-bottom: 9px; }
+      .cookie-table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
+  </style>
+
+</head>
+<body>
+  <header class="legal-topbar">
+    <div class="legal-topbar-inner">
+      <a class="legal-brand" href="/index.html">Utebo Motor <span>Selection</span></a>
+      <a class="legal-back" href="/index.html">← Volver a la web</a>
+    </div>
+  </header>
+  <main>
+    <div class="legal-hero">
+      <div class="legal-kicker">Cookies y tecnologías similares</div>
+      <h1>Política de cookies</h1>
+      <p>Información sobre las cookies técnicas y demás tecnologías utilizadas actualmente en el sitio web.</p>
+    </div>
+    <div class="legal-content">
+      <article class="legal-card">
+
+        <section>
+          <h2>1. Qué son las cookies</h2>
+          <p>Las cookies son pequeños archivos o datos que pueden almacenarse en el dispositivo de la persona usuaria cuando visita un sitio web. Pueden utilizarse, entre otras finalidades, para permitir funciones técnicas, recordar preferencias, medir audiencia o realizar seguimiento publicitario.</p>
+        </section>
+        <section>
+          <h2>2. Cookies utilizadas actualmente</h2>
+          <p>En la configuración actual de Utebo Motor Selection no se han implementado cookies analíticas, publicitarias o de seguimiento en la parte pública del sitio web.</p>
+          <p>El área privada de administración utiliza una cookie técnica necesaria para mantener la sesión del administrador después de iniciar sesión.</p>
+          <table class="cookie-table">
+            <thead>
+              <tr><th>Cookie</th><th>Tipo</th><th>Finalidad</th><th>Duración</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>utebo_admin</strong></td>
+                <td>Técnica / sesión de administración</td>
+                <td>Mantener autenticada la sesión del área privada <code>/admin</code>.</td>
+                <td>Hasta 8 horas como máximo o hasta que se cierre la sesión.</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Esta cookie está configurada con medidas de seguridad como <code>HttpOnly</code>, <code>Secure</code> y <code>SameSite=Strict</code> y no se utiliza con fines publicitarios ni de elaboración de perfiles.</p>
+        </section>
+        <section>
+          <h2>3. Servicios técnicos de terceros</h2>
+          <p>La web utiliza infraestructura de Cloudflare para servir contenidos, ejecutar funcionalidades, almacenar información e imágenes y proteger técnicamente el servicio.</p>
+          <p>Dependiendo de la configuración técnica y de las medidas de seguridad activadas, el proveedor de infraestructura puede utilizar mecanismos estrictamente necesarios para seguridad, disponibilidad o entrega del servicio.</p>
+        </section>
+        <section>
+          <h2>4. Consentimiento</h2>
+          <p>Las cookies estrictamente necesarias para permitir el funcionamiento o prestar un servicio solicitado no requieren el mismo mecanismo de consentimiento que las cookies analíticas o publicitarias no exentas.</p>
+          <p>Por este motivo, mientras el sitio web mantenga la configuración descrita en esta política y no incorpore cookies no necesarias sujetas a consentimiento, no se muestra un banner general de aceptación de cookies.</p>
+        </section>
+        <section>
+          <h2>5. Cambios futuros</h2>
+          <p>Si en el futuro se incorporan herramientas como analítica web, píxeles publicitarios, publicidad personalizada, contenidos incrustados o tecnologías similares que requieran consentimiento, esta política será actualizada y se implementará el mecanismo de consentimiento correspondiente antes de activar dichas tecnologías.</p>
+        </section>
+        <section>
+          <h2>6. Cómo controlar o eliminar cookies</h2>
+          <p>Los navegadores permiten consultar, bloquear o eliminar las cookies almacenadas desde sus opciones de privacidad y seguridad. La desactivación de cookies técnicas necesarias puede impedir que determinadas funciones, especialmente el acceso al área privada de administración, funcionen correctamente.</p>
+        </section>
+        <section>
+          <h2>7. Contacto</h2>
+          <p>Para cualquier cuestión relacionada con esta política puede contactar con Utebo Motor Selection en <a href="mailto:info@utebomotorselection.es">info@utebomotorselection.es</a> o en el teléfono 614 60 11 89.</p>
+        </section>
+        <section>
+          <h2>8. Actualización</h2>
+          <p>Última actualización: 8 de agosto de 2026.</p>
+        </section>
+
+      </article>
+    </div>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="legal-footer-inner">
+      <span>© 2026 Utebo Motor Selection</span>
+      <div class="legal-footer-links">
+        <a href="/aviso-legal.html">Aviso legal</a>
+        <a href="/privacidad.html">Política de privacidad</a>
+        <a href="/cookies.html">Política de cookies</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

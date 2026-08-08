@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <title>Política de privacidad | Utebo Motor Selection</title>
+  <meta name="description" content="Política de privacidad de Utebo Motor Selection.">
+  <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    :root {
+      --bg: #0c0d0f;
+      --panel: #15171a;
+      --panel-2: #1b1d21;
+      --text: #f5f5f5;
+      --muted: #b7b9bd;
+      --line: rgba(255,255,255,.10);
+      --red: #d71920;
+      --max: 980px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top right, rgba(215,25,32,.12), transparent 32%), var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.7;
+    }
+    a { color: inherit; }
+    .legal-topbar {
+      border-bottom: 1px solid var(--line);
+      background: rgba(12,13,15,.94);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
+    .legal-topbar-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .legal-brand {
+      text-decoration: none;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 15px;
+    }
+    .legal-brand span { color: var(--red); }
+    .legal-back {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .legal-back:hover { color: #fff; }
+    .legal-hero {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 78px 0 34px;
+    }
+    .legal-kicker {
+      color: var(--red);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .legal-hero h1 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 64px);
+      line-height: 1;
+      letter-spacing: -.04em;
+      text-transform: uppercase;
+    }
+    .legal-hero p {
+      max-width: 720px;
+      margin: 18px 0 0;
+      color: var(--muted);
+    }
+    .legal-content {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0 72px;
+    }
+    .legal-card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--line);
+      padding: clamp(24px, 5vw, 46px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+    }
+    .legal-card section + section {
+      margin-top: 36px;
+      padding-top: 34px;
+      border-top: 1px solid var(--line);
+    }
+    .legal-card h2 {
+      margin: 0 0 12px;
+      font-size: 21px;
+      line-height: 1.25;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+    .legal-card p { margin: 0 0 13px; color: #e3e4e6; }
+    .legal-card ul { margin: 12px 0 0; padding-left: 20px; color: #e3e4e6; }
+    .legal-card li + li { margin-top: 7px; }
+    .legal-data {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 9px 18px;
+      padding: 20px;
+      background: rgba(255,255,255,.035);
+      border-left: 3px solid var(--red);
+      margin-top: 16px;
+    }
+    .legal-data strong { color: #fff; }
+    .legal-data span { color: var(--muted); }
+    .legal-note {
+      margin-top: 20px;
+      padding: 15px 17px;
+      background: rgba(215,25,32,.09);
+      border: 1px solid rgba(215,25,32,.25);
+      color: #f0d8d9;
+      font-size: 13px;
+    }
+    .cookie-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 14px;
+    }
+    .cookie-table th, .cookie-table td {
+      text-align: left;
+      vertical-align: top;
+      padding: 13px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .cookie-table th { color: #fff; background: rgba(255,255,255,.045); }
+    .cookie-table td { color: #d8d9dc; }
+    .legal-footer { border-top: 1px solid var(--line); background: #090a0c; }
+    .legal-footer-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      justify-content: space-between;
+      color: #96989d;
+      font-size: 12px;
+    }
+    .legal-footer-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+    .legal-footer a { color: #b8bac0; text-decoration: none; }
+    .legal-footer a:hover { color: #fff; }
+    @media (max-width: 650px) {
+      .legal-topbar-inner { min-height: 64px; }
+      .legal-hero { padding-top: 54px; }
+      .legal-data { grid-template-columns: 1fr; gap: 2px; }
+      .legal-data span { margin-bottom: 9px; }
+      .cookie-table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
+  </style>
+
+</head>
+<body>
+  <header class="legal-topbar">
+    <div class="legal-topbar-inner">
+      <a class="legal-brand" href="/index.html">Utebo Motor <span>Selection</span></a>
+      <a class="legal-back" href="/index.html">← Volver a la web</a>
+    </div>
+  </header>
+  <main>
+    <div class="legal-hero">
+      <div class="legal-kicker">Protección de datos</div>
+      <h1>Política de privacidad</h1>
+      <p>Información sobre el tratamiento de datos personales cuando una persona contacta o mantiene una relación con Utebo Motor Selection.</p>
+    </div>
+    <div class="legal-content">
+      <article class="legal-card">
+
+        <section>
+          <h2>1. Responsable del tratamiento</h2>
+          <div class="legal-data">
+            <strong>Responsable</strong><span>Raquel Canela</span>
+            <strong>Nombre comercial</strong><span>Utebo Motor Selection</span>
+            <strong>NIF</strong><span>XXXXXXXXX</span>
+            <strong>Domicilio</strong><span>Calle Luis Buñuel 25, Utebo</span>
+            <strong>Teléfono</strong><span>614 60 11 89</span>
+            <strong>Correo electrónico</strong><span><a href="mailto:info@utebomotorselection.es">info@utebomotorselection.es</a></span>
+          </div>
+        </section>
+        <section>
+          <h2>2. Qué datos podemos tratar</h2>
+          <p>Podemos tratar los datos que la persona interesada facilite voluntariamente al contactar con Utebo Motor Selection por correo electrónico, teléfono, WhatsApp u otros medios habilitados.</p>
+          <ul>
+            <li>Datos identificativos y de contacto, como nombre, teléfono o correo electrónico.</li>
+            <li>Información incluida en mensajes, consultas o solicitudes.</li>
+            <li>Datos necesarios para valorar una compraventa, búsqueda, importación o gestión relacionada con un vehículo.</li>
+            <li>Datos administrativos, contractuales o de facturación cuando exista una relación comercial.</li>
+          </ul>
+          <p>La web también puede generar información técnica necesaria para su funcionamiento y seguridad, como direcciones IP, registros técnicos o información básica de la solicitud de conexión.</p>
+        </section>
+        <section>
+          <h2>3. Finalidades del tratamiento</h2>
+          <ul>
+            <li>Atender consultas y solicitudes de información.</li>
+            <li>Gestionar contactos relacionados con vehículos anunciados.</li>
+            <li>Gestionar procesos de compra, venta, búsqueda o importación de vehículos.</li>
+            <li>Realizar gestiones precontractuales o contractuales solicitadas por la persona interesada.</li>
+            <li>Cumplir obligaciones legales, fiscales, contables o administrativas cuando corresponda.</li>
+            <li>Garantizar la seguridad técnica y el funcionamiento del sitio web.</li>
+          </ul>
+          <p>No se realizarán envíos publicitarios por vías distintas de las necesarias para atender una consulta o relación existente salvo que exista una base jurídica válida para ello, como el consentimiento cuando sea exigible.</p>
+        </section>
+        <section>
+          <h2>4. Legitimación</h2>
+          <ul>
+            <li>Aplicación de medidas precontractuales o ejecución de un contrato cuando la persona interesada solicita información, una valoración o una operación relacionada con un vehículo.</li>
+            <li>Cumplimiento de obligaciones legales aplicables al titular.</li>
+            <li>Interés legítimo en mantener la seguridad y correcto funcionamiento de la web y sus sistemas.</li>
+            <li>Consentimiento cuando el tratamiento concreto lo requiera.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>5. Plazo de conservación</h2>
+          <p>Los datos se conservarán durante el tiempo necesario para atender la finalidad para la que fueron recabados. Cuando exista una relación contractual o comercial, podrán conservarse durante los plazos exigidos por la normativa aplicable y durante los periodos necesarios para atender posibles responsabilidades legales.</p>
+        </section>
+        <section>
+          <h2>6. Destinatarios y proveedores</h2>
+          <p>Los datos no se venderán a terceros. Podrán comunicarse cuando exista una obligación legal o cuando sea necesario para prestar un servicio solicitado.</p>
+          <p>Utebo Motor Selection puede utilizar proveedores tecnológicos que actúen como encargados del tratamiento o prestadores de servicios. La infraestructura técnica de esta web utiliza servicios de Cloudflare para alojamiento, ejecución de la aplicación, base de datos, almacenamiento de imágenes, seguridad y entrega de contenidos.</p>
+          <p>Si la persona usuaria decide contactar mediante WhatsApp, sus datos también serán tratados a través de dicho servicio conforme a las condiciones y políticas de privacidad aplicables a WhatsApp y a su proveedor.</p>
+        </section>
+        <section>
+          <h2>7. Transferencias internacionales</h2>
+          <p>Algunos proveedores tecnológicos pueden operar desde distintos países o utilizar infraestructuras distribuidas internacionalmente. Cuando una transferencia internacional de datos sea aplicable, deberá contar con una base y garantías adecuadas conforme a la normativa de protección de datos.</p>
+        </section>
+        <section>
+          <h2>8. Derechos de las personas</h2>
+          <p>La persona interesada puede solicitar el ejercicio de los derechos que le correspondan en materia de protección de datos, entre ellos acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad, así como retirar el consentimiento cuando el tratamiento se base en él.</p>
+          <p>Para ejercerlos puede escribir a <a href="mailto:info@utebomotorselection.es">info@utebomotorselection.es</a> o por correo postal a Calle Luis Buñuel 25, Utebo.</p>
+          <p>Si considera que el tratamiento de sus datos vulnera la normativa, puede presentar una reclamación ante la Agencia Española de Protección de Datos.</p>
+        </section>
+        <section>
+          <h2>9. Seguridad</h2>
+          <p>Se aplican medidas técnicas y organizativas razonables dirigidas a proteger los datos frente a pérdida, acceso no autorizado, alteración o divulgación indebida, teniendo en cuenta la naturaleza de la información tratada y los riesgos asociados.</p>
+        </section>
+        <section>
+          <h2>10. Menores de edad</h2>
+          <p>Los servicios ofrecidos en este sitio web están relacionados con operaciones sobre vehículos y no están específicamente dirigidos a menores de edad.</p>
+        </section>
+        <section>
+          <h2>11. Cambios en esta política</h2>
+          <p>Esta política podrá actualizarse cuando cambien los tratamientos realizados, la normativa aplicable o los servicios utilizados.</p>
+          <p>Última actualización: 8 de agosto de 2026.</p>
+        </section>
+
+      </article>
+    </div>
+  </main>
+
+  <footer class="legal-footer">
+    <div class="legal-footer-inner">
+      <span>© 2026 Utebo Motor Selection</span>
+      <div class="legal-footer-links">
+        <a href="/aviso-legal.html">Aviso legal</a>
+        <a href="/privacidad.html">Política de privacidad</a>
+        <a href="/cookies.html">Política de cookies</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
