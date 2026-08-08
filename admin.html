@@ -4028,6 +4028,145 @@ async function subirFotosAdmin(
   }
 
 }
+
+// ============================================================
+// ELIMINAR VEHÍCULO COMPLETO
+// ============================================================
+
+vehicleDeleteButton.addEventListener(
+  "click",
+  async () => {
+
+    const id =
+      Number(
+        document.getElementById(
+          "formVehicleId"
+        ).value
+      );
+
+
+    if (!id) {
+
+      alert(
+        "No se ha podido identificar el vehículo."
+      );
+
+      return;
+
+    }
+
+
+    const nombre =
+      document.getElementById(
+        "formVehiculo"
+      ).value;
+
+
+    const confirmar =
+      window.confirm(
+        `¿Seguro que quieres eliminar "${nombre}"?\n\n` +
+        `Se eliminará el vehículo y todas sus fotografías.\n\n` +
+        `Esta acción no se puede deshacer.`
+      );
+
+
+    if (!confirmar) {
+
+      return;
+
+    }
+
+
+    vehicleDeleteButton.disabled =
+      true;
+
+
+    vehicleDeleteButton.textContent =
+      "Eliminando...";
+
+
+    vehicleFormMessage.textContent =
+      "";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/admin/api/vehiculo",
+          {
+
+            method: "DELETE",
+
+            credentials:
+              "same-origin",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                id: id
+              })
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      console.log(
+        "Resultado eliminación:",
+        data
+      );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          "No se pudo eliminar el vehículo"
+        );
+
+      }
+
+
+      // Cerrar formulario
+      cerrarModalVehiculo();
+
+
+      // Recargar listado
+      await cargarVehiculos();
+
+
+    } catch (error) {
+
+      console.error(
+        "Error eliminando vehículo:",
+        error
+      );
+
+
+      vehicleFormMessage.textContent =
+        error.message;
+
+    } finally {
+
+      vehicleDeleteButton.disabled =
+        false;
+
+
+      vehicleDeleteButton.textContent =
+        "Eliminar vehículo";
+
+    }
+
+  }
+);
   
 </script>
 
