@@ -110,6 +110,23 @@ export default {
     // WEB ESTÁTICA
     // ========================================================
 
+// ============================================================
+// PRUEBA DEL CATÁLOGO DESDE D1
+// ============================================================
+
+if (url.pathname === "/api/vehiculos-d1") {
+  return obtenerVehiculosD1(env);
+}
+
+
+// ============================================================
+// IMÁGENES PRIVADAS DESDE R2
+// ============================================================
+
+if (url.pathname.startsWith("/media/")) {
+  return servirImagenR2(url, env);
+}
+    
     return env.ASSETS.fetch(request);
 
   }
@@ -1092,6 +1109,315 @@ function obtenerExtension(
 
     default:
       return "jpg";
+
+  }
+
+}
+
+// ============================================================
+// OBTENER VEHÍCULOS DESDE D1
+// ============================================================
+
+async function obtenerVehiculosD1(env) {
+
+  try {
+
+    const consulta = await env.DB
+      .prepare(`
+        SELECT
+
+          v.id,
+          v.vehiculo,
+          v.publicado,
+          v.estado,
+          v.destacado,
+
+          v.marca,
+          v.modelo,
+          v.version,
+
+          v.precio,
+          v.ano,
+          v.kilometros,
+
+          v.combustible,
+          v.cambio,
+          v.potencia,
+          v.procedencia,
+
+          v.descripcion,
+          v.orden,
+
+          f.id AS foto_id,
+          f.r2_key,
+          f.nombre_archivo,
+          f.mime_type,
+          f.orden AS foto_orden
+
+        FROM vehiculos v
+
+        LEFT JOIN fotos_vehiculos f
+          ON f.vehiculo_id = v.id
+
+        WHERE
+          v.publicado = 1
+
+          AND (
+            v.estado IS NULL
+            OR v.estado <> 'Vendido'
+          )
+
+        ORDER BY
+          v.orden ASC,
+          v.id ASC,
+          f.orden ASC,
+          f.id ASC
+      `)
+      .all();
+
+
+    const mapaVehiculos = new Map();
+
+
+    for (const fila of consulta.results || []) {
+
+      if (!mapaVehiculos.has(fila.id)) {
+
+        mapaVehiculos.set(
+          fila.id,
+          {
+            id: String(fila.id),
+
+            vehiculo:
+              fila.vehiculo || "",
+
+            estado:
+              fila.estado || "Disponible",
+
+            destacado:
+              Boolean(fila.destacado),
+
+            marca:
+              fila.marca || "",
+
+            modelo:
+              fila.modelo || "",
+
+            version:
+              fila.version || "",
+
+            precio:
+              fila.precio ?? null,
+
+            ano:
+              fila.ano ?? null,
+
+            kilometros:
+              fila.kilometros ?? null,
+
+            combustible:
+              fila.combustible || "",
+
+            cambio:
+              fila.cambio || "",
+
+            potencia:
+              fila.potencia ?? null,
+
+            procedencia:
+              fila.procedencia || "",
+
+            descripcion:
+              fila.descripcion || "",
+
+            orden:
+              fila.orden ?? 999,
+
+            fotos: []
+          }
+        );
+
+      }
+
+
+      // ------------------------------------------------------
+      // AÑADIR FOTOGRAFÍA
+      // ------------------------------------------------------
+
+      if (fila.r2_key) {
+
+        const vehiculo =
+          mapaVehiculos.get(fila.id);
+
+
+        const rutaFoto =
+          fila.r2_key
+            .split("/")
+            .map(
+              segmento =>
+                encodeURIComponent(segmento)
+            )
+            .join("/");
+
+
+        vehiculo.fotos.push({
+          url: `/media/${rutaFoto}`,
+
+          nombre:
+            fila.nombre_archivo || ""
+        });
+
+      }
+
+    }
+
+
+    const vehiculos =
+      Array.from(
+        mapaVehiculos.values()
+      );
+
+
+    return Response.json(
+      {
+        ok: true,
+        total: vehiculos.length,
+        vehiculos
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store"
+        }
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Error obteniendo vehículos D1:",
+      error
+    );
+
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No se pudo cargar el catálogo desde D1"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// SERVIR IMÁGENES DESDE R2
+// ============================================================
+
+async function servirImagenR2(url, env) {
+
+  try {
+
+    const ruta =
+      url.pathname.substring(
+        "/media/".length
+      );
+
+
+    if (!ruta) {
+
+      return new Response(
+        "Imagen no encontrada",
+        {
+          status: 404
+        }
+      );
+
+    }
+
+
+    const key =
+      decodeURIComponent(ruta);
+
+
+    const objeto =
+      await env.IMAGES.get(key);
+
+
+    if (!objeto) {
+
+      return new Response(
+        "Imagen no encontrada",
+        {
+          status: 404
+        }
+      );
+
+    }
+
+
+    const headers =
+      new Headers();
+
+
+    // Recuperar metadatos HTTP guardados en R2
+    objeto.writeHttpMetadata(headers);
+
+
+    // ETag para caché del navegador
+    headers.set(
+      "ETag",
+      objeto.httpEtag
+    );
+
+
+    // Seguridad básica
+    headers.set(
+      "X-Content-Type-Options",
+      "nosniff"
+    );
+
+
+    // Las imágenes migradas usan claves únicas,
+    // así que pueden cachearse durante mucho tiempo.
+    if (!headers.has("Cache-Control")) {
+
+      headers.set(
+        "Cache-Control",
+        "public, max-age=31536000, immutable"
+      );
+
+    }
+
+
+    return new Response(
+      objeto.body,
+      {
+        headers
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Error obteniendo imagen R2:",
+      error
+    );
+
+
+    return new Response(
+      "Error cargando imagen",
+      {
+        status: 500
+      }
+    );
 
   }
 
