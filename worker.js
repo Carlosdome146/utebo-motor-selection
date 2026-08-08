@@ -167,10 +167,8 @@ if (
     // ========================================================
 
     if (url.pathname === "/api/vehiculos") {
-
-      return obtenerVehiculosAirtable(env);
-
-    }
+  return obtenerVehiculosD1(env);
+}
 
 
     // ========================================================
