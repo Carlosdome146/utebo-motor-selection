@@ -85,7 +85,35 @@ if (
 
 }
     
+// ============================================================
+// ADMIN - REPOSICIONES
+// ============================================================
 
+if (
+  url.pathname ===
+  "/admin/api/reposiciones"
+) {
+
+  return adminReposiciones(
+    request,
+    env
+  );
+
+}
+
+
+if (
+  url.pathname ===
+  "/admin/api/reposicion"
+) {
+
+  return adminReposicion(
+    request,
+    env
+  );
+
+}
+    
     // ========================================================
     // TEST SIMPLE
     // ========================================================
@@ -3289,5 +3317,835 @@ function extensionImagen(
       return "jpg";
 
   }
+
+}
+
+// ============================================================
+// ADMIN - LISTADO DE REPOSICIONES
+// ============================================================
+
+async function adminReposiciones(
+  request,
+  env
+) {
+
+  if (request.method !== "GET") {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Método no permitido"
+      },
+      {
+        status: 405
+      }
+    );
+
+  }
+
+
+  const autorizado =
+    await adminAutorizado(
+      request,
+      env
+    );
+
+
+  if (!autorizado) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No autorizado"
+      },
+      {
+        status: 401
+      }
+    );
+
+  }
+
+
+  try {
+
+    const resultado =
+      await env.DB
+        .prepare(`
+          SELECT
+
+            r.id,
+            r.nombre,
+            r.precio,
+            r.publicado,
+            r.orden,
+
+            COUNT(f.id) AS fotos
+
+          FROM reposiciones r
+
+          LEFT JOIN
+            fotos_reposiciones f
+
+            ON
+              f.reposicion_id =
+              r.id
+
+          GROUP BY
+            r.id
+
+          ORDER BY
+            r.orden ASC,
+            r.id ASC
+        `)
+
+        .all();
+
+
+    const reposiciones =
+      (
+        resultado.results || []
+      ).map(
+        r => ({
+
+          ...r,
+
+          publicado:
+            Boolean(
+              r.publicado
+            ),
+
+          fotos:
+            Number(
+              r.fotos || 0
+            )
+
+        })
+      );
+
+
+    return Response.json(
+      {
+        ok: true,
+        total:
+          reposiciones.length,
+        reposiciones
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Admin reposiciones:",
+      error
+    );
+
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No se pudieron cargar las reposiciones"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// ADMIN - CREAR / EDITAR / ELIMINAR REPOSICIÓN
+// ============================================================
+
+async function adminReposicion(
+  request,
+  env
+) {
+
+  // ----------------------------------------------------------
+  // SESIÓN
+  // ----------------------------------------------------------
+
+  const autorizado =
+    await adminAutorizado(
+      request,
+      env
+    );
+
+
+  if (!autorizado) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No autorizado"
+      },
+      {
+        status: 401
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // GET - LEER UNA REPOSICIÓN
+  // ==========================================================
+
+  if (
+    request.method === "GET"
+  ) {
+
+    const url =
+      new URL(
+        request.url
+      );
+
+
+    const id =
+      Number(
+        url.searchParams.get(
+          "id"
+        )
+      );
+
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "ID incorrecto"
+        },
+        {
+          status: 400
+        }
+      );
+
+    }
+
+
+    const reposicion =
+      await obtenerReposicionAdmin(
+        env,
+        id
+      );
+
+
+    if (!reposicion) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "Reposición no encontrada"
+        },
+        {
+          status: 404
+        }
+      );
+
+    }
+
+
+    return Response.json(
+      {
+        ok: true,
+        reposicion
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // MÉTODOS DE ESCRITURA
+  // ==========================================================
+
+  if (
+    request.method !== "POST" &&
+    request.method !== "PUT" &&
+    request.method !== "DELETE"
+  ) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Método no permitido"
+      },
+      {
+        status: 405
+      }
+    );
+
+  }
+
+
+  if (
+    !origenAdminValido(
+      request
+    )
+  ) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Origen no permitido"
+      },
+      {
+        status: 403
+      }
+    );
+
+  }
+
+
+  let body;
+
+
+  try {
+
+    body =
+      await request.json();
+
+  } catch {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Datos incorrectos"
+      },
+      {
+        status: 400
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // DELETE - ELIMINAR
+  // ==========================================================
+
+  if (
+    request.method ===
+    "DELETE"
+  ) {
+
+    const id =
+      Number(
+        body.id
+      );
+
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "ID incorrecto"
+        },
+        {
+          status: 400
+        }
+      );
+
+    }
+
+
+    try {
+
+      const reposicion =
+        await obtenerReposicionAdmin(
+          env,
+          id
+        );
+
+
+      if (!reposicion) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Reposición no encontrada"
+          },
+          {
+            status: 404
+          }
+        );
+
+      }
+
+
+      // Obtener fotografías antes de borrar
+      const fotosResultado =
+        await env.DB
+          .prepare(`
+            SELECT
+              r2_key
+
+            FROM
+              fotos_reposiciones
+
+            WHERE
+              reposicion_id = ?
+          `)
+
+          .bind(id)
+
+          .all();
+
+
+      const fotos =
+        fotosResultado.results ||
+        [];
+
+
+      // Borrar de D1
+      await env.DB.batch([
+
+        env.DB
+          .prepare(`
+            DELETE FROM
+              fotos_reposiciones
+
+            WHERE
+              reposicion_id = ?
+          `)
+
+          .bind(id),
+
+        env.DB
+          .prepare(`
+            DELETE FROM
+              reposiciones
+
+            WHERE
+              id = ?
+          `)
+
+          .bind(id)
+
+      ]);
+
+
+      // Borrar ficheros físicos de R2
+      for (
+        const foto of fotos
+      ) {
+
+        try {
+
+          await env.IMAGES.delete(
+            foto.r2_key
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Error borrando foto de reposición:",
+            foto.r2_key,
+            error
+          );
+
+        }
+
+      }
+
+
+      return Response.json({
+        ok: true,
+        accion:
+          "eliminada",
+        id
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Eliminar reposición:",
+        error
+      );
+
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo eliminar la reposición"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // DATOS POST / PUT
+  // ==========================================================
+
+  const nombre =
+    textoAdmin(
+      body.nombre
+    );
+
+
+  const precio =
+    numeroNullableAdmin(
+      body.precio
+    );
+
+
+  const publicado =
+    body.publicado
+      ? 1
+      : 0;
+
+
+  const orden =
+    numeroNullableAdmin(
+      body.orden
+    ) ?? 999;
+
+
+  if (!nombre) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "El nombre del producto es obligatorio"
+      },
+      {
+        status: 400
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // POST - CREAR
+  // ==========================================================
+
+  if (
+    request.method === "POST"
+  ) {
+
+    try {
+
+      const resultado =
+        await env.DB
+          .prepare(`
+            INSERT INTO
+              reposiciones
+            (
+              nombre,
+              precio,
+              publicado,
+              orden,
+              updated_at
+            )
+
+            VALUES (
+              ?, ?, ?, ?,
+              CURRENT_TIMESTAMP
+            )
+          `)
+
+          .bind(
+            nombre,
+            precio,
+            publicado,
+            orden
+          )
+
+          .run();
+
+
+      const id =
+        Number(
+          resultado.meta
+            ?.last_row_id
+        );
+
+
+      if (!id) {
+
+        throw new Error(
+          "No se pudo obtener el ID"
+        );
+
+      }
+
+
+      const reposicion =
+        await obtenerReposicionAdmin(
+          env,
+          id
+        );
+
+
+      return Response.json({
+        ok: true,
+        accion:
+          "creada",
+        reposicion
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Crear reposición:",
+        error
+      );
+
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo crear la reposición"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // PUT - ACTUALIZAR
+  // ==========================================================
+
+  if (
+    request.method === "PUT"
+  ) {
+
+    const id =
+      Number(
+        body.id
+      );
+
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "ID incorrecto"
+        },
+        {
+          status: 400
+        }
+      );
+
+    }
+
+
+    try {
+
+      const resultado =
+        await env.DB
+          .prepare(`
+            UPDATE
+              reposiciones
+
+            SET
+              nombre = ?,
+              precio = ?,
+              publicado = ?,
+              orden = ?,
+              updated_at =
+                CURRENT_TIMESTAMP
+
+            WHERE
+              id = ?
+          `)
+
+          .bind(
+            nombre,
+            precio,
+            publicado,
+            orden,
+            id
+          )
+
+          .run();
+
+
+      if (
+        Number(
+          resultado.meta
+            ?.changes || 0
+        ) === 0
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Reposición no encontrada"
+          },
+          {
+            status: 404
+          }
+        );
+
+      }
+
+
+      const reposicion =
+        await obtenerReposicionAdmin(
+          env,
+          id
+        );
+
+
+      return Response.json({
+        ok: true,
+        accion:
+          "actualizada",
+        reposicion
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Actualizar reposición:",
+        error
+      );
+
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo actualizar la reposición"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+}
+
+
+// ============================================================
+// ADMIN - LEER REPOSICIÓN
+// ============================================================
+
+async function obtenerReposicionAdmin(
+  env,
+  id
+) {
+
+  const r =
+    await env.DB
+      .prepare(`
+        SELECT
+
+          r.id,
+          r.nombre,
+          r.precio,
+          r.publicado,
+          r.orden,
+
+          (
+            SELECT COUNT(*)
+
+            FROM
+              fotos_reposiciones f
+
+            WHERE
+              f.reposicion_id =
+              r.id
+          ) AS fotos
+
+        FROM
+          reposiciones r
+
+        WHERE
+          r.id = ?
+
+        LIMIT 1
+      `)
+
+      .bind(id)
+
+      .first();
+
+
+  if (!r) {
+
+    return null;
+
+  }
+
+
+  return {
+
+    ...r,
+
+    publicado:
+      Boolean(
+        r.publicado
+      ),
+
+    fotos:
+      Number(
+        r.fotos || 0
+      )
+
+  };
 
 }
