@@ -935,7 +935,9 @@ async function adminReposicionFotos(
 // ========================================================
 
 if (url.pathname === "/api/reposiciones") {
-  return obtenerReposicionesPublicas(env);
+
+  return obtenerReposicionesD1(env);
+
 }
     
 // ============================================================
@@ -1171,7 +1173,7 @@ async function obtenerVehiculosD1(env) {
 // ============================================================
 // OBTENER REPOSICIONES DESDE D1
 // ============================================================
-async function obtenerReposicionesPublicas(env) {
+async function obtenerReposicionesD1(env) {
 
   try {
 
