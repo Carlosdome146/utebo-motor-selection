@@ -91,6 +91,16 @@ if (
 
 if (
   url.pathname ===
+  "/admin/api/reposicion-fotos"
+) {
+  return adminReposicionFotos(
+    request,
+    env
+  );
+}
+    
+if (
+  url.pathname ===
   "/admin/api/reposiciones"
 ) {
 
@@ -110,6 +120,791 @@ if (
   return adminReposicion(
     request,
     env
+  );
+
+}
+
+// ============================================================
+// ADMIN - FOTOS REPOSICIONES
+// ============================================================
+
+async function adminReposicionFotos(
+  request,
+  env
+) {
+
+  const autorizado =
+    await adminAutorizado(
+      request,
+      env
+    );
+
+  if (!autorizado) {
+
+    return Response.json(
+      {
+        ok: false,
+        error: "No autorizado"
+      },
+      {
+        status: 401
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // GET - LISTAR FOTOS
+  // ==========================================================
+
+  if (request.method === "GET") {
+
+    const url =
+      new URL(request.url);
+
+    const reposicionId =
+      Number(
+        url.searchParams.get(
+          "reposicionId"
+        )
+      );
+
+    if (
+      !Number.isInteger(
+        reposicionId
+      ) ||
+      reposicionId <= 0
+    ) {
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "Reposición incorrecta"
+        },
+        {
+          status: 400
+        }
+      );
+
+    }
+
+    try {
+
+      const resultado =
+        await env.DB
+          .prepare(`
+            SELECT
+              id,
+              reposicion_id,
+              r2_key,
+              nombre_archivo,
+              mime_type,
+              orden
+            FROM fotos_reposiciones
+            WHERE reposicion_id = ?
+            ORDER BY orden ASC, id ASC
+          `)
+          .bind(reposicionId)
+          .all();
+
+      const fotos =
+        (
+          resultado.results || []
+        ).map(
+          foto => ({
+            id: foto.id,
+            reposicionId:
+              foto.reposicion_id,
+            nombre:
+              foto.nombre_archivo || "",
+            tipo:
+              foto.mime_type || "",
+            orden:
+              foto.orden,
+            url:
+              rutaPublicaR2(
+                foto.r2_key
+              )
+          })
+        );
+
+      return Response.json(
+        {
+          ok: true,
+          total:
+            fotos.length,
+          fotos
+        },
+        {
+          headers: {
+            "Cache-Control":
+              "no-store"
+          }
+        }
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Listar fotos reposiciones:",
+        error
+      );
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudieron cargar las fotografías"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ----------------------------------------------------------
+  // ESCRITURAS: SOLO MISMO ORIGEN
+  // ----------------------------------------------------------
+
+  if (
+    !origenAdminValido(
+      request
+    )
+  ) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Origen no permitido"
+      },
+      {
+        status: 403
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // POST - SUBIR FOTOGRAFÍAS
+  // ==========================================================
+
+  if (request.method === "POST") {
+
+    try {
+
+      const formData =
+        await request.formData();
+
+      const reposicionId =
+        Number(
+          formData.get(
+            "reposicionId"
+          )
+        );
+
+      if (
+        !Number.isInteger(
+          reposicionId
+        ) ||
+        reposicionId <= 0
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Reposición incorrecta"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+      const reposicion =
+        await env.DB
+          .prepare(`
+            SELECT id
+            FROM reposiciones
+            WHERE id = ?
+          `)
+          .bind(
+            reposicionId
+          )
+          .first();
+
+      if (!reposicion) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Reposición no encontrada"
+          },
+          {
+            status: 404
+          }
+        );
+
+      }
+
+      const archivos =
+        formData
+          .getAll("fotos")
+          .filter(
+            archivo =>
+              archivo instanceof File
+          );
+
+      if (
+        archivos.length === 0
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "No se han seleccionado fotografías"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+      if (
+        archivos.length > 10
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Puedes subir un máximo de 10 fotografías cada vez"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+      const tiposPermitidos =
+        new Set([
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+          "image/avif"
+        ]);
+
+      let tamanoTotal = 0;
+
+      for (
+        const archivo of archivos
+      ) {
+
+        if (
+          !tiposPermitidos.has(
+            archivo.type
+          )
+        ) {
+
+          return Response.json(
+            {
+              ok: false,
+              error:
+                `Formato no permitido: ${archivo.name}`
+            },
+            {
+              status: 400
+            }
+          );
+
+        }
+
+        if (
+          archivo.size >
+          12 * 1024 * 1024
+        ) {
+
+          return Response.json(
+            {
+              ok: false,
+              error:
+                `${archivo.name} supera los 12 MB`
+            },
+            {
+              status: 400
+            }
+          );
+
+        }
+
+        tamanoTotal +=
+          archivo.size;
+
+      }
+
+      if (
+        tamanoTotal >
+        50 * 1024 * 1024
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "La subida supera los 50 MB"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+      const maxOrden =
+        await env.DB
+          .prepare(`
+            SELECT
+              COALESCE(
+                MAX(orden),
+                -1
+              ) AS max_orden
+            FROM fotos_reposiciones
+            WHERE reposicion_id = ?
+          `)
+          .bind(
+            reposicionId
+          )
+          .first();
+
+      let siguienteOrden =
+        Number(
+          maxOrden?.max_orden ??
+          -1
+        ) + 1;
+
+      const fotosSubidas = [];
+
+      for (
+        const archivo of archivos
+      ) {
+
+        const extension =
+          extensionImagen(
+            archivo.type
+          );
+
+        const r2Key =
+          `reposiciones/` +
+          `${reposicionId}/` +
+          `${crypto.randomUUID()}` +
+          `.${extension}`;
+
+        await env.IMAGES.put(
+          r2Key,
+          archivo.stream(),
+          {
+            httpMetadata: {
+              contentType:
+                archivo.type,
+              cacheControl:
+                "public, max-age=31536000, immutable"
+            }
+          }
+        );
+
+        try {
+
+          const resultado =
+            await env.DB
+              .prepare(`
+                INSERT INTO fotos_reposiciones (
+                  reposicion_id,
+                  r2_key,
+                  nombre_archivo,
+                  mime_type,
+                  orden
+                )
+                VALUES (?, ?, ?, ?, ?)
+              `)
+              .bind(
+                reposicionId,
+                r2Key,
+                archivo.name,
+                archivo.type,
+                siguienteOrden
+              )
+              .run();
+
+          fotosSubidas.push({
+            id:
+              resultado.meta
+                ?.last_row_id,
+            nombre:
+              archivo.name,
+            orden:
+              siguienteOrden,
+            url:
+              rutaPublicaR2(
+                r2Key
+              )
+          });
+
+          siguienteOrden++;
+
+        } catch (error) {
+
+          await env.IMAGES.delete(
+            r2Key
+          );
+
+          throw error;
+
+        }
+
+      }
+
+      return Response.json({
+        ok: true,
+        total:
+          fotosSubidas.length,
+        fotos:
+          fotosSubidas
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Subir fotos reposiciones:",
+        error
+      );
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudieron subir las fotografías"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // DELETE - ELIMINAR FOTO
+  // ==========================================================
+
+  if (
+    request.method ===
+    "DELETE"
+  ) {
+
+    try {
+
+      const body =
+        await request.json();
+
+      const reposicionId =
+        Number(
+          body.reposicionId
+        );
+
+      const fotoId =
+        Number(
+          body.fotoId
+        );
+
+      if (
+        !reposicionId ||
+        !fotoId
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Datos incorrectos"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+      const foto =
+        await env.DB
+          .prepare(`
+            SELECT
+              id,
+              r2_key
+            FROM fotos_reposiciones
+            WHERE
+              id = ?
+              AND reposicion_id = ?
+          `)
+          .bind(
+            fotoId,
+            reposicionId
+          )
+          .first();
+
+      if (!foto) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Fotografía no encontrada"
+          },
+          {
+            status: 404
+          }
+        );
+
+      }
+
+      await env.DB
+        .prepare(`
+          DELETE FROM fotos_reposiciones
+          WHERE
+            id = ?
+            AND reposicion_id = ?
+        `)
+        .bind(
+          fotoId,
+          reposicionId
+        )
+        .run();
+
+      try {
+
+        await env.IMAGES.delete(
+          foto.r2_key
+        );
+
+      } catch (error) {
+
+        console.error(
+          "R2 delete reposicion:",
+          error
+        );
+
+      }
+
+      return Response.json({
+        ok: true
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Eliminar foto reposicion:",
+        error
+      );
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo eliminar la fotografía"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // PUT - CAMBIAR ORDEN
+  // ==========================================================
+
+  if (request.method === "PUT") {
+
+    try {
+
+      const body =
+        await request.json();
+
+      const reposicionId =
+        Number(
+          body.reposicionId
+        );
+
+      const orden =
+        Array.isArray(
+          body.orden
+        )
+          ? body.orden.map(
+              Number
+            )
+          : [];
+
+      if (
+        !reposicionId ||
+        orden.length === 0
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Orden incorrecto"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+      const actuales =
+        await env.DB
+          .prepare(`
+            SELECT id
+            FROM fotos_reposiciones
+            WHERE reposicion_id = ?
+            ORDER BY orden, id
+          `)
+          .bind(
+            reposicionId
+          )
+          .all();
+
+      const idsActuales =
+        (
+          actuales.results || []
+        ).map(
+          fila =>
+            Number(fila.id)
+        );
+
+      if (
+        idsActuales.length !==
+        orden.length
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "La lista de fotografías no coincide"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+      const conjuntoActual =
+        new Set(idsActuales);
+
+      const conjuntoNuevo =
+        new Set(orden);
+
+      if (
+        conjuntoNuevo.size !==
+        idsActuales.length ||
+        !orden.every(
+          id =>
+            conjuntoActual.has(id)
+        )
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Orden de fotografías incorrecto"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+      const sentencia =
+        env.DB.prepare(`
+          UPDATE fotos_reposiciones
+          SET orden = ?
+          WHERE
+            id = ?
+            AND reposicion_id = ?
+        `);
+
+      const consultas =
+        orden.map(
+          (fotoId, index) =>
+            sentencia.bind(
+              index,
+              fotoId,
+              reposicionId
+            )
+        );
+
+      await env.DB.batch(
+        consultas
+      );
+
+      return Response.json({
+        ok: true
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Ordenar fotos reposiciones:",
+        error
+      );
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo cambiar el orden"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  return Response.json(
+    {
+      ok: false,
+      error:
+        "Método no permitido"
+    },
+    {
+      status: 405
+    }
   );
 
 }
@@ -140,9 +935,7 @@ if (
 // ========================================================
 
 if (url.pathname === "/api/reposiciones") {
-
-  return obtenerReposicionesD1(env);
-
+  return obtenerReposicionesPublicas(env);
 }
     
 // ============================================================
@@ -379,9 +1172,7 @@ async function obtenerVehiculosD1(env) {
 // OBTENER REPOSICIONES DESDE D1
 // ============================================================
 
-async function obtenerReposicionesD1(
-  env
-) {
+async function obtenerReposicionesPublicas(env) {
 
   try {
 
@@ -389,7 +1180,6 @@ async function obtenerReposicionesD1(
       await env.DB
         .prepare(`
           SELECT
-
             r.id,
             r.nombre,
             r.precio,
@@ -407,8 +1197,7 @@ async function obtenerReposicionesD1(
           LEFT JOIN fotos_reposiciones f
             ON f.reposicion_id = r.id
 
-          WHERE
-            r.publicado = 1
+          WHERE r.publicado = 1
 
           ORDER BY
             r.orden ASC,
@@ -416,7 +1205,6 @@ async function obtenerReposicionesD1(
             f.orden ASC,
             f.id ASC
         `)
-
         .all();
 
 
@@ -424,40 +1212,96 @@ async function obtenerReposicionesD1(
       new Map();
 
 
-    for (
-      const fila
-      of consulta.results || []
-    ) {
+    for (const fila of consulta.results || []) {
 
-      if (
-        !mapaReposiciones.has(
-          fila.id
-        )
-      ) {
+      if (!mapaReposiciones.has(fila.id)) {
 
         mapaReposiciones.set(
           fila.id,
           {
-
-            id:
-              String(fila.id),
-
+            id: String(fila.id),
             nombre:
               fila.nombre || "",
-
             precio:
               fila.precio ?? null,
-
             orden:
               fila.orden ?? 999,
-
             fotos: []
-
           }
         );
 
       }
 
+      if (fila.r2_key) {
+
+        const reposicion =
+          mapaReposiciones.get(
+            fila.id
+          );
+
+        const rutaFoto =
+          fila.r2_key
+            .split("/")
+            .map(
+              segmento =>
+                encodeURIComponent(segmento)
+            )
+            .join("/");
+
+        reposicion.fotos.push({
+          url:
+            `/media/${rutaFoto}`,
+          nombre:
+            fila.nombre_archivo || ""
+        });
+
+      }
+
+    }
+
+
+    const reposiciones =
+      Array.from(
+        mapaReposiciones.values()
+      );
+
+
+    return Response.json(
+      {
+        ok: true,
+        total:
+          reposiciones.length,
+        reposiciones
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Reposiciones públicas:",
+      error
+    );
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No se pudieron cargar las reposiciones"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
 
       // ------------------------------------------------------
       // AÑADIR FOTOGRAFÍA
