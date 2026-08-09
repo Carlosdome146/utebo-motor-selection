@@ -1303,7 +1303,7 @@ async function obtenerReposicionesPublicas(env) {
 
 }
 
-  } catch (error) {
+   catch (error) {
 
     console.error(
       "Error obteniendo reposiciones D1:",
