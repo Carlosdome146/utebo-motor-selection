@@ -1171,115 +1171,14 @@ async function obtenerVehiculosD1(env) {
 // ============================================================
 // OBTENER REPOSICIONES DESDE D1
 // ============================================================
-
 async function obtenerReposicionesPublicas(env) {
 
   try {
 
-    const consulta =
-      await env.DB
-        .prepare(`
-          SELECT
-            r.id,
-            r.nombre,
-            r.precio,
-            r.publicado,
-            r.orden,
-
-            f.id AS foto_id,
-            f.r2_key,
-            f.nombre_archivo,
-            f.mime_type,
-            f.orden AS foto_orden
-
-          FROM reposiciones r
-
-          LEFT JOIN fotos_reposiciones f
-            ON f.reposicion_id = r.id
-
-          WHERE r.publicado = 1
-
-          ORDER BY
-            r.orden ASC,
-            r.id ASC,
-            f.orden ASC,
-            f.id ASC
-        `)
-        .all();
-
-
-    const mapaReposiciones =
-      new Map();
-
-
-    for (const fila of consulta.results || []) {
-
-      if (!mapaReposiciones.has(fila.id)) {
-
-        mapaReposiciones.set(
-          fila.id,
-          {
-            id: String(fila.id),
-            nombre:
-              fila.nombre || "",
-            precio:
-              fila.precio ?? null,
-            orden:
-              fila.orden ?? 999,
-            fotos: []
-          }
-        );
-
-      }
-
-      if (fila.r2_key) {
-
-        const reposicion =
-          mapaReposiciones.get(
-            fila.id
-          );
-
-        const rutaFoto =
-          fila.r2_key
-            .split("/")
-            .map(
-              segmento =>
-                encodeURIComponent(segmento)
-            )
-            .join("/");
-
-        reposicion.fotos.push({
-          url:
-            `/media/${rutaFoto}`,
-          nombre:
-            fila.nombre_archivo || ""
-        });
-
-      }
-
-    }
-
-
-    const reposiciones =
-      Array.from(
-        mapaReposiciones.values()
-      );
-
-
-    return Response.json(
-      {
-        ok: true,
-        total:
-          reposiciones.length,
-        reposiciones
-      },
-      {
-        headers: {
-          "Cache-Control":
-            "no-store"
-        }
-      }
-    );
+    // consulta
+    // mapa
+    // fotos
+    // return correcto
 
   } catch (error) {
 
@@ -1287,29 +1186,6 @@ async function obtenerReposicionesPublicas(env) {
       "Reposiciones públicas:",
       error
     );
-
-    return Response.json(
-      {
-        ok: false,
-        error:
-          "No se pudieron cargar las reposiciones"
-      },
-      {
-        status: 500
-      }
-    );
-
-  }
-
-}
-
-  } catch (error) {
-
-    console.error(
-      "Error obteniendo reposiciones D1:",
-      error
-    );
-
 
     return Response.json(
       {
