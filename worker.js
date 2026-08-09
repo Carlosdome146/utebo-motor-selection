@@ -1303,60 +1303,6 @@ async function obtenerReposicionesPublicas(env) {
 
 }
 
-      // ------------------------------------------------------
-      // AÑADIR FOTOGRAFÍA
-      // ------------------------------------------------------
-
-      if (fila.r2_key) {
-
-        const reposicion =
-          mapaReposiciones.get(
-            fila.id
-          );
-
-
-        reposicion.fotos.push({
-
-          id:
-            fila.foto_id,
-
-          url:
-            rutaPublicaR2(
-              fila.r2_key
-            ),
-
-          nombre:
-            fila.nombre_archivo || ""
-
-        });
-
-      }
-
-    }
-
-
-    const reposiciones =
-      Array.from(
-        mapaReposiciones.values()
-      );
-
-
-    return Response.json(
-      {
-        ok: true,
-        total:
-          reposiciones.length,
-        reposiciones
-      },
-      {
-        headers: {
-          "Cache-Control":
-            "no-store"
-        }
-      }
-    );
-
-
   } catch (error) {
 
     console.error(
