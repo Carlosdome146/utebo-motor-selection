@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 
-Disallow: /api/
 Disallow: /admin/api/
 
 Sitemap: https://utebomotorsselection.com/sitemap.xml
