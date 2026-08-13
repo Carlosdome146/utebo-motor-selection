@@ -78,303 +78,561 @@ async function cargarVehiculos(container) {
 
 function crearTarjetaVehiculo(v) {
 
-  const article = document.createElement("article");
-  article.className = "vehicle-card";
-
-  if (v.destacado) {
-    article.classList.add("vehicle-featured");
-  }
-
-// ----------------------------------------------------------
-// IMAGEN / GALERÍA
-// ----------------------------------------------------------
-
-const media = document.createElement("div");
-media.className = "vehicle-media";
-
-if (v.fotos && v.fotos.length > 0) {
-
-  const img = document.createElement("img");
-
-  img.src = v.fotos[0].url;
-  img.alt = v.vehiculo || `${v.marca} ${v.modelo}`;
-  img.loading = "lazy";
-
-  media.appendChild(img);
-
-  // Si hay fotografías, permitimos abrir la galería
-  media.classList.add("vehicle-media-clickable");
-
-  media.addEventListener("click", () => {
-    abrirGaleriaVehiculo(
-      v.fotos,
-      v.vehiculo || `${v.marca} ${v.modelo}`
+  const article =
+    document.createElement(
+      "article"
     );
-  });
 
-  // Indicador del número de fotografías
-  if (v.fotos.length > 1) {
+  article.className =
+    "vehicle-card";
 
-    const photoCount = document.createElement("span");
-
-    photoCount.className = "vehicle-photo-count";
-
-    photoCount.innerHTML = `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 6.5h3l1.5-2h7l1.5 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Zm8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/>
-      </svg>
-
-      ${v.fotos.length} fotos
-    `;
-
-    media.appendChild(photoCount);
-  }
-
-} else {
-
-  const noImage = document.createElement("div");
-
-  noImage.className = "vehicle-no-image";
-
-  noImage.textContent = "UTEBO MOTOR SELECTION";
-
-  media.appendChild(noImage);
-}
-
-  // ----------------------------------------------------------
-  // ESTADO
-  // ----------------------------------------------------------
-
-  const estado = document.createElement("span");
-
-  estado.className =
-    "vehicle-status " +
-    (v.estado === "Reservado"
-      ? "vehicle-status-reserved"
-      : "vehicle-status-available");
-
-  estado.textContent = v.estado;
-
-  media.appendChild(estado);
-
-  // ----------------------------------------------------------
-  // DESTACADO
-  // ----------------------------------------------------------
 
   if (v.destacado) {
-    const destacado = document.createElement("span");
-    destacado.className = "vehicle-highlight";
-    destacado.textContent = "DESTACADO";
-
-    media.appendChild(destacado);
+    article.classList.add(
+      "vehicle-featured"
+    );
   }
 
-  article.appendChild(media);
 
-  // ----------------------------------------------------------
-  // CONTENIDO
-  // ----------------------------------------------------------
+  // ==========================================================
+  // NOMBRE DEL VEHÍCULO
+  // ==========================================================
 
-  const content = document.createElement("div");
-  content.className = "vehicle-content";
-
-  const title = document.createElement("h2");
-  title.className = "vehicle-title";
-  title.textContent =
+  const nombreVehiculo =
     v.vehiculo ||
     `${v.marca || ""} ${v.modelo || ""} ${v.version || ""}`.trim();
 
-  content.appendChild(title);
 
-  // ----------------------------------------------------------
-  // PRECIO
-  // ----------------------------------------------------------
+  // ==========================================================
+  // SLUG + URL FICHA
+  // ==========================================================
 
-  const price = document.createElement("div");
-  price.className = "vehicle-price";
+  const slug =
+    String(
+      nombreVehiculo ||
+      "vehiculo"
+    )
 
-  if (v.precio !== null) {
-    price.textContent = formatearPrecio(v.precio);
+      .normalize(
+        "NFD"
+      )
+
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      )
+
+      .toLowerCase()
+
+      .replace(
+        /[^a-z0-9]+/g,
+        "-"
+      )
+
+      .replace(
+        /^-+|-+$/g,
+        ""
+      );
+
+
+  const fichaUrl =
+    `/vehiculo/${v.id}-${slug}`;
+
+
+  // ==========================================================
+  // IMAGEN / GALERÍA
+  // ==========================================================
+
+  const media =
+    document.createElement(
+      "div"
+    );
+
+  media.className =
+    "vehicle-media";
+
+
+  if (
+    v.fotos &&
+    v.fotos.length > 0
+  ) {
+
+    const img =
+      document.createElement(
+        "img"
+      );
+
+
+    img.src =
+      v.fotos[0].url;
+
+
+    img.alt =
+      nombreVehiculo;
+
+
+    img.loading =
+      "lazy";
+
+
+    media.appendChild(
+      img
+    );
+
+
+    // Abrir galería al pulsar la foto
+
+    media.classList.add(
+      "vehicle-media-clickable"
+    );
+
+
+    media.addEventListener(
+      "click",
+      () => {
+
+        abrirGaleriaVehiculo(
+          v.fotos,
+          nombreVehiculo
+        );
+
+      }
+    );
+
+
+    // Número de fotografías
+
+    if (
+      v.fotos.length > 1
+    ) {
+
+      const photoCount =
+        document.createElement(
+          "span"
+        );
+
+
+      photoCount.className =
+        "vehicle-photo-count";
+
+
+      photoCount.innerHTML = `
+
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <path
+            d="M4 6.5h3l1.5-2h7l1.5 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Zm8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"
+          />
+
+        </svg>
+
+        ${v.fotos.length} fotos
+
+      `;
+
+
+      media.appendChild(
+        photoCount
+      );
+
+    }
+
   } else {
-    price.textContent = "Consultar precio";
+
+    const noImage =
+      document.createElement(
+        "div"
+      );
+
+
+    noImage.className =
+      "vehicle-no-image";
+
+
+    noImage.textContent =
+      "UTEBO MOTOR SELECTION";
+
+
+    media.appendChild(
+      noImage
+    );
+
   }
 
-  content.appendChild(price);
 
-  // ----------------------------------------------------------
+  // ==========================================================
+  // ESTADO
+  // ==========================================================
+
+  const estado =
+    document.createElement(
+      "span"
+    );
+
+
+  estado.className =
+    "vehicle-status " +
+
+    (
+      v.estado ===
+      "Reservado"
+
+        ? "vehicle-status-reserved"
+
+        : "vehicle-status-available"
+    );
+
+
+  estado.textContent =
+    v.estado;
+
+
+  media.appendChild(
+    estado
+  );
+
+
+  // ==========================================================
+  // DESTACADO
+  // ==========================================================
+
+  if (v.destacado) {
+
+    const destacado =
+      document.createElement(
+        "span"
+      );
+
+
+    destacado.className =
+      "vehicle-highlight";
+
+
+    destacado.textContent =
+      "DESTACADO";
+
+
+    media.appendChild(
+      destacado
+    );
+
+  }
+
+
+  article.appendChild(
+    media
+  );
+
+
+  // ==========================================================
+  // CONTENIDO
+  // ==========================================================
+
+  const content =
+    document.createElement(
+      "div"
+    );
+
+
+  content.className =
+    "vehicle-content";
+
+
+  // ==========================================================
+  // TÍTULO
+  // ==========================================================
+
+  const title =
+    document.createElement(
+      "h2"
+    );
+
+
+  title.className =
+    "vehicle-title";
+
+
+  title.textContent =
+    nombreVehiculo;
+
+
+  content.appendChild(
+    title
+  );
+
+
+  // ==========================================================
+  // PRECIO
+  // ==========================================================
+
+  const price =
+    document.createElement(
+      "div"
+    );
+
+
+  price.className =
+    "vehicle-price";
+
+
+  if (
+    v.precio !== null &&
+    v.precio !== undefined
+  ) {
+
+    price.textContent =
+      formatearPrecio(
+        v.precio
+      );
+
+  } else {
+
+    price.textContent =
+      "Consultar precio";
+
+  }
+
+
+  content.appendChild(
+    price
+  );
+
+
+  // ==========================================================
   // DATOS PRINCIPALES
-  // ----------------------------------------------------------
+  // ==========================================================
 
-  const specs = document.createElement("div");
-  specs.className = "vehicle-specs";
+  const specs =
+    document.createElement(
+      "div"
+    );
+
+
+  specs.className =
+    "vehicle-specs";
+
 
   const datos = [
-    v.ano ? `${v.ano}` : null,
 
-    v.kilometros !== null
-      ? `${formatearNumero(v.kilometros)} km`
+    v.ano
+      ? `${v.ano}`
       : null,
 
-    v.combustible || null,
 
-    v.cambio || null,
+    v.kilometros !== null &&
+    v.kilometros !== undefined
+
+      ? `${formatearNumero(
+          v.kilometros
+        )} km`
+
+      : null,
+
+
+    v.combustible ||
+    null,
+
+
+    v.cambio ||
+    null,
+
 
     v.potencia
+
       ? `${v.potencia} CV`
+
       : null
-  ].filter(Boolean);
 
-  datos.forEach((dato) => {
-    const item = document.createElement("span");
-    item.textContent = dato;
+  ].filter(
+    Boolean
+  );
 
-    specs.appendChild(item);
-  });
 
-  content.appendChild(specs);
+  datos.forEach(
+    dato => {
 
-  // ----------------------------------------------------------
+      const item =
+        document.createElement(
+          "span"
+        );
+
+
+      item.textContent =
+        dato;
+
+
+      specs.appendChild(
+        item
+      );
+
+    }
+  );
+
+
+  content.appendChild(
+    specs
+  );
+
+
+  // ==========================================================
   // PROCEDENCIA
-  // ----------------------------------------------------------
+  // ==========================================================
 
   if (v.procedencia) {
-    const origin = document.createElement("div");
-    origin.className = "vehicle-origin";
+
+    const origin =
+      document.createElement(
+        "div"
+      );
+
+
+    origin.className =
+      "vehicle-origin";
+
 
     origin.textContent =
-      v.procedencia === "Alemania"
+
+      v.procedencia ===
+      "Alemania"
+
         ? "Importación Alemania"
+
         : v.procedencia;
 
-    content.appendChild(origin);
+
+    content.appendChild(
+      origin
+    );
+
   }
 
 
+  // ==========================================================
+  // ACCIONES
+  // ==========================================================
 
-  article.appendChild(content);
+  const actions =
+    document.createElement(
+      "div"
+    );
+
+
+  actions.className =
+    "vehicle-card-actions";
+
+
+  // ==========================================================
+  // VER VEHÍCULO
+  // ==========================================================
+
+  const verVehiculo =
+    document.createElement(
+      "a"
+    );
+
+
+  verVehiculo.className =
+    "vehicle-detail-link";
+
+
+  verVehiculo.href =
+    fichaUrl;
+
+
+  verVehiculo.innerHTML = `
+
+    <span>
+      Ver vehículo
+    </span>
+
+    <span
+      class="vehicle-detail-arrow"
+    >
+      →
+    </span>
+
+  `;
+
+
+  actions.appendChild(
+    verVehiculo
+  );
+
+
+  // ==========================================================
+  // WHATSAPP
+  // ==========================================================
+
+  const whatsapp =
+    document.createElement(
+      "a"
+    );
+
+
+  whatsapp.className =
+    "vehicle-whatsapp";
+
+
+  whatsapp.target =
+    "_blank";
+
+
+  whatsapp.rel =
+    "noopener noreferrer";
+
+
+  const mensaje =
+    `Hola, estoy interesado/a en el vehículo ` +
+    `${nombreVehiculo} que tenéis anunciado en vuestra web.`;
+
+
+  whatsapp.href =
+    "https://wa.me/34614601189?text=" +
+    encodeURIComponent(
+      mensaje
+    );
+
+
+  whatsapp.innerHTML = `
+
+    <span>
+      Consultar por WhatsApp
+    </span>
+
+    <span
+      class="vehicle-whatsapp-arrow"
+    >
+      →
+    </span>
+
+  `;
+
+
+  actions.appendChild(
+    whatsapp
+  );
+
+
+  // ==========================================================
+  // AÑADIR ACCIONES
+  // ==========================================================
+
+  content.appendChild(
+    actions
+  );
+
+
+  article.appendChild(
+    content
+  );
+
 
   return article;
+
 }
-
-// ----------------------------------------------------------
-// ACCIONES
-// ----------------------------------------------------------
-
-const actions =
-  document.createElement(
-    "div"
-  );
-
-actions.className =
-  "vehicle-card-actions";
-
-
-// ----------------------------------------------------------
-// URL DE LA FICHA
-// ----------------------------------------------------------
-
-const slug =
-  crearSlugCatalogo(
-    title.textContent
-  );
-
-
-const fichaUrl =
-  `/vehiculo/${v.id}-${slug}`;
-
-
-// ----------------------------------------------------------
-// VER VEHÍCULO
-// ----------------------------------------------------------
-
-const verVehiculo =
-  document.createElement(
-    "a"
-  );
-
-
-verVehiculo.className =
-  "vehicle-detail-link";
-
-
-verVehiculo.href =
-  fichaUrl;
-
-
-verVehiculo.innerHTML = `
-  <span>
-    Ver vehículo
-  </span>
-
-  <span
-    class="vehicle-detail-arrow"
-  >
-    →
-  </span>
-`;
-
-
-actions.appendChild(
-  verVehiculo
-);
-
-
-// ----------------------------------------------------------
-// WHATSAPP
-// ----------------------------------------------------------
-
-const whatsapp =
-  document.createElement(
-    "a"
-  );
-
-
-whatsapp.className =
-  "vehicle-whatsapp";
-
-
-whatsapp.target =
-  "_blank";
-
-
-whatsapp.rel =
-  "noopener noreferrer";
-
-
-const mensaje =
-  `Hola, estoy interesado/a en el vehículo ` +
-  `${title.textContent} que tenéis anunciado en vuestra web.`;
-
-
-whatsapp.href =
-  "https://wa.me/34614601189?text=" +
-  encodeURIComponent(
-    mensaje
-  );
-
-
-whatsapp.innerHTML = `
-  <span>
-    Consultar por WhatsApp
-  </span>
-
-  <span
-    class="vehicle-whatsapp-arrow"
-  >
-    →
-  </span>
-`;
-
-
-actions.appendChild(
-  whatsapp
-);
-
-
-content.appendChild(
-  actions
-);
-
 function mostrarCatalogoVacio(container) {
   container.innerHTML = `
     <div class="catalog-empty">
