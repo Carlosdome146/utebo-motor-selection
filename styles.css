@@ -1345,3 +1345,104 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
 .footer-legal a:hover {
   color: #ffffff;
 }
+
+/* ============================================================
+   PRÓXIMA ABERTURA
+============================================================ */
+
+.opening-banner {
+  position: relative;
+  overflow: hidden;
+
+  padding: 22px 0;
+
+  background:
+    linear-gradient(
+      110deg,
+      #101113 0%,
+      #1c1d20 68%,
+      #d71920 160%
+    );
+
+  color: white;
+
+  border-bottom:
+    3px solid #d71920;
+}
+
+.opening-banner::after {
+  content: "";
+
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  right: -90px;
+  top: -160px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.10);
+
+  border-radius: 50%;
+}
+
+.opening-banner-inner {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 24px;
+}
+
+.opening-banner-label {
+  color: #d71920;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: .18em;
+
+  text-transform: uppercase;
+}
+
+.opening-banner-title {
+  font-size: clamp(
+    22px,
+    3vw,
+    34px
+  );
+
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.opening-banner-text {
+  margin-left: auto;
+
+  color:
+    rgba(255,255,255,.72);
+
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+
+  .opening-banner-inner {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 6px;
+  }
+
+  .opening-banner-text {
+    margin-left: 0;
+  }
+
+}
