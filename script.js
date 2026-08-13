@@ -249,48 +249,131 @@ if (v.fotos && v.fotos.length > 0) {
     content.appendChild(origin);
   }
 
-  // ----------------------------------------------------------
-  // DESCRIPCIÓN
-  // ----------------------------------------------------------
 
-  if (v.descripcion) {
-    const description = document.createElement("p");
-    description.className = "vehicle-description";
-    description.textContent = v.descripcion;
-
-    content.appendChild(description);
-  }
-
-  // ----------------------------------------------------------
-  // WHATSAPP
-  // ----------------------------------------------------------
-
-  const whatsapp = document.createElement("a");
-
-  whatsapp.className = "vehicle-whatsapp";
-  whatsapp.target = "_blank";
-  whatsapp.rel = "noopener noreferrer";
-
-  const mensaje =
-    `Hola, estoy interesado/a en el vehículo ` +
-    `${title.textContent} que tenéis anunciado en vuestra web.`;
-
-  whatsapp.href =
-    "https://wa.me/34614601189?text=" +
-    encodeURIComponent(mensaje);
-
-  whatsapp.innerHTML = `
-    <span>Consultar por WhatsApp</span>
-    <span class="vehicle-whatsapp-arrow">→</span>
-  `;
-
-  content.appendChild(whatsapp);
 
   article.appendChild(content);
 
   return article;
 }
 
+// ----------------------------------------------------------
+// ACCIONES
+// ----------------------------------------------------------
+
+const actions =
+  document.createElement(
+    "div"
+  );
+
+actions.className =
+  "vehicle-card-actions";
+
+
+// ----------------------------------------------------------
+// URL DE LA FICHA
+// ----------------------------------------------------------
+
+const slug =
+  crearSlugCatalogo(
+    title.textContent
+  );
+
+
+const fichaUrl =
+  `/vehiculo/${v.id}-${slug}`;
+
+
+// ----------------------------------------------------------
+// VER VEHÍCULO
+// ----------------------------------------------------------
+
+const verVehiculo =
+  document.createElement(
+    "a"
+  );
+
+
+verVehiculo.className =
+  "vehicle-detail-link";
+
+
+verVehiculo.href =
+  fichaUrl;
+
+
+verVehiculo.innerHTML = `
+  <span>
+    Ver vehículo
+  </span>
+
+  <span
+    class="vehicle-detail-arrow"
+  >
+    →
+  </span>
+`;
+
+
+actions.appendChild(
+  verVehiculo
+);
+
+
+// ----------------------------------------------------------
+// WHATSAPP
+// ----------------------------------------------------------
+
+const whatsapp =
+  document.createElement(
+    "a"
+  );
+
+
+whatsapp.className =
+  "vehicle-whatsapp";
+
+
+whatsapp.target =
+  "_blank";
+
+
+whatsapp.rel =
+  "noopener noreferrer";
+
+
+const mensaje =
+  `Hola, estoy interesado/a en el vehículo ` +
+  `${title.textContent} que tenéis anunciado en vuestra web.`;
+
+
+whatsapp.href =
+  "https://wa.me/34614601189?text=" +
+  encodeURIComponent(
+    mensaje
+  );
+
+
+whatsapp.innerHTML = `
+  <span>
+    Consultar por WhatsApp
+  </span>
+
+  <span
+    class="vehicle-whatsapp-arrow"
+  >
+    →
+  </span>
+`;
+
+
+actions.appendChild(
+  whatsapp
+);
+
+
+content.appendChild(
+  actions
+);
 
 function mostrarCatalogoVacio(container) {
   container.innerHTML = `
@@ -329,6 +412,44 @@ function formatearPrecio(numero) {
 
 function formatearNumero(numero) {
   return new Intl.NumberFormat("es-ES").format(numero);
+}
+
+// ============================================================
+// CREAR SLUG PARA FICHA DE VEHÍCULO
+// ============================================================
+
+function crearSlugCatalogo(
+  texto
+) {
+
+  return String(
+    texto || "vehiculo"
+  )
+
+    .normalize(
+      "NFD"
+    )
+
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+
+    .toLowerCase()
+
+    .replace(
+      /[^a-z0-9]+/g,
+      "-"
+    )
+
+    .replace(
+      /^-+|-+$/g,
+      ""
+    )
+
+    ||
+    "vehiculo";
+
 }
 
 // ============================================================
