@@ -931,6 +931,24 @@ async function adminReposicionFotos(
 }
 
 // ========================================================
+// FICHA INDIVIDUAL DE VEHÍCULO
+// ========================================================
+
+if (
+  url.pathname.startsWith(
+    "/vehiculo/"
+  )
+) {
+
+  return servirFichaVehiculo(
+    request,
+    env,
+    url
+  );
+
+}
+
+// ========================================================
 // REPOSICIONES PÚBLICAS - D1 + R2
 // ========================================================
 
@@ -4949,5 +4967,28 @@ async function obtenerReposicionAdmin(
       )
 
   };
+
+}
+
+
+// ============================================================
+// FICHA INDIVIDUAL DE VEHÍCULO
+// ============================================================
+
+async function servirFichaVehiculo(
+  request,
+  env,
+  url
+) {
+
+  return new Response(
+    "Ficha de vehículo funcionando",
+    {
+      headers: {
+        "Content-Type":
+          "text/plain; charset=UTF-8"
+      }
+    }
+  );
 
 }

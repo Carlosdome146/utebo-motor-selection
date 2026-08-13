@@ -25,7 +25,8 @@
     "run_worker_first": [
   "/api/*",
   "/media/*",
-  "/admin/api/*"
+  "/admin/api/*",
+  "/vehiculo/*"
 ]
   }
 }
