@@ -4981,14 +4981,1727 @@ async function servirFichaVehiculo(
   url
 ) {
 
-  return new Response(
-    "Ficha de vehículo funcionando",
-    {
-      headers: {
-        "Content-Type":
-          "text/plain; charset=UTF-8"
-      }
+  try {
+
+    // ========================================================
+    // OBTENER ID DESDE LA URL
+    //
+    // Ejemplo:
+    // /vehiculo/7-audi-a4
+    //            ↑
+    //            ID
+    // ========================================================
+
+    const parte =
+      decodeURIComponent(
+        url.pathname.substring(
+          "/vehiculo/".length
+        )
+      );
+
+
+    const coincidencia =
+      parte.match(
+        /^(\d+)(?:-|$)/
+      );
+
+
+    if (!coincidencia) {
+
+      return new Response(
+        "Vehículo no encontrado",
+        {
+          status: 404
+        }
+      );
+
     }
+
+
+    const id =
+      Number(
+        coincidencia[1]
+      );
+
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+
+      return new Response(
+        "Vehículo no encontrado",
+        {
+          status: 404
+        }
+      );
+
+    }
+
+
+    // ========================================================
+    // LEER VEHÍCULO + FOTOS
+    // ========================================================
+
+    const resultado =
+      await env.DB
+        .prepare(`
+          SELECT
+
+            v.id,
+            v.vehiculo,
+            v.publicado,
+            v.estado,
+            v.destacado,
+
+            v.marca,
+            v.modelo,
+            v.version,
+
+            v.precio,
+            v.ano,
+            v.kilometros,
+
+            v.combustible,
+            v.cambio,
+            v.potencia,
+            v.procedencia,
+
+            v.descripcion,
+            v.orden,
+
+            f.id AS foto_id,
+            f.r2_key,
+            f.nombre_archivo,
+            f.mime_type,
+            f.orden AS foto_orden
+
+          FROM vehiculos v
+
+          LEFT JOIN fotos_vehiculos f
+            ON f.vehiculo_id = v.id
+
+          WHERE
+            v.id = ?
+
+            AND
+            v.publicado = 1
+
+            AND (
+              v.estado IS NULL
+              OR v.estado <> 'Vendido'
+            )
+
+          ORDER BY
+            f.orden ASC,
+            f.id ASC
+        `)
+
+        .bind(id)
+
+        .all();
+
+
+    const filas =
+      resultado.results || [];
+
+
+    if (
+      filas.length === 0
+    ) {
+
+      return new Response(
+        "Vehículo no encontrado",
+        {
+          status: 404
+        }
+      );
+
+    }
+
+
+    const primera =
+      filas[0];
+
+
+    // ========================================================
+    // VEHÍCULO
+    // ========================================================
+
+    const vehiculo = {
+
+      id:
+        primera.id,
+
+      vehiculo:
+        primera.vehiculo || "",
+
+      estado:
+        primera.estado ||
+        "Disponible",
+
+      marca:
+        primera.marca || "",
+
+      modelo:
+        primera.modelo || "",
+
+      version:
+        primera.version || "",
+
+      precio:
+        primera.precio ?? null,
+
+      ano:
+        primera.ano ?? null,
+
+      kilometros:
+        primera.kilometros ?? null,
+
+      combustible:
+        primera.combustible || "",
+
+      cambio:
+        primera.cambio || "",
+
+      potencia:
+        primera.potencia ?? null,
+
+      procedencia:
+        primera.procedencia || "",
+
+      descripcion:
+        primera.descripcion || "",
+
+      fotos: []
+
+    };
+
+
+    // ========================================================
+    // FOTOS
+    // ========================================================
+
+    for (
+      const fila
+      of filas
+    ) {
+
+      if (!fila.r2_key) {
+
+        continue;
+
+      }
+
+
+      vehiculo.fotos.push({
+
+        id:
+          fila.foto_id,
+
+        url:
+          rutaPublicaR2(
+            fila.r2_key
+          ),
+
+        nombre:
+          fila.nombre_archivo || ""
+
+      });
+
+    }
+
+
+    // ========================================================
+    // SLUG CANÓNICO
+    // ========================================================
+
+    const slug =
+      crearSlugVehiculo(
+        vehiculo.vehiculo
+      );
+
+
+    const rutaCanonica =
+      `/vehiculo/${vehiculo.id}-${slug}`;
+
+
+    // Si entran por:
+    // /vehiculo/7
+    // /vehiculo/7-lo-que-sea
+    //
+    // redirigimos a la URL correcta.
+
+    if (
+      url.pathname !==
+      rutaCanonica
+    ) {
+
+      return Response.redirect(
+        new URL(
+          rutaCanonica,
+          url.origin
+        ).toString(),
+        301
+      );
+
+    }
+
+
+    // ========================================================
+    // DATOS PARA LA PÁGINA
+    // ========================================================
+
+    const nombre =
+      escaparHtmlFicha(
+        vehiculo.vehiculo
+      );
+
+
+    const precio =
+      vehiculo.precio !== null
+        ? `${formatearNumeroFicha(
+            vehiculo.precio
+          )} €`
+        : "Consultar precio";
+
+
+    const fotoPrincipal =
+      vehiculo.fotos.length
+        ? vehiculo.fotos[0].url
+        : "/assets/logo-utebo-motor-selection.jpeg";
+
+
+    const fotoAbsoluta =
+      `https://utebomotorsselection.com${fotoPrincipal}`;
+
+
+    const canonical =
+      `https://utebomotorsselection.com${rutaCanonica}`;
+
+
+    // ========================================================
+    // META DESCRIPTION
+    // ========================================================
+
+    const partesDescripcion =
+      [];
+
+
+    if (vehiculo.ano) {
+
+      partesDescripcion.push(
+        String(
+          vehiculo.ano
+        )
+      );
+
+    }
+
+
+    if (vehiculo.kilometros) {
+
+      partesDescripcion.push(
+        `${formatearNumeroFicha(
+          vehiculo.kilometros
+        )} km`
+      );
+
+    }
+
+
+    if (vehiculo.combustible) {
+
+      partesDescripcion.push(
+        vehiculo.combustible
+      );
+
+    }
+
+
+    if (vehiculo.cambio) {
+
+      partesDescripcion.push(
+        vehiculo.cambio
+      );
+
+    }
+
+
+    let metaDescription =
+      `${vehiculo.vehiculo} de segunda mano en Utebo.`;
+
+
+    if (
+      partesDescripcion.length
+    ) {
+
+      metaDescription +=
+        ` ${partesDescripcion.join(
+          ", "
+        )}.`;
+
+    }
+
+
+    metaDescription +=
+      " Consulta fotos, características y precio en Utebo Motor Selection.";
+
+
+    // ========================================================
+    // CARACTERÍSTICAS
+    // ========================================================
+
+    const caracteristicas =
+      [];
+
+
+    if (vehiculo.ano) {
+
+      caracteristicas.push({
+        titulo:
+          "Año",
+
+        valor:
+          vehiculo.ano
+      });
+
+    }
+
+
+    if (
+      vehiculo.kilometros !==
+      null
+    ) {
+
+      caracteristicas.push({
+        titulo:
+          "Kilómetros",
+
+        valor:
+          `${formatearNumeroFicha(
+            vehiculo.kilometros
+          )} km`
+      });
+
+    }
+
+
+    if (vehiculo.combustible) {
+
+      caracteristicas.push({
+        titulo:
+          "Combustible",
+
+        valor:
+          vehiculo.combustible
+      });
+
+    }
+
+
+    if (vehiculo.cambio) {
+
+      caracteristicas.push({
+        titulo:
+          "Cambio",
+
+        valor:
+          vehiculo.cambio
+      });
+
+    }
+
+
+    if (
+      vehiculo.potencia !==
+      null
+    ) {
+
+      caracteristicas.push({
+        titulo:
+          "Potencia",
+
+        valor:
+          `${vehiculo.potencia} CV`
+      });
+
+    }
+
+
+    if (vehiculo.procedencia) {
+
+      caracteristicas.push({
+        titulo:
+          "Procedencia",
+
+        valor:
+          vehiculo.procedencia
+      });
+
+    }
+
+
+    const caracteristicasHtml =
+      caracteristicas
+        .map(
+          item => `
+            <div class="vehicle-detail-spec">
+
+              <span>
+                ${escaparHtmlFicha(
+                  item.titulo
+                )}
+              </span>
+
+              <strong>
+                ${escaparHtmlFicha(
+                  item.valor
+                )}
+              </strong>
+
+            </div>
+          `
+        )
+        .join("");
+
+
+    // ========================================================
+    // MINIATURAS
+    // ========================================================
+
+    const miniaturasHtml =
+      vehiculo.fotos
+        .map(
+          (foto, index) => `
+
+            <button
+              class="
+                vehicle-detail-thumb
+                ${
+                  index === 0
+                    ? "is-active"
+                    : ""
+                }
+              "
+              type="button"
+              data-gallery-src="${escaparAtributoFicha(
+                foto.url
+              )}"
+              aria-label="Ver fotografía ${index + 1}"
+            >
+
+              <img
+                src="${escaparAtributoFicha(
+                  foto.url
+                )}"
+                alt="${escaparAtributoFicha(
+                  vehiculo.vehiculo
+                )}"
+                loading="lazy"
+              >
+
+            </button>
+
+          `
+        )
+        .join("");
+
+
+    // ========================================================
+    // WHATSAPP
+    // ========================================================
+
+    const mensajeWhatsApp =
+      encodeURIComponent(
+        `Hola, quiero información sobre el vehículo ${vehiculo.vehiculo} anunciado por ${precio}.`
+      );
+
+
+    // ========================================================
+    // DATOS ESTRUCTURADOS PRODUCT
+    // ========================================================
+
+    const datosProducto = {
+
+      "@context":
+        "https://schema.org",
+
+      "@type":
+        "Product",
+
+      name:
+        vehiculo.vehiculo,
+
+      description:
+        vehiculo.descripcion ||
+        metaDescription,
+
+      image:
+        vehiculo.fotos.map(
+          foto =>
+            `https://utebomotorsselection.com${foto.url}`
+        ),
+
+      url:
+        canonical,
+
+      brand:
+        vehiculo.marca
+          ? {
+              "@type":
+                "Brand",
+
+              name:
+                vehiculo.marca
+            }
+          : undefined
+
+    };
+
+
+    if (
+      vehiculo.precio !==
+      null
+    ) {
+
+      datosProducto.offers = {
+
+        "@type":
+          "Offer",
+
+        priceCurrency:
+          "EUR",
+
+        price:
+          vehiculo.precio,
+
+        availability:
+          vehiculo.estado ===
+          "Reservado"
+
+            ? "https://schema.org/LimitedAvailability"
+
+            : "https://schema.org/InStock",
+
+        url:
+          canonical
+
+      };
+
+    }
+
+
+    const jsonLd =
+      JSON.stringify(
+        datosProducto
+      )
+        .replace(
+          /</g,
+          "\\u003c"
+        );
+
+
+    // ========================================================
+    // HTML
+    // ========================================================
+
+    const html = `<!doctype html>
+
+<html lang="es">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+
+  <title>
+    ${nombre} de segunda mano en Utebo | Utebo Motor Selection
+  </title>
+
+
+  <meta
+    name="description"
+    content="${escaparAtributoFicha(
+      metaDescription
+    )}"
+  >
+
+
+  <link
+    rel="canonical"
+    href="${canonical}"
+  >
+
+
+  <meta
+    property="og:type"
+    content="product"
+  >
+
+  <meta
+    property="og:title"
+    content="${escaparAtributoFicha(
+      vehiculo.vehiculo
+    )} | Utebo Motor Selection"
+  >
+
+  <meta
+    property="og:description"
+    content="${escaparAtributoFicha(
+      metaDescription
+    )}"
+  >
+
+  <meta
+    property="og:image"
+    content="${fotoAbsoluta}"
+  >
+
+  <meta
+    property="og:url"
+    content="${canonical}"
+  >
+
+
+  <link
+    rel="stylesheet"
+    href="/styles.css"
+  >
+
+
+  <style>
+
+    .vehicle-detail-page {
+      padding:
+        54px 0 80px;
+    }
+
+
+    .vehicle-detail-back {
+      display:
+        inline-flex;
+
+      margin-bottom:
+        24px;
+
+      color:
+        #666b70;
+
+      text-decoration:
+        none;
+
+      font-size:
+        13px;
+
+      font-weight:
+        800;
+    }
+
+
+    .vehicle-detail-back:hover {
+      color:
+        #d71920;
+    }
+
+
+    .vehicle-detail-grid {
+      display:
+        grid;
+
+      grid-template-columns:
+        minmax(0, 1.15fr)
+        minmax(340px, .85fr);
+
+      gap:
+        48px;
+
+      align-items:
+        start;
+    }
+
+
+    .vehicle-detail-main-image {
+      width:
+        100%;
+
+      aspect-ratio:
+        4 / 3;
+
+      background:
+        #eceeef;
+
+      overflow:
+        hidden;
+    }
+
+
+    .vehicle-detail-main-image img {
+      width:
+        100%;
+
+      height:
+        100%;
+
+      display:
+        block;
+
+      object-fit:
+        cover;
+    }
+
+
+    .vehicle-detail-thumbs {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(
+          5,
+          1fr
+        );
+
+      gap:
+        8px;
+
+      margin-top:
+        10px;
+    }
+
+
+    .vehicle-detail-thumb {
+      padding:
+        0;
+
+      border:
+        2px solid
+        transparent;
+
+      background:
+        #eeeeee;
+
+      aspect-ratio:
+        4 / 3;
+
+      overflow:
+        hidden;
+
+      cursor:
+        pointer;
+    }
+
+
+    .vehicle-detail-thumb.is-active {
+      border-color:
+        #d71920;
+    }
+
+
+    .vehicle-detail-thumb img {
+      width:
+        100%;
+
+      height:
+        100%;
+
+      display:
+        block;
+
+      object-fit:
+        cover;
+    }
+
+
+    .vehicle-detail-kicker {
+      color:
+        #d71920;
+
+      font-size:
+        11px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        .16em;
+
+      text-transform:
+        uppercase;
+    }
+
+
+    .vehicle-detail-title {
+      margin:
+        10px 0 6px;
+
+      color:
+        #101113;
+
+      font-size:
+        clamp(
+          38px,
+          5vw,
+          68px
+        );
+
+      line-height:
+        .95;
+
+      text-transform:
+        uppercase;
+    }
+
+
+    .vehicle-detail-price {
+      margin:
+        18px 0 26px;
+
+      color:
+        #d71920;
+
+      font-size:
+        32px;
+
+      font-weight:
+        900;
+    }
+
+
+    .vehicle-detail-status {
+      display:
+        inline-flex;
+
+      margin-bottom:
+        24px;
+
+      padding:
+        7px 10px;
+
+      background:
+        #101113;
+
+      color:
+        #ffffff;
+
+      font-size:
+        10px;
+
+      font-weight:
+        900;
+
+      letter-spacing:
+        .09em;
+
+      text-transform:
+        uppercase;
+    }
+
+
+    .vehicle-detail-specs {
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(
+          2,
+          1fr
+        );
+
+      border-top:
+        1px solid
+        rgba(18,20,23,.12);
+
+      border-left:
+        1px solid
+        rgba(18,20,23,.12);
+    }
+
+
+    .vehicle-detail-spec {
+      padding:
+        17px;
+
+      border-right:
+        1px solid
+        rgba(18,20,23,.12);
+
+      border-bottom:
+        1px solid
+        rgba(18,20,23,.12);
+
+      background:
+        rgba(255,255,255,.72);
+    }
+
+
+    .vehicle-detail-spec span {
+      display:
+        block;
+
+      margin-bottom:
+        5px;
+
+      color:
+        #767b80;
+
+      font-size:
+        10px;
+
+      font-weight:
+        800;
+
+      letter-spacing:
+        .08em;
+
+      text-transform:
+        uppercase;
+    }
+
+
+    .vehicle-detail-spec strong {
+      color:
+        #101113;
+
+      font-size:
+        14px;
+    }
+
+
+    .vehicle-detail-whatsapp {
+      width:
+        100%;
+
+      margin-top:
+        24px;
+
+      justify-content:
+        center;
+    }
+
+
+    .vehicle-description-section {
+      padding:
+        0 0 90px;
+    }
+
+
+    .vehicle-description-box {
+      max-width:
+        900px;
+
+      padding:
+        36px;
+
+      background:
+        rgba(255,255,255,.82);
+
+      border:
+        1px solid
+        rgba(18,20,23,.12);
+    }
+
+
+    .vehicle-description-box h2 {
+      margin:
+        0 0 22px;
+
+      color:
+        #101113;
+
+      font-size:
+        30px;
+
+      text-transform:
+        uppercase;
+    }
+
+
+    .vehicle-description-text {
+      margin:
+        0;
+
+      color:
+        #50555a;
+
+      font-size:
+        15px;
+
+      line-height:
+        1.8;
+
+      white-space:
+        pre-line;
+    }
+
+
+    @media
+    (max-width: 900px) {
+
+      .vehicle-detail-grid {
+        grid-template-columns:
+          1fr;
+      }
+
+
+      .vehicle-detail-thumbs {
+        grid-template-columns:
+          repeat(
+            4,
+            1fr
+          );
+      }
+
+    }
+
+
+    @media
+    (max-width: 560px) {
+
+      .vehicle-detail-page {
+        padding-top:
+          28px;
+      }
+
+
+      .vehicle-detail-title {
+        font-size:
+          42px;
+      }
+
+
+      .vehicle-detail-specs {
+        grid-template-columns:
+          1fr 1fr;
+      }
+
+
+      .vehicle-description-box {
+        padding:
+          24px;
+      }
+
+    }
+
+  </style>
+
+
+  <script type="application/ld+json">
+    ${jsonLd}
+  </script>
+
+</head>
+
+
+<body>
+
+
+<header class="site-header">
+
+  <div class="container nav-wrap">
+
+    <a
+      class="brand"
+      href="/"
+    >
+
+      <img
+        src="/assets/logo-utebo-motor-selection.jpeg"
+        alt="Utebo Motor Selection"
+      >
+
+    </a>
+
+
+    <button
+      class="menu-toggle"
+      aria-label="Abrir menú"
+    >
+      ☰
+    </button>
+
+
+    <nav class="nav-links">
+
+      <a href="/">
+        Inicio
+      </a>
+
+      <a href="/catalogo.html">
+        Catálogo
+      </a>
+
+      <a href="/servicios.html">
+        Servicios
+      </a>
+
+      <a href="/reposiciones.html">
+        Reposiciones
+      </a>
+
+      <a href="/nosotros.html">
+        Nosotros
+      </a>
+
+      <a
+        class="nav-cta"
+        href="https://wa.me/34614601189"
+        target="_blank"
+        rel="noopener"
+      >
+        WhatsApp
+      </a>
+
+    </nav>
+
+  </div>
+
+</header>
+
+
+<main>
+
+
+  <section
+    class="vehicle-detail-page"
+  >
+
+    <div class="container">
+
+
+      <a
+        class="vehicle-detail-back"
+        href="/catalogo.html"
+      >
+        ← Volver al catálogo
+      </a>
+
+
+      <div
+        class="vehicle-detail-grid"
+      >
+
+
+        <div>
+
+
+          <div
+            class="vehicle-detail-main-image"
+          >
+
+            <img
+              id="vehicleDetailMainImage"
+              src="${escaparAtributoFicha(
+                fotoPrincipal
+              )}"
+              alt="${escaparAtributoFicha(
+                vehiculo.vehiculo
+              )}"
+            >
+
+          </div>
+
+
+          ${
+            vehiculo.fotos.length > 1
+
+              ? `
+                  <div
+                    class="vehicle-detail-thumbs"
+                  >
+                    ${miniaturasHtml}
+                  </div>
+                `
+
+              : ""
+          }
+
+
+        </div>
+
+
+        <div>
+
+
+          <div
+            class="vehicle-detail-kicker"
+          >
+            Vehículo de ocasión
+          </div>
+
+
+          <h1
+            class="vehicle-detail-title"
+          >
+            ${nombre}
+          </h1>
+
+
+          <div
+            class="vehicle-detail-price"
+          >
+            ${escaparHtmlFicha(
+              precio
+            )}
+          </div>
+
+
+          <div
+            class="vehicle-detail-status"
+          >
+            ${escaparHtmlFicha(
+              vehiculo.estado
+            )}
+          </div>
+
+
+          <div
+            class="vehicle-detail-specs"
+          >
+            ${caracteristicasHtml}
+          </div>
+
+
+          <a
+            class="
+              btn
+              btn-primary
+              vehicle-detail-whatsapp
+            "
+            href="https://wa.me/34614601189?text=${mensajeWhatsApp}"
+            target="_blank"
+            rel="noopener"
+          >
+            Consultar por WhatsApp
+          </a>
+
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  ${
+    vehiculo.descripcion
+
+      ? `
+          <section
+            class="vehicle-description-section"
+          >
+
+            <div class="container">
+
+              <div
+                class="vehicle-description-box"
+              >
+
+                <div
+                  class="section-kicker"
+                >
+                  Información del vehículo
+                </div>
+
+                <h2>
+                  Descripción completa
+                </h2>
+
+
+                <p
+                  class="vehicle-description-text"
+                >${escaparHtmlFicha(
+                  vehiculo.descripcion
+                )}</p>
+
+              </div>
+
+            </div>
+
+          </section>
+        `
+
+      : ""
+  }
+
+
+</main>
+
+
+<footer class="site-footer">
+
+  <div class="container">
+
+    <div class="footer-grid">
+
+
+      <div>
+
+        <img
+          class="footer-logo"
+          src="/assets/logo-utebo-motor-selection.jpeg"
+          alt="Utebo Motor Selection"
+        >
+
+        <div>
+          Compra, venta y búsqueda personalizada
+          de vehículos en Utebo.
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <div class="footer-title">
+          Navegación
+        </div>
+
+        <div class="footer-links">
+
+          <a href="/catalogo.html">
+            Catálogo
+          </a>
+
+          <a href="/servicios.html">
+            Servicios
+          </a>
+
+          <a href="/reposiciones.html">
+            Reposiciones
+          </a>
+
+          <a href="/nosotros.html">
+            Nosotros
+          </a>
+
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <div class="footer-title">
+          Contacto
+        </div>
+
+        <div class="footer-links">
+
+          <a
+            href="https://wa.me/34614601189"
+            target="_blank"
+            rel="noopener"
+          >
+            WhatsApp:
+            +34 614 60 11 89
+          </a>
+
+          <span>
+            Av. Zaragoza 22, Utebo
+          </span>
+
+        </div>
+
+      </div>
+
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+      <span>
+        © 2026 Utebo Motor Selection
+      </span>
+
+      <span>
+        Vehículos · Alemania · Reposiciones
+      </span>
+
+    </div>
+
+  </div>
+
+</footer>
+
+
+<div class="footer-legal">
+
+  <span>
+    © 2026 Utebo Motor Selection
+  </span>
+
+  <a href="/aviso-legal.html">
+    Aviso legal
+  </a>
+
+  <a href="/privacidad.html">
+    Política de privacidad
+  </a>
+
+  <a href="/cookies.html">
+    Política de cookies
+  </a>
+
+</div>
+
+
+<a
+  class="whatsapp-float"
+  href="https://wa.me/34614601189"
+  target="_blank"
+  rel="noopener"
+  aria-label="Abrir WhatsApp"
+>
+
+  <svg
+    viewBox="0 0 32 32"
+    aria-hidden="true"
+  >
+
+    <path
+      d="M16 4.2a11 11 0 0 0-9.5 16.5L5 27l6.5-1.4A11 11 0 1 0 16 4.2Z"
+    />
+
+    <path
+      d="M11.6 10.3c.5 4.7 5.4 9.6 10.1 10.1l1.7-2.3-3.2-1.5-1.3 1.3c-2.2-.8-4-2.6-4.8-4.8l1.3-1.3-1.5-3.2-2.3 1.7Z"
+    />
+
+  </svg>
+
+</a>
+
+
+<script src="/script.js"></script>
+
+<script>
+
+  document
+    .querySelectorAll(
+      "[data-gallery-src]"
+    )
+    .forEach(
+      boton => {
+
+        boton.addEventListener(
+          "click",
+          () => {
+
+            const imagen =
+              document.getElementById(
+                "vehicleDetailMainImage"
+              );
+
+
+            imagen.src =
+              boton.dataset.gallerySrc;
+
+
+            document
+              .querySelectorAll(
+                ".vehicle-detail-thumb"
+              )
+              .forEach(
+                item =>
+                  item.classList.remove(
+                    "is-active"
+                  )
+              );
+
+
+            boton.classList.add(
+              "is-active"
+            );
+
+          }
+        );
+
+      }
+    );
+
+</script>
+
+
+<script
+  src="/cookie-consent.js"
+  defer
+></script>
+
+
+</body>
+
+</html>`;
+
+
+    return new Response(
+      html,
+      {
+        headers: {
+
+          "Content-Type":
+            "text/html; charset=UTF-8",
+
+          "Cache-Control":
+            "no-store"
+
+        }
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Ficha vehículo:",
+      error
+    );
+
+
+    return new Response(
+      "No se pudo cargar el vehículo",
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// FICHA - CREAR SLUG
+// ============================================================
+
+function crearSlugVehiculo(
+  texto
+) {
+
+  return String(
+    texto || "vehiculo"
+  )
+
+    .normalize(
+      "NFD"
+    )
+
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+
+    .toLowerCase()
+
+    .replace(
+      /[^a-z0-9]+/g,
+      "-"
+    )
+
+    .replace(
+      /^-+|-+$/g,
+      ""
+    )
+
+    ||
+    "vehiculo";
+
+}
+
+
+// ============================================================
+// FICHA - ESCAPAR HTML
+// ============================================================
+
+function escaparHtmlFicha(
+  valor
+) {
+
+  return String(
+    valor ?? ""
+  )
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
+
+
+// ============================================================
+// FICHA - ESCAPAR ATRIBUTO
+// ============================================================
+
+function escaparAtributoFicha(
+  valor
+) {
+
+  return escaparHtmlFicha(
+    valor
   );
+
+}
+
+
+// ============================================================
+// FICHA - FORMATEAR NÚMERO
+// ============================================================
+
+function formatearNumeroFicha(
+  valor
+) {
+
+  const numero =
+    Number(
+      valor
+    );
+
+
+  if (
+    !Number.isFinite(
+      numero
+    )
+  ) {
+
+    return "";
+
+  }
+
+
+  return new Intl
+    .NumberFormat(
+      "es-ES"
+    )
+    .format(
+      numero
+    );
 
 }
