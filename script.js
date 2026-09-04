@@ -263,36 +263,54 @@ function crearTarjetaVehiculo(v) {
   }
 
 
-  // ==========================================================
-  // ESTADO
-  // ==========================================================
+// ==========================================================
+// ESTADO
+// ==========================================================
 
-  const estado =
-    document.createElement(
-      "span"
-    );
-
-
-  estado.className =
-    "vehicle-status " +
-
-    (
-      v.estado ===
-      "Reservado"
-
-        ? "vehicle-status-reserved"
-
-        : "vehicle-status-available"
-    );
-
-
-  estado.textContent =
-    v.estado;
-
-
-  media.appendChild(
-    estado
+const estado =
+  document.createElement(
+    "span"
   );
+
+
+let claseEstado =
+  "vehicle-status-available";
+
+
+if (
+  v.estado ===
+  "Reservado"
+) {
+
+  claseEstado =
+    "vehicle-status-reserved";
+
+}
+
+
+if (
+  v.estado ===
+  "En Preparación"
+) {
+
+  claseEstado =
+    "vehicle-status-preparing";
+
+}
+
+
+estado.className =
+  "vehicle-status " +
+  claseEstado;
+
+
+estado.textContent =
+  v.estado;
+
+
+media.appendChild(
+  estado
+);
 
 
   // ==========================================================
@@ -509,6 +527,46 @@ function crearTarjetaVehiculo(v) {
 
   }
 
+  // ==========================================================
+// FECHA DISPONIBLE
+// ==========================================================
+
+if (
+  v.estado ===
+    "En Preparación" &&
+  v.fecha_disponible
+) {
+
+  const availability =
+    document.createElement(
+      "div"
+    );
+
+
+  availability.className =
+    "vehicle-preparation-date";
+
+
+  availability.innerHTML = `
+
+    <span>
+      Disponible a partir del
+    </span>
+
+    <strong>
+      ${formatearFechaDisponible(
+        v.fecha_disponible
+      )}
+    </strong>
+
+  `;
+
+
+  content.appendChild(
+    availability
+  );
+
+}
 
   // ==========================================================
   // ACCIONES
@@ -1083,5 +1141,37 @@ function abrirGaleriaVehiculo(fotos, tituloVehiculo) {
   // ----------------------------------------------------------
 
   mostrarFoto();
+
+}
+
+function formatearFechaDisponible(
+  fecha
+) {
+
+  if (!fecha) {
+    return "";
+  }
+
+
+  const partes =
+    fecha.split(
+      "-"
+    );
+
+
+  if (
+    partes.length !== 3
+  ) {
+
+    return fecha;
+
+  }
+
+
+  return (
+    `${partes[2]}/` +
+    `${partes[1]}/` +
+    `${partes[0]}`
+  );
 
 }

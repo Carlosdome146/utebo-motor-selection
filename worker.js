@@ -989,6 +989,7 @@ async function obtenerVehiculosD1(env) {
             v.vehiculo,
             v.publicado,
             v.estado,
+            v.fecha_disponible,
             v.destacado,
 
             v.marca,
@@ -1063,6 +1064,10 @@ async function obtenerVehiculosD1(env) {
 
             estado:
               fila.estado || "Disponible",
+
+            fecha_disponible:
+              fila.fecha_disponible ||
+                                     null,
 
             destacado:
               Boolean(
@@ -1764,6 +1769,7 @@ async function adminVehiculos(
 
             v.publicado,
             v.estado,
+            v.fecha_disponible,
             v.destacado,
 
             v.marca,
@@ -2522,6 +2528,25 @@ async function adminVehiculo(
 
   }
 
+  if (
+  datos.estado ===
+    "En Preparación" &&
+  !datos.fecha_disponible
+) {
+
+  return Response.json(
+    {
+      ok: false,
+      error:
+        "Debes indicar la fecha en la que el vehículo estará disponible"
+    },
+    {
+      status: 400
+    }
+  );
+
+}
+
 
   // ==========================================================
   // POST - CREAR VEHÍCULO
@@ -2542,6 +2567,7 @@ async function adminVehiculo(
 
               publicado,
               estado,
+              fecha_disponible,
               destacado,
 
               marca,
@@ -2566,7 +2592,7 @@ async function adminVehiculo(
 
             VALUES (
               ?, ?, ?, ?, ?, ?, ?, ?,
-              ?, ?, ?, ?, ?, ?, ?, ?,
+              ?, ?, ?, ?, ?, ?, ?, ?, ?,
               CURRENT_TIMESTAMP
             )
           `)
@@ -2577,6 +2603,7 @@ async function adminVehiculo(
 
             datos.publicado,
             datos.estado,
+            datos.fecha_disponible,
             datos.destacado,
 
             datos.marca,
@@ -2701,6 +2728,7 @@ async function adminVehiculo(
 
               publicado = ?,
               estado = ?,
+              fecha_disponible = ?,
               destacado = ?,
 
               marca = ?,
@@ -2731,6 +2759,7 @@ async function adminVehiculo(
 
             datos.publicado,
             datos.estado,
+            datos.fecha_disponible,
             datos.destacado,
 
             datos.marca,
@@ -2848,6 +2877,7 @@ async function obtenerVehiculoAdmin(
 
           v.publicado,
           v.estado,
+          v.fecha_disponible,
           v.destacado,
 
           v.marca,
@@ -2923,11 +2953,12 @@ function normalizarDatosVehiculo(
   body
 ) {
 
-  const estadosPermitidos = [
-    "Disponible",
-    "Reservado",
-    "Vendido"
-  ];
+    const estadosPermitidos = [
+      "Disponible",
+      "En Preparación",
+      "Reservado",
+      "Vendido"
+    ];
 
 
   let estado =
@@ -2961,6 +2992,13 @@ function normalizarDatosVehiculo(
         : 0,
 
     estado,
+
+    fecha_disponible:
+  estado === "En Preparación"
+    ? normalizarFechaDisponible(
+        body.fecha_disponible
+      )
+    : null,
 
     destacado:
       body.destacado
@@ -5052,6 +5090,7 @@ async function servirFichaVehiculo(
             v.vehiculo,
             v.publicado,
             v.estado,
+            v.fecha_disponible,
             v.destacado,
 
             v.marca,
@@ -6703,5 +6742,34 @@ function formatearNumeroFicha(
     .format(
       numero
     );
+
+}
+
+// ============================================================
+// NORMALIZAR FECHA DISPONIBLE
+// ============================================================
+
+function normalizarFechaDisponible(
+  valor
+) {
+
+  const fecha =
+    String(
+      valor || ""
+    ).trim();
+
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      fecha
+    )
+  ) {
+
+    return null;
+
+  }
+
+
+  return fecha;
 
 }

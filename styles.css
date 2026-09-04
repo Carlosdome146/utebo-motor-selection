@@ -1526,3 +1526,49 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
 .vehicle-whatsapp {
   margin-top: 0;
 }
+
+/* ============================================================
+   VEHÍCULO EN PREPARACIÓN
+============================================================ */
+
+.vehicle-status-preparing {
+  background: #d97706;
+  color: #ffffff;
+}
+
+
+.vehicle-preparation-date {
+  margin-top: 22px;
+
+  padding: 15px 17px;
+
+  border-left:
+    3px solid #d71920;
+
+  background:
+    #f2f2f2;
+}
+
+
+.vehicle-preparation-date span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #73777c;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: .08em;
+
+  text-transform: uppercase;
+}
+
+
+.vehicle-preparation-date strong {
+  color: #111214;
+
+  font-size: 15px;
+  font-weight: 900;
+}

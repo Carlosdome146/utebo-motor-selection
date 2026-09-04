@@ -2211,21 +2211,42 @@ body.modal-open {
             Estado
           </label>
 
-          <select id="formEstado">
+          <div
+  id="formFechaDisponibleField"
+  class="vehicle-form-field"
+  style="display:none;"
+>
 
-            <option value="Disponible">
-              Disponible
-            </option>
+  <label for="formFechaDisponible">
+    Disponible a partir de
+  </label>
 
-            <option value="Reservado">
-              Reservado
-            </option>
+  <input
+    id="formFechaDisponible"
+    type="date"
+  >
 
-            <option value="Vendido">
-              Vendido
-            </option>
+</div>
 
-          </select>
+<select id="formEstado">
+
+  <option value="Disponible">
+    Disponible
+  </option>
+
+  <option value="En Preparación">
+    En Preparación
+  </option>
+
+  <option value="Reservado">
+    Reservado
+  </option>
+
+  <option value="Vendido">
+    Vendido
+  </option>
+
+</select>
 
         </div>
 
@@ -2741,6 +2762,57 @@ body.modal-open {
 
 <script>
 
+// ============================================================
+// ESTADO EN PREPARACIÓN - FECHA DISPONIBLE
+// ============================================================
+
+const formEstado =
+  document.getElementById(
+    "formEstado"
+  );
+
+const formFechaDisponible =
+  document.getElementById(
+    "formFechaDisponible"
+  );
+
+const formFechaDisponibleField =
+  document.getElementById(
+    "formFechaDisponibleField"
+  );
+
+
+function actualizarCampoFechaDisponible() {
+
+  const enPreparacion =
+    formEstado.value ===
+    "En Preparación";
+
+
+  formFechaDisponibleField.style.display =
+    enPreparacion
+      ? ""
+      : "none";
+
+
+  formFechaDisponible.required =
+    enPreparacion;
+
+
+  if (!enPreparacion) {
+
+    formFechaDisponible.value =
+      "";
+
+  }
+
+}
+
+
+formEstado.addEventListener(
+  "change",
+  actualizarCampoFechaDisponible
+);
 
 // ============================================================
 // ELEMENTOS
@@ -3587,7 +3659,14 @@ vehicleDeleteButton.style.display =
   ).value =
     v.estado ||
     "Disponible";
+document.getElementById(
+  "formFechaDisponible"
+).value =
+  v.fecha_disponible ||
+  "";
 
+
+actualizarCampoFechaDisponible();
 
   document.getElementById(
     "formCombustible"
@@ -3709,6 +3788,11 @@ vehicleForm.addEventListener(
       estado:
         document.getElementById(
           "formEstado"
+        ).value,
+
+      fecha_disponible:
+        document.getElementById(
+          "formFechaDisponible"
         ).value,
 
       combustible:
