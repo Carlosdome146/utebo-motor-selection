@@ -22,6 +22,205 @@
 
   <style>
 
+/* ============================================================
+   ANALÍTICA
+============================================================ */
+
+.analytics-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 18px;
+
+  margin-bottom: 28px;
+}
+
+
+.analytics-stat {
+  padding: 24px;
+
+  background: #ffffff;
+
+  border:
+    1px solid
+    rgba(18,20,23,.10);
+}
+
+
+.analytics-stat span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #777b80;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: .07em;
+
+  text-transform: uppercase;
+}
+
+
+.analytics-stat strong {
+  display: block;
+
+  color: #111214;
+
+  font-size: 28px;
+
+  font-weight: 900;
+}
+
+
+.analytics-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 22px;
+}
+
+
+.analytics-card {
+  padding: 26px;
+
+  background: #ffffff;
+
+  border:
+    1px solid
+    rgba(18,20,23,.10);
+}
+
+
+.analytics-card-header {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content:
+    space-between;
+
+  gap: 20px;
+
+  margin-bottom: 26px;
+}
+
+
+.analytics-card h2 {
+  margin:
+    5px 0 0;
+
+  font-size: 22px;
+}
+
+
+.analytics-select {
+  min-width: 160px;
+
+  padding:
+    10px 12px;
+
+  border:
+    1px solid
+    rgba(18,20,23,.16);
+
+  background:
+    #ffffff;
+}
+
+
+.analytics-bars {
+  display: grid;
+
+  gap: 18px;
+}
+
+
+.analytics-bar-row {
+  display: grid;
+
+  grid-template-columns:
+    120px 1fr 40px;
+
+  gap: 12px;
+
+  align-items:
+    center;
+}
+
+
+.analytics-bar-label {
+  color: #33363a;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+
+.analytics-bar-track {
+  height: 13px;
+
+  overflow: hidden;
+
+  background:
+    #eceeef;
+}
+
+
+.analytics-bar-fill {
+  height: 100%;
+
+  background:
+    #d71920;
+}
+
+
+.analytics-bar-value {
+  text-align: right;
+
+  color: #111214;
+
+  font-size: 12px;
+
+  font-weight: 900;
+}
+
+
+.analytics-empty {
+  padding: 28px;
+
+  color: #777b80;
+
+  text-align: center;
+
+  background: #f5f5f5;
+}
+
+
+@media
+(max-width: 850px) {
+
+  .analytics-grid,
+  .analytics-stats {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
 .vehicle-form-delete {
   margin-right: auto;
 
@@ -1791,6 +1990,14 @@ body.modal-open {
         Reposiciones
       </button>
 
+      <button
+        id="tabAnalitica"
+        class="admin-tab"
+        type="button"
+      >
+        Analítica
+      </button>
+
     </div>
 
 
@@ -2019,6 +2226,156 @@ body.modal-open {
 
     </section>
 
+
+    <!-- ======================================================
+     PANEL ANALÍTICA
+======================================================= -->
+
+<section
+  id="panelAnalitica"
+  class="admin-panel"
+>
+
+  <div class="admin-top">
+
+    <div>
+
+      <div class="admin-kicker">
+        Rendimiento
+      </div>
+
+      <h1>
+        Analítica de ventas
+      </h1>
+
+      <p>
+        Información basada en los vehículos
+        marcados como vendidos.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div
+    class="analytics-stats"
+  >
+
+    <div class="analytics-stat">
+
+      <span>
+        Vehículos vendidos
+      </span>
+
+      <strong
+        id="analyticsTotalSales"
+      >
+        0
+      </strong>
+
+    </div>
+
+
+    <div class="analytics-stat">
+
+      <span>
+        Marca más vendida
+      </span>
+
+      <strong
+        id="analyticsTopBrand"
+      >
+        —
+      </strong>
+
+    </div>
+
+
+    <div class="analytics-stat">
+
+      <span>
+        Modelo más vendido
+      </span>
+
+      <strong
+        id="analyticsTopModel"
+      >
+        —
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <div class="analytics-grid">
+
+
+    <section class="analytics-card">
+
+      <div class="analytics-card-header">
+
+        <div>
+
+          <span class="admin-kicker">
+            Ventas
+          </span>
+
+          <h2>
+            Marcas más vendidas
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="brandSalesChart"
+        class="analytics-bars"
+      ></div>
+
+    </section>
+
+
+    <section class="analytics-card">
+
+      <div class="analytics-card-header">
+
+        <div>
+
+          <span class="admin-kicker">
+            Modelos
+          </span>
+
+          <h2>
+            Modelos más vendidos
+          </h2>
+
+        </div>
+
+
+        <select
+          id="analyticsBrandSelect"
+          class="analytics-select"
+        >
+        </select>
+
+      </div>
+
+
+      <div
+        id="modelSalesChart"
+        class="analytics-bars"
+      ></div>
+
+    </section>
+
+
+  </div>
+
+</section>
   </main>
 
 </section>
@@ -2856,6 +3213,8 @@ const logoutButton =
 const vehiclesContainer =
   document.getElementById("vehicles");
 
+  let vehiculosAdminActuales =
+  [];
 
 const tabVehiculos =
   document.getElementById(
@@ -2865,6 +3224,17 @@ const tabVehiculos =
 const tabReposiciones =
   document.getElementById(
     "tabReposiciones"
+  );
+
+  const tabAnalitica =
+  document.getElementById(
+    "tabAnalitica"
+  );
+
+
+const panelAnalitica =
+  document.getElementById(
+    "panelAnalitica"
   );
 
 const panelVehiculos =
@@ -3118,6 +3488,8 @@ async function cargarVehiculos() {
 
   }
 
+vehiculosAdminActuales =
+  data.vehiculos || [];
 
   pintarVehiculos(
     data.vehiculos
@@ -4895,72 +5267,448 @@ function activarPanelAdmin(
 
 
 // ============================================================
-// REPOSICIONES - ELEMENTOS
+// PESTAÑAS ADMIN
 // ============================================================
 
-const newReposicionButton =
-  document.getElementById(
-    "newReposicionButton"
+tabVehiculos.addEventListener(
+  "click",
+  () => {
+
+    activarPanelAdmin(
+      "vehiculos"
+    );
+
+  }
+);
+
+
+tabReposiciones.addEventListener(
+  "click",
+  async () => {
+
+    activarPanelAdmin(
+      "reposiciones"
+    );
+
+    await cargarReposiciones();
+
+  }
+);
+
+
+tabAnalitica.addEventListener(
+  "click",
+  () => {
+
+    activarPanelAdmin(
+      "analitica"
+    );
+
+    pintarDashboardVentas(
+      vehiculosAdminActuales
+    );
+
+  }
+);
+
+
+function activarPanelAdmin(
+  panel
+) {
+
+  const esVehiculos =
+    panel ===
+    "vehiculos";
+
+
+  const esReposiciones =
+    panel ===
+    "reposiciones";
+
+
+  const esAnalitica =
+    panel ===
+    "analitica";
+
+
+  tabVehiculos.classList.toggle(
+    "active",
+    esVehiculos
   );
 
-const reposicionModal =
-  document.getElementById(
-    "reposicionModal"
+
+  tabReposiciones.classList.toggle(
+    "active",
+    esReposiciones
   );
 
-const reposicionModalBackdrop =
-  document.getElementById(
-    "reposicionModalBackdrop"
+
+  tabAnalitica.classList.toggle(
+    "active",
+    esAnalitica
   );
 
-const reposicionModalClose =
-  document.getElementById(
-    "reposicionModalClose"
+
+  panelVehiculos.classList.toggle(
+    "active",
+    esVehiculos
   );
 
-const reposicionForm =
-  document.getElementById(
-    "reposicionForm"
+
+  panelReposiciones.classList.toggle(
+    "active",
+    esReposiciones
   );
 
-const reposicionFormCancel =
-  document.getElementById(
-    "reposicionFormCancel"
+
+  panelAnalitica.classList.toggle(
+    "active",
+    esAnalitica
   );
 
-const reposicionFormSave =
+}
+
+// ============================================================
+// DASHBOARD ANALÍTICO
+// ============================================================
+
+function pintarDashboardVentas(
+  vehiculos
+) {
+
+  const vendidos =
+    vehiculos.filter(
+      vehiculo =>
+        vehiculo.estado ===
+        "Vendido"
+    );
+
+
   document.getElementById(
-    "reposicionFormSave"
+    "analyticsTotalSales"
+  ).textContent =
+    vendidos.length;
+
+
+  const ventasMarca =
+    agruparVentas(
+      vendidos,
+      vehiculo =>
+        vehiculo.marca ||
+        "Sin marca"
+    );
+
+
+  const rankingMarcas =
+    ordenarRanking(
+      ventasMarca
+    );
+
+
+  document.getElementById(
+    "analyticsTopBrand"
+  ).textContent =
+    rankingMarcas.length
+      ? rankingMarcas[0].nombre
+      : "—";
+
+
+  pintarBarrasAnaliticas(
+    document.getElementById(
+      "brandSalesChart"
+    ),
+    rankingMarcas
   );
 
-const reposicionDeleteButton =
-  document.getElementById(
-    "reposicionDeleteButton"
+
+  const selector =
+    document.getElementById(
+      "analyticsBrandSelect"
+    );
+
+
+  selector.innerHTML =
+    "";
+
+
+  rankingMarcas.forEach(
+    marca => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        marca.nombre;
+
+
+      option.textContent =
+        marca.nombre;
+
+
+      selector.appendChild(
+        option
+      );
+
+    }
   );
 
-const reposicionFormMessage =
-  document.getElementById(
-    "reposicionFormMessage"
+
+  if (!rankingMarcas.length) {
+
+    document.getElementById(
+      "modelSalesChart"
+    ).innerHTML = `
+      <div class="analytics-empty">
+        Todavía no hay vehículos vendidos.
+      </div>
+    `;
+
+
+    document.getElementById(
+      "analyticsTopModel"
+    ).textContent =
+      "—";
+
+
+    return;
+
+  }
+
+
+  pintarModelosMarca(
+    vendidos,
+    rankingMarcas[0].nombre
   );
 
-const reposicionPhotos =
-  document.getElementById(
-    "reposicionPhotos"
+
+  selector.onchange =
+    () => {
+
+      pintarModelosMarca(
+        vendidos,
+        selector.value
+      );
+
+    };
+
+}
+
+
+// ============================================================
+// AGRUPAR
+// ============================================================
+
+function agruparVentas(
+  vehiculos,
+  obtenerClave
+) {
+
+  const mapa =
+    new Map();
+
+
+  vehiculos.forEach(
+    vehiculo => {
+
+      const clave =
+        obtenerClave(
+          vehiculo
+        );
+
+
+      mapa.set(
+        clave,
+        (
+          mapa.get(
+            clave
+          ) || 0
+        ) + 1
+      );
+
+    }
   );
 
-const formReposicionFotos =
+
+  return mapa;
+
+}
+
+
+// ============================================================
+// ORDENAR
+// ============================================================
+
+function ordenarRanking(
+  mapa
+) {
+
+  return Array
+    .from(
+      mapa.entries()
+    )
+    .map(
+      ([nombre, total]) => ({
+        nombre,
+        total
+      })
+    )
+    .sort(
+      (a, b) =>
+        b.total -
+        a.total
+    );
+
+}
+
+
+// ============================================================
+// MODELOS POR MARCA
+// ============================================================
+
+function pintarModelosMarca(
+  vendidos,
+  marca
+) {
+
+  const vehiculosMarca =
+    vendidos.filter(
+      vehiculo =>
+        (
+          vehiculo.marca ||
+          "Sin marca"
+        ) === marca
+    );
+
+
+  const modelos =
+    agruparVentas(
+      vehiculosMarca,
+      vehiculo =>
+        vehiculo.modelo ||
+        "Sin modelo"
+    );
+
+
+  const ranking =
+    ordenarRanking(
+      modelos
+    );
+
+
   document.getElementById(
-    "formReposicionFotos"
+    "analyticsTopModel"
+  ).textContent =
+    ranking.length
+      ? ranking[0].nombre
+      : "—";
+
+
+  pintarBarrasAnaliticas(
+    document.getElementById(
+      "modelSalesChart"
+    ),
+    ranking
   );
 
-const reposicionPhotoSelectionText =
-  document.getElementById(
-    "reposicionPhotoSelectionText"
+}
+
+
+// ============================================================
+// BARRAS
+// ============================================================
+
+function pintarBarrasAnaliticas(
+  container,
+  datos
+) {
+
+  container.innerHTML =
+    "";
+
+
+  if (!datos.length) {
+
+    container.innerHTML = `
+      <div class="analytics-empty">
+        No hay datos suficientes.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const maximo =
+    datos[0].total;
+
+
+  datos.forEach(
+    item => {
+
+      const porcentaje =
+        maximo > 0
+          ? (
+              item.total /
+              maximo
+            ) * 100
+          : 0;
+
+
+      const fila =
+        document.createElement(
+          "div"
+        );
+
+
+      fila.className =
+        "analytics-bar-row";
+
+
+      fila.innerHTML = `
+
+        <div
+          class="analytics-bar-label"
+        >
+          ${escapar(item.nombre)}
+        </div>
+
+
+        <div
+          class="analytics-bar-track"
+        >
+
+          <div
+            class="analytics-bar-fill"
+            style="
+              width:
+              ${porcentaje}%;
+            "
+          ></div>
+
+        </div>
+
+
+        <div
+          class="analytics-bar-value"
+        >
+          ${item.total}
+        </div>
+
+      `;
+
+
+      container.appendChild(
+        fila
+      );
+
+    }
   );
 
-let fotosReposicionActuales = [];
-
-let reposicionFotosActual = null;
+}
 
 
 // ============================================================

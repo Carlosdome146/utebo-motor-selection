@@ -10,16 +10,125 @@ document.querySelectorAll('.nav-links a').forEach(link => {
   if (href === current) link.classList.add('active');
 });
 
-const search = document.querySelector('#vehicleSearch');
-if (search) {
-  search.addEventListener('input', e => {
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll('.vehicle-card').forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(q) ? '' : 'none';
-    });
-  });
+// ============================================================
+// FILTROS DEL CATÁLOGO
+// ============================================================
+
+const search =
+  document.querySelector(
+    "#vehicleSearch"
+  );
+
+
+const statusButtons =
+  document.querySelectorAll(
+    ".catalog-status-filter"
+  );
+
+
+let estadoCatalogoActual =
+  "Todos";
+
+
+function aplicarFiltrosCatalogo() {
+
+  const textoBusqueda =
+    search
+      ? search.value
+          .trim()
+          .toLowerCase()
+      : "";
+
+
+  document
+    .querySelectorAll(
+      ".vehicle-card"
+    )
+    .forEach(
+      card => {
+
+        const textoTarjeta =
+          card.innerText
+            .toLowerCase();
+
+
+        const coincideBusqueda =
+          !textoBusqueda ||
+          textoTarjeta.includes(
+            textoBusqueda
+          );
+
+
+        const estadoTarjeta =
+          card.dataset.estado ||
+          "Disponible";
+
+
+        const coincideEstado =
+          estadoCatalogoActual ===
+            "Todos"
+
+          ||
+
+          estadoTarjeta ===
+            estadoCatalogoActual;
+
+
+        card.style.display =
+          coincideBusqueda &&
+          coincideEstado
+
+            ? ""
+
+            : "none";
+
+      }
+    );
+
 }
+
+
+if (search) {
+
+  search.addEventListener(
+    "input",
+    aplicarFiltrosCatalogo
+  );
+
+}
+
+
+statusButtons.forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        estadoCatalogoActual =
+          button.dataset.status;
+
+
+        statusButtons.forEach(
+          item =>
+            item.classList.remove(
+              "active"
+            )
+        );
+
+
+        button.classList.add(
+          "active"
+        );
+
+
+        aplicarFiltrosCatalogo();
+
+      }
+    );
+
+  }
+);
 
 // ============================================================
 // CATÁLOGO DINÁMICO - UTEBO MOTOR SELECTION
@@ -63,6 +172,8 @@ async function cargarVehiculos(container) {
       container.appendChild(card);
     });
 
+    aplicarFiltrosCatalogo();
+
   } catch (error) {
     console.error("Error cargando vehículos:", error);
 
@@ -85,6 +196,10 @@ function crearTarjetaVehiculo(v) {
 
   article.className =
     "vehicle-card";
+
+article.dataset.estado =
+  v.estado ||
+  "Disponible";
 
 
   if (v.destacado) {
