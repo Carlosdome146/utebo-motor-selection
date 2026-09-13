@@ -1684,6 +1684,24 @@ body.modal-open {
     }
 
 
+    .preparing {
+
+      background: #fff3dc;
+
+      color: #8a5300;
+
+    }
+
+
+    .rented {
+
+      background: #e7e9ec;
+
+      color: #30343a;
+
+    }
+
+
     .sold {
 
       background: #fbe9ea;
@@ -3345,42 +3363,47 @@ body.modal-open {
             Estado
           </label>
 
-          <div
-  id="formFechaDisponibleField"
-  class="vehicle-form-field"
-  style="display:none;"
->
+          <select id="formEstado">
 
-  <label for="formFechaDisponible">
-    Disponible a partir de
-  </label>
+            <option value="Disponible">
+              Disponible
+            </option>
 
-  <input
-    id="formFechaDisponible"
-    type="date"
-  >
+            <option value="En Preparación">
+              En Preparación
+            </option>
 
-</div>
+            <option value="Reservado">
+              Reservado
+            </option>
 
-<select id="formEstado">
+            <option value="Alquilado" disabled>
+              Alquilado
+            </option>
 
-  <option value="Disponible">
-    Disponible
-  </option>
+            <option value="Vendido">
+              Vendido
+            </option>
 
-  <option value="En Preparación">
-    En Preparación
-  </option>
+          </select>
 
-  <option value="Reservado">
-    Reservado
-  </option>
+        </div>
 
-  <option value="Vendido">
-    Vendido
-  </option>
 
-</select>
+        <div
+          id="formFechaDisponibleField"
+          class="vehicle-form-field"
+          style="display:none;"
+        >
+
+          <label for="formFechaDisponible">
+            Disponible a partir de
+          </label>
+
+          <input
+            id="formFechaDisponible"
+            type="date"
+          >
 
         </div>
 
@@ -4347,7 +4370,11 @@ function pintarVehiculos(vehiculos) {
         ? "sold"
         : v.estado === "Reservado"
           ? "reserved"
-          : "available";
+          : v.estado === "En Preparación"
+            ? "preparing"
+            : v.estado === "Alquilado"
+              ? "rented"
+              : "available";
 
 
     article.innerHTML = `
@@ -4654,6 +4681,9 @@ photoSelectionText.textContent =
     "formEstado"
   ).value =
     "Disponible";
+
+
+  actualizarCampoFechaDisponible();
 
 
   document.getElementById(
@@ -6021,6 +6051,8 @@ async function cargarAlquileres() {
     </div>
   `;
 
+  finishedRentals.innerHTML = "";
+
 
   try {
 
@@ -6037,11 +6069,20 @@ async function cargarAlquileres() {
       );
 
 
+    if (response.status === 401) {
+
+      mostrarLogin();
+
+      return;
+
+    }
+
+
     const data =
       await response.json();
 
 
-    if (!response.ok) {
+    if (!response.ok || !data.ok) {
 
       throw new Error(
         data.error ||
@@ -6062,9 +6103,22 @@ async function cargarAlquileres() {
 
   } catch (error) {
 
+    console.error(
+      "Error cargando alquileres:",
+      error
+    );
+
+
     activeRentals.innerHTML = `
       <div class="admin-message">
         ${escapar(error.message)}
+      </div>
+    `;
+
+
+    finishedRentals.innerHTML = `
+      <div class="admin-message">
+        No se pudo cargar el histórico.
       </div>
     `;
 
@@ -6083,16 +6137,16 @@ function pintarAlquileres(
 
   const activos =
     alquileres.filter(
-      a =>
-        a.estado ===
+      alquiler =>
+        alquiler.estado ===
         "Activo"
     );
 
 
   const finalizados =
     alquileres.filter(
-      a =>
-        a.estado ===
+      alquiler =>
+        alquiler.estado ===
         "Finalizado"
     );
 
@@ -6103,15 +6157,18 @@ function pintarAlquileres(
 
   const devuelvenHoy =
     activos.filter(
-      a =>
-        a.fecha_vuelta === hoy
+      alquiler =>
+        alquiler.fecha_vuelta ===
+        hoy
     );
 
 
   const retrasados =
     activos.filter(
-      a =>
-        a.fecha_vuelta < hoy
+      alquiler =>
+        alquiler.fecha_vuelta &&
+        alquiler.fecha_vuelta <
+        hoy
     );
 
 
@@ -6153,7 +6210,7 @@ function pintarAlquileres(
 
 
 // ============================================================
-// ACTIVOS
+// ALQUILERES ACTIVOS
 // ============================================================
 
 function pintarAlquileresActivos(
@@ -6182,8 +6239,10 @@ function pintarAlquileresActivos(
     alquiler => {
 
       const retrasado =
-        alquiler.fecha_vuelta <
-        hoy;
+        Boolean(
+          alquiler.fecha_vuelta &&
+          alquiler.fecha_vuelta < hoy
+        );
 
 
       const devuelveHoy =
@@ -6262,7 +6321,6 @@ function pintarAlquileresActivos(
               alquiler.marca ||
               ""
             )}
-
             ${escapar(
               alquiler.modelo ||
               ""
@@ -6285,14 +6343,17 @@ function pintarAlquileresActivos(
 
           <strong>
             ${escapar(
-              alquiler.nombre_completo
+              alquiler.nombre_completo ||
+              ""
             )}
           </strong>
 
           <span>
             DNI:
-            ${ocultarDni(
-              alquiler.dni
+            ${escapar(
+              ocultarDni(
+                alquiler.dni
+              )
             )}
           </span>
 
@@ -6331,7 +6392,7 @@ function pintarAlquileresActivos(
 
         <button
           class="rental-return-button"
-          data-rental-return="${alquiler.id}"
+          data-rental-return="${Number(alquiler.id)}"
           type="button"
         >
           Registrar devolución
@@ -6351,7 +6412,7 @@ function pintarAlquileresActivos(
 
 
 // ============================================================
-// HISTÓRICO
+// HISTÓRICO DE ALQUILERES
 // ============================================================
 
 function pintarHistoricoAlquileres(
@@ -6399,7 +6460,8 @@ function pintarHistoricoAlquileres(
 
         <span>
           ${escapar(
-            alquiler.nombre_completo
+            alquiler.nombre_completo ||
+            ""
           )}
         </span>
 
@@ -6432,8 +6494,9 @@ function pintarHistoricoAlquileres(
 
 }
 
+
 // ============================================================
-// NUEVO ALQUILER
+// MODAL - NUEVO ALQUILER
 // ============================================================
 
 const rentalModal =
@@ -6480,11 +6543,7 @@ const rentalFormMessage =
 
 newRentalButton.addEventListener(
   "click",
-  () => {
-
-    abrirModalAlquiler();
-
-  }
+  abrirModalAlquiler
 );
 
 
@@ -6528,11 +6587,15 @@ function abrirModalAlquiler() {
 
 
       option.value =
-        vehiculo.id;
+        String(
+          vehiculo.id
+        );
 
 
       option.textContent =
-        vehiculo.vehiculo;
+        vehiculo.vehiculo ||
+        `${vehiculo.marca || ""} ${vehiculo.modelo || ""}`.trim() ||
+        `Vehículo ${vehiculo.id}`;
 
 
       selector.appendChild(
@@ -6585,9 +6648,17 @@ function cerrarModalAlquiler() {
   );
 
 
-  document.body.classList.remove(
-    "modal-open"
-  );
+  if (
+    !returnModal.classList.contains(
+      "open"
+    )
+  ) {
+
+    document.body.classList.remove(
+      "modal-open"
+    );
+
+  }
 
 }
 
@@ -6609,6 +6680,11 @@ rentalFormCancel.addEventListener(
   cerrarModalAlquiler
 );
 
+
+// ============================================================
+// GUARDAR NUEVO ALQUILER
+// ============================================================
+
 rentalForm.addEventListener(
   "submit",
   async event => {
@@ -6650,6 +6726,16 @@ rentalForm.addEventListener(
         ).value
 
     };
+
+
+    if (!datos.vehiculoId) {
+
+      rentalFormMessage.textContent =
+        "Selecciona un vehículo disponible.";
+
+      return;
+
+    }
 
 
     if (
@@ -6704,7 +6790,7 @@ rentalForm.addEventListener(
         await response.json();
 
 
-      if (!response.ok) {
+      if (!response.ok || !data.ok) {
 
         throw new Error(
           data.error ||
@@ -6724,138 +6810,11 @@ rentalForm.addEventListener(
 
     } catch (error) {
 
-      rentalFormMessage.textContent =
-        error.message;
+      console.error(
+        "Error registrando alquiler:",
+        error
+      );
 
-
-    } finally {
-
-      rentalFormSave.disabled =
-        false;
-
-
-      rentalFormSave.textContent =
-        "Registrar alquiler";
-
-    }
-
-  }
-);
-
-rentalForm.addEventListener(
-  "submit",
-  async event => {
-
-    event.preventDefault();
-
-
-    rentalFormMessage.textContent =
-      "";
-
-
-    const datos = {
-
-      vehiculoId:
-        Number(
-          document.getElementById(
-            "rentalVehicle"
-          ).value
-        ),
-
-      nombreCompleto:
-        document.getElementById(
-          "rentalFullName"
-        ).value.trim(),
-
-      dni:
-        document.getElementById(
-          "rentalDni"
-        ).value.trim(),
-
-      fechaSalida:
-        document.getElementById(
-          "rentalStart"
-        ).value,
-
-      fechaVuelta:
-        document.getElementById(
-          "rentalEnd"
-        ).value
-
-    };
-
-
-    if (
-      datos.fechaVuelta <
-      datos.fechaSalida
-    ) {
-
-      rentalFormMessage.textContent =
-        "La fecha de vuelta no puede ser anterior a la fecha de salida.";
-
-      return;
-
-    }
-
-
-    rentalFormSave.disabled =
-      true;
-
-
-    rentalFormSave.textContent =
-      "Registrando...";
-
-
-    try {
-
-      const response =
-        await fetch(
-          "/admin/api/alquiler",
-          {
-
-            method:
-              "POST",
-
-            credentials:
-              "same-origin",
-
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
-
-            body:
-              JSON.stringify(
-                datos
-              )
-
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          data.error ||
-          "No se pudo registrar el alquiler"
-        );
-
-      }
-
-
-      cerrarModalAlquiler();
-
-
-      await cargarVehiculos();
-
-      await cargarAlquileres();
-
-
-    } catch (error) {
 
       rentalFormMessage.textContent =
         error.message;
@@ -6875,28 +6834,239 @@ rentalForm.addEventListener(
   }
 );
 
-document.getElementById(
-  "returnForm"
-).addEventListener(
-  "submit",
-  async event => {
 
-    event.preventDefault();
+// ============================================================
+// MODAL - DEVOLUCIÓN
+// ============================================================
 
+const returnModal =
+  document.getElementById(
+    "returnModal"
+  );
+
+
+const returnModalBackdrop =
+  document.getElementById(
+    "returnModalBackdrop"
+  );
+
+
+const returnModalClose =
+  document.getElementById(
+    "returnModalClose"
+  );
+
+
+const returnForm =
+  document.getElementById(
+    "returnForm"
+  );
+
+
+const returnFormCancel =
+  document.getElementById(
+    "returnFormCancel"
+  );
+
+
+const returnFormSave =
+  document.getElementById(
+    "returnFormSave"
+  );
+
+
+const returnFormMessage =
+  document.getElementById(
+    "returnFormMessage"
+  );
+
+
+const returnVehicleStatus =
+  document.getElementById(
+    "returnVehicleStatus"
+  );
+
+
+const returnAvailableDate =
+  document.getElementById(
+    "returnAvailableDate"
+  );
+
+
+const returnAvailableDateField =
+  document.getElementById(
+    "returnAvailableDateField"
+  );
+
+
+activeRentals.addEventListener(
+  "click",
+  event => {
 
     const boton =
-      document.getElementById(
-        "returnFormSave"
+      event.target.closest(
+        "[data-rental-return]"
       );
 
 
-    const mensaje =
-      document.getElementById(
-        "returnFormMessage"
+    if (!boton) {
+
+      return;
+
+    }
+
+
+    const id =
+      Number(
+        boton.dataset.rentalReturn
       );
 
 
-    mensaje.textContent =
+    const alquiler =
+      alquileresAdminActuales.find(
+        item =>
+          Number(item.id) ===
+          id
+      );
+
+
+    if (!alquiler) {
+
+      return;
+
+    }
+
+
+    document.getElementById(
+      "returnRentalId"
+    ).value =
+      String(id);
+
+
+    document.getElementById(
+      "returnVehicleName"
+    ).textContent =
+      alquiler.vehiculo ||
+      "Vehículo";
+
+
+    returnVehicleStatus.value =
+      "Disponible";
+
+
+    returnAvailableDate.value =
+      "";
+
+
+    returnFormMessage.textContent =
+      "";
+
+
+    actualizarFechaDevolucion();
+
+
+    returnModal.classList.add(
+      "open"
+    );
+
+
+    document.body.classList.add(
+      "modal-open"
+    );
+
+  }
+);
+
+
+returnVehicleStatus.addEventListener(
+  "change",
+  actualizarFechaDevolucion
+);
+
+
+function actualizarFechaDevolucion() {
+
+  const enPreparacion =
+    returnVehicleStatus.value ===
+    "En Preparación";
+
+
+  returnAvailableDateField.style.display =
+    enPreparacion
+      ? ""
+      : "none";
+
+
+  returnAvailableDate.required =
+    enPreparacion;
+
+
+  if (!enPreparacion) {
+
+    returnAvailableDate.value =
+      "";
+
+  }
+
+}
+
+
+function cerrarModalDevolucion() {
+
+  returnModal.classList.remove(
+    "open"
+  );
+
+
+  if (
+    !rentalModal.classList.contains(
+      "open"
+    )
+  ) {
+
+    document.body.classList.remove(
+      "modal-open"
+    );
+
+  }
+
+
+  returnFormMessage.textContent =
+    "";
+
+}
+
+
+returnModalClose.addEventListener(
+  "click",
+  cerrarModalDevolucion
+);
+
+
+returnModalBackdrop.addEventListener(
+  "click",
+  cerrarModalDevolucion
+);
+
+
+returnFormCancel.addEventListener(
+  "click",
+  cerrarModalDevolucion
+);
+
+
+// ============================================================
+// GUARDAR DEVOLUCIÓN
+// ============================================================
+
+returnForm.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    returnFormMessage.textContent =
       "";
 
 
@@ -6913,18 +7083,30 @@ document.getElementById(
         returnVehicleStatus.value,
 
       fechaDisponible:
-        document.getElementById(
-          "returnAvailableDate"
-        ).value
+        returnAvailableDate.value
 
     };
 
 
-    boton.disabled =
+    if (
+      datos.estadoVehiculo ===
+        "En Preparación" &&
+      !datos.fechaDisponible
+    ) {
+
+      returnFormMessage.textContent =
+        "Indica la fecha en la que el vehículo volverá a estar disponible.";
+
+      return;
+
+    }
+
+
+    returnFormSave.disabled =
       true;
 
 
-    boton.textContent =
+    returnFormSave.textContent =
       "Guardando...";
 
 
@@ -6959,7 +7141,7 @@ document.getElementById(
         await response.json();
 
 
-      if (!response.ok) {
+      if (!response.ok || !data.ok) {
 
         throw new Error(
           data.error ||
@@ -6979,23 +7161,34 @@ document.getElementById(
 
     } catch (error) {
 
-      mensaje.textContent =
+      console.error(
+        "Error registrando devolución:",
+        error
+      );
+
+
+      returnFormMessage.textContent =
         error.message;
 
 
     } finally {
 
-      boton.disabled =
+      returnFormSave.disabled =
         false;
 
 
-      boton.textContent =
+      returnFormSave.textContent =
         "Confirmar devolución";
 
     }
 
   }
 );
+
+
+// ============================================================
+// HELPERS ALQUILERES
+// ============================================================
 
 function obtenerFechaHoyAdmin() {
 
@@ -7035,16 +7228,17 @@ function formatearFechaAdmin(
 ) {
 
   if (!fecha) {
+
     return "—";
+
   }
 
 
   const soloFecha =
-    String(fecha)
-      .substring(
-        0,
-        10
-      );
+    String(fecha).substring(
+      0,
+      10
+    );
 
 
   const partes =
@@ -7057,7 +7251,9 @@ function formatearFechaAdmin(
     partes.length !== 3
   ) {
 
-    return fecha;
+    return escapar(
+      fecha
+    );
 
   }
 
@@ -7102,8 +7298,9 @@ function ocultarDni(
 
 }
 
+
 // ============================================================
-// PESTAÑAS VEHÍCULOS / REPOSICIONES
+// PESTAÑAS ADMIN
 // ============================================================
 
 tabVehiculos.addEventListener(
@@ -7126,7 +7323,40 @@ tabReposiciones.addEventListener(
       "reposiciones"
     );
 
+
     await cargarReposiciones();
+
+  }
+);
+
+
+tabAnalitica.addEventListener(
+  "click",
+  () => {
+
+    activarPanelAdmin(
+      "analitica"
+    );
+
+
+    pintarDashboardVentas(
+      vehiculosAdminActuales
+    );
+
+  }
+);
+
+
+tabAlquileres.addEventListener(
+  "click",
+  async () => {
+
+    activarPanelAdmin(
+      "alquileres"
+    );
+
+
+    await cargarAlquileres();
 
   }
 );
@@ -7137,19 +7367,23 @@ function activarPanelAdmin(
 ) {
 
   const esVehiculos =
-    panel === "vehiculos";
+    panel ===
+    "vehiculos";
 
 
   const esReposiciones =
-    panel === "reposiciones";
+    panel ===
+    "reposiciones";
 
 
   const esAnalitica =
-    panel === "analitica";
+    panel ===
+    "analitica";
 
 
   const esAlquileres =
-    panel === "alquileres";
+    panel ===
+    "alquileres";
 
 
   tabVehiculos.classList.toggle(
@@ -7201,121 +7435,46 @@ function activarPanelAdmin(
 
 }
 
-tabAlquileres.addEventListener(
-  "click",
-  async () => {
 
-    activarPanelAdmin(
-      "alquileres"
-    );
+// Cerrar modales de alquiler con Escape
+document.addEventListener(
+  "keydown",
+  event => {
 
-    await cargarAlquileres();
+    if (
+      event.key !==
+      "Escape"
+    ) {
 
-  }
-);
+      return;
 
-
-// ============================================================
-// PESTAÑAS ADMIN
-// ============================================================
-
-tabVehiculos.addEventListener(
-  "click",
-  () => {
-
-    activarPanelAdmin(
-      "vehiculos"
-    );
-
-  }
-);
+    }
 
 
-tabReposiciones.addEventListener(
-  "click",
-  async () => {
+    if (
+      rentalModal.classList.contains(
+        "open"
+      )
+    ) {
 
-    activarPanelAdmin(
-      "reposiciones"
-    );
+      cerrarModalAlquiler();
 
-    await cargarReposiciones();
+    }
+
+
+    if (
+      returnModal.classList.contains(
+        "open"
+      )
+    ) {
+
+      cerrarModalDevolucion();
+
+    }
 
   }
 );
 
-
-tabAnalitica.addEventListener(
-  "click",
-  () => {
-
-    activarPanelAdmin(
-      "analitica"
-    );
-
-    pintarDashboardVentas(
-      vehiculosAdminActuales
-    );
-
-  }
-);
-
-
-function activarPanelAdmin(
-  panel
-) {
-
-  const esVehiculos =
-    panel ===
-    "vehiculos";
-
-
-  const esReposiciones =
-    panel ===
-    "reposiciones";
-
-
-  const esAnalitica =
-    panel ===
-    "analitica";
-
-
-  tabVehiculos.classList.toggle(
-    "active",
-    esVehiculos
-  );
-
-
-  tabReposiciones.classList.toggle(
-    "active",
-    esReposiciones
-  );
-
-
-  tabAnalitica.classList.toggle(
-    "active",
-    esAnalitica
-  );
-
-
-  panelVehiculos.classList.toggle(
-    "active",
-    esVehiculos
-  );
-
-
-  panelReposiciones.classList.toggle(
-    "active",
-    esReposiciones
-  );
-
-
-  panelAnalitica.classList.toggle(
-    "active",
-    esAnalitica
-  );
-
-}
 
 // ============================================================
 // DASHBOARD ANALÍTICO
