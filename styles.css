@@ -2306,3 +2306,26 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
   }
 
 }
+
+/* ============================================================
+   AJUSTE INICIO - BANNER APERTURA + HERO
+============================================================ */
+
+/* Evitamos espacio extra después del aviso de apertura */
+.opening-banner {
+  margin-bottom: 0 !important;
+}
+
+
+/* El hero debe comenzar mucho más cerca del banner */
+.opening-banner + .hero {
+  padding-top: 38px !important;
+  min-height: auto !important;
+}
+
+
+/* Por si el espacio lo está generando el grid interior */
+.opening-banner + .hero .hero-grid {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
