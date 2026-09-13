@@ -84,6 +84,35 @@ if (
   );
 
 }
+
+// ============================================================
+// ADMIN - ALQUILERES
+// ============================================================
+
+if (
+  url.pathname ===
+  "/admin/api/alquileres"
+) {
+
+  return adminAlquileres(
+    request,
+    env
+  );
+
+}
+
+
+if (
+  url.pathname ===
+  "/admin/api/alquiler"
+) {
+
+  return adminAlquiler(
+    request,
+    env
+  );
+
+}
     
 // ============================================================
 // ADMIN - REPOSICIONES
@@ -973,6 +1002,842 @@ if (url.pathname.startsWith("/media/")) {
 };
 
 // ============================================================
+// ADMIN - LISTAR ALQUILERES
+// ============================================================
+
+async function adminAlquileres(
+  request,
+  env
+) {
+
+  // ----------------------------------------------------------
+  // AUTORIZACIÓN
+  // ----------------------------------------------------------
+
+  const autorizado =
+    await adminAutorizado(
+      request,
+      env
+    );
+
+
+  if (!autorizado) {
+
+    return Response.json(
+      {
+        ok: false,
+        error: "No autorizado"
+      },
+      {
+        status: 401
+      }
+    );
+
+  }
+
+
+  // ----------------------------------------------------------
+  // SOLO GET
+  // ----------------------------------------------------------
+
+  if (
+    request.method !== "GET"
+  ) {
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "Método no permitido"
+      },
+      {
+        status: 405
+      }
+    );
+
+  }
+
+
+  try {
+
+    const resultado =
+      await env.DB
+        .prepare(`
+          SELECT
+
+            a.id,
+
+            a.vehiculo_id,
+
+            a.nombre_completo,
+            a.dni,
+
+            a.fecha_salida,
+            a.fecha_vuelta,
+
+            a.estado,
+
+            a.fecha_devolucion_real,
+
+            a.created_at,
+            a.updated_at,
+
+            v.vehiculo,
+            v.marca,
+            v.modelo,
+            v.version,
+            v.estado AS estado_vehiculo
+
+          FROM alquileres a
+
+          INNER JOIN vehiculos v
+            ON v.id = a.vehiculo_id
+
+          ORDER BY
+
+            CASE
+              WHEN a.estado = 'Activo'
+              THEN 0
+              ELSE 1
+            END ASC,
+
+            a.fecha_vuelta ASC,
+
+            a.id DESC
+        `)
+        .all();
+
+
+    return Response.json({
+      ok: true,
+
+      alquileres:
+        resultado.results || []
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      "Listar alquileres:",
+      error
+    );
+
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No se pudieron cargar los alquileres"
+      },
+      {
+        status: 500
+      }
+    );
+
+  }
+
+}
+
+// ============================================================
+// ADMIN - ALQUILER
+// ============================================================
+
+async function adminAlquiler(
+  request,
+  env
+) {
+
+  // ----------------------------------------------------------
+  // AUTORIZACIÓN
+  // ----------------------------------------------------------
+
+  const autorizado =
+    await adminAutorizado(
+      request,
+      env
+    );
+
+
+  if (!autorizado) {
+
+    return Response.json(
+      {
+        ok: false,
+        error: "No autorizado"
+      },
+      {
+        status: 401
+      }
+    );
+
+  }
+
+
+  // ----------------------------------------------------------
+  // VALIDAR ORIGEN
+  // ----------------------------------------------------------
+
+  if (
+    request.method !== "GET" &&
+    !origenAdminValido(
+      request
+    )
+  ) {
+
+    return Response.json(
+      {
+        ok: false,
+        error: "Origen no permitido"
+      },
+      {
+        status: 403
+      }
+    );
+
+  }
+
+
+  // ==========================================================
+  // POST - CREAR ALQUILER
+  // ==========================================================
+
+  if (
+    request.method === "POST"
+  ) {
+
+    try {
+
+      const body =
+        await request.json();
+
+
+      const vehiculoId =
+        Number(
+          body.vehiculoId
+        );
+
+
+      const nombreCompleto =
+        textoAdmin(
+          body.nombreCompleto,
+          200
+        );
+
+
+      const dni =
+        textoAdmin(
+          body.dni,
+          30
+        )
+        .toUpperCase();
+
+
+      const fechaSalida =
+        normalizarFechaAlquiler(
+          body.fechaSalida
+        );
+
+
+      const fechaVuelta =
+        normalizarFechaAlquiler(
+          body.fechaVuelta
+        );
+
+
+      // --------------------------------------------------------
+      // VALIDACIONES
+      // --------------------------------------------------------
+
+      if (
+        !Number.isInteger(
+          vehiculoId
+        ) ||
+        vehiculoId <= 0
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Vehículo incorrecto"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+
+      if (
+        !nombreCompleto
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Debes indicar el nombre completo"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+
+      if (!dni) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Debes indicar el DNI"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+
+      if (
+        !fechaSalida ||
+        !fechaVuelta
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Las fechas del alquiler no son correctas"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+
+      if (
+        fechaVuelta <
+        fechaSalida
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "La fecha de vuelta no puede ser anterior a la fecha de salida"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+
+      // --------------------------------------------------------
+      // COMPROBAR VEHÍCULO
+      // --------------------------------------------------------
+
+      const vehiculo =
+        await env.DB
+          .prepare(`
+            SELECT
+
+              id,
+              vehiculo,
+              estado
+
+            FROM vehiculos
+
+            WHERE id = ?
+
+            LIMIT 1
+          `)
+          .bind(
+            vehiculoId
+          )
+          .first();
+
+
+      if (!vehiculo) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Vehículo no encontrado"
+          },
+          {
+            status: 404
+          }
+        );
+
+      }
+
+
+      if (
+        vehiculo.estado !==
+        "Disponible"
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "El vehículo ya no está disponible para alquiler"
+          },
+          {
+            status: 409
+          }
+        );
+
+      }
+
+
+      // --------------------------------------------------------
+      // COMPROBAR ALQUILER ACTIVO
+      // --------------------------------------------------------
+
+      const alquilerActivo =
+        await env.DB
+          .prepare(`
+            SELECT id
+
+            FROM alquileres
+
+            WHERE
+              vehiculo_id = ?
+              AND estado = 'Activo'
+
+            LIMIT 1
+          `)
+          .bind(
+            vehiculoId
+          )
+          .first();
+
+
+      if (alquilerActivo) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Este vehículo ya tiene un alquiler activo"
+          },
+          {
+            status: 409
+          }
+        );
+
+      }
+
+
+      // --------------------------------------------------------
+      // CREAR ALQUILER + CAMBIAR VEHÍCULO
+      // --------------------------------------------------------
+
+      await env.DB.batch([
+
+        env.DB
+          .prepare(`
+            INSERT INTO alquileres (
+
+              vehiculo_id,
+
+              nombre_completo,
+              dni,
+
+              fecha_salida,
+              fecha_vuelta,
+
+              estado,
+
+              created_at,
+              updated_at
+
+            )
+
+            VALUES (
+              ?,
+              ?,
+              ?,
+              ?,
+              ?,
+              'Activo',
+              CURRENT_TIMESTAMP,
+              CURRENT_TIMESTAMP
+            )
+          `)
+          .bind(
+
+            vehiculoId,
+
+            nombreCompleto,
+            dni,
+
+            fechaSalida,
+            fechaVuelta
+
+          ),
+
+
+        env.DB
+          .prepare(`
+            UPDATE vehiculos
+
+            SET
+
+              estado =
+                'Alquilado',
+
+              fecha_disponible =
+                NULL,
+
+              updated_at =
+                CURRENT_TIMESTAMP
+
+            WHERE id = ?
+          `)
+          .bind(
+            vehiculoId
+          )
+
+      ]);
+
+
+      return Response.json({
+        ok: true,
+        accion:
+          "alquiler_creado"
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Crear alquiler:",
+        error
+      );
+
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo registrar el alquiler"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ==========================================================
+  // PUT - REGISTRAR DEVOLUCIÓN
+  // ==========================================================
+
+  if (
+    request.method === "PUT"
+  ) {
+
+    try {
+
+      const body =
+        await request.json();
+
+
+      const alquilerId =
+        Number(
+          body.id
+        );
+
+
+      const estadoVehiculo =
+        textoAdmin(
+          body.estadoVehiculo
+        );
+
+
+      const fechaDisponible =
+        normalizarFechaAlquiler(
+          body.fechaDisponible
+        );
+
+
+      if (
+        !Number.isInteger(
+          alquilerId
+        ) ||
+        alquilerId <= 0
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Alquiler incorrecto"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+
+      if (
+        ![
+          "Disponible",
+          "En Preparación"
+        ].includes(
+          estadoVehiculo
+        )
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Estado final del vehículo incorrecto"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+
+      if (
+        estadoVehiculo ===
+          "En Preparación" &&
+        !fechaDisponible
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Debes indicar cuándo estará disponible el vehículo"
+          },
+          {
+            status: 400
+          }
+        );
+
+      }
+
+
+      // --------------------------------------------------------
+      // BUSCAR ALQUILER
+      // --------------------------------------------------------
+
+      const alquiler =
+        await env.DB
+          .prepare(`
+            SELECT
+
+              id,
+              vehiculo_id,
+              estado
+
+            FROM alquileres
+
+            WHERE id = ?
+
+            LIMIT 1
+          `)
+          .bind(
+            alquilerId
+          )
+          .first();
+
+
+      if (!alquiler) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Alquiler no encontrado"
+          },
+          {
+            status: 404
+          }
+        );
+
+      }
+
+
+      if (
+        alquiler.estado !==
+        "Activo"
+      ) {
+
+        return Response.json(
+          {
+            ok: false,
+            error:
+              "Este alquiler ya está finalizado"
+          },
+          {
+            status: 409
+          }
+        );
+
+      }
+
+
+      // --------------------------------------------------------
+      // FINALIZAR
+      // --------------------------------------------------------
+
+      await env.DB.batch([
+
+        env.DB
+          .prepare(`
+            UPDATE alquileres
+
+            SET
+
+              estado =
+                'Finalizado',
+
+              fecha_devolucion_real =
+                date('now'),
+
+              updated_at =
+                CURRENT_TIMESTAMP
+
+            WHERE id = ?
+          `)
+          .bind(
+            alquilerId
+          ),
+
+
+        env.DB
+          .prepare(`
+            UPDATE vehiculos
+
+            SET
+
+              estado = ?,
+
+              fecha_disponible = ?,
+
+              updated_at =
+                CURRENT_TIMESTAMP
+
+            WHERE id = ?
+          `)
+          .bind(
+
+            estadoVehiculo,
+
+            estadoVehiculo ===
+              "En Preparación"
+              ? fechaDisponible
+              : null,
+
+            alquiler.vehiculo_id
+
+          )
+
+      ]);
+
+
+      return Response.json({
+        ok: true,
+        accion:
+          "alquiler_finalizado"
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Finalizar alquiler:",
+        error
+      );
+
+
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "No se pudo registrar la devolución"
+        },
+        {
+          status: 500
+        }
+      );
+
+    }
+
+  }
+
+
+  // ----------------------------------------------------------
+  // RESTO
+  // ----------------------------------------------------------
+
+  return Response.json(
+    {
+      ok: false,
+      error:
+        "Método no permitido"
+    },
+    {
+      status: 405
+    }
+  );
+
+}
+
+// ============================================================
+// NORMALIZAR FECHA DE ALQUILER
+// ============================================================
+
+function normalizarFechaAlquiler(
+  valor
+) {
+
+  const fecha =
+    String(
+      valor || ""
+    ).trim();
+
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      fecha
+    )
+  ) {
+
+    return null;
+
+  }
+
+
+  return fecha;
+
+}
+
+// ============================================================
 // OBTENER VEHÍCULOS DESDE D1
 // ============================================================
 
@@ -1022,10 +1887,14 @@ async function obtenerVehiculosD1(env) {
           WHERE
             v.publicado = 1
 
-            AND (
-              v.estado IS NULL
-              OR v.estado <> 'Vendido'
+                    AND (
+            v.estado IS NULL
+
+            OR v.estado NOT IN (
+              'Vendido',
+              'Alquilado'
             )
+          )
 
           ORDER BY
             v.orden ASC,
@@ -2957,6 +3826,7 @@ function normalizarDatosVehiculo(
       "Disponible",
       "En Preparación",
       "Reservado",
+      "Alquilado",
       "Vendido"
     ];
 

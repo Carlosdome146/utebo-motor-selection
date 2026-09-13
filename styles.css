@@ -1655,3 +1655,599 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
   }
 
 }
+
+/* ============================================================
+   ALQUILER
+============================================================ */
+
+.rental-hero {
+  padding:
+    80px 0 70px;
+
+  background:
+    linear-gradient(
+      115deg,
+      #111214 0%,
+      #1c1d20 68%,
+      #8d1218 150%
+    );
+
+  color:
+    #ffffff;
+}
+
+
+.rental-hero-grid {
+  display:
+    grid;
+
+  grid-template-columns:
+    1fr auto;
+
+  gap:
+    50px;
+
+  align-items:
+    end;
+}
+
+
+.rental-hero h1 {
+  max-width:
+    780px;
+
+  margin:
+    12px 0 20px;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(
+      48px,
+      7vw,
+      92px
+    );
+
+  line-height:
+    .94;
+
+  text-transform:
+    uppercase;
+}
+
+
+.rental-hero p {
+  max-width:
+    720px;
+
+  margin:
+    0;
+
+  color:
+    rgba(255,255,255,.72);
+
+  font-size:
+    17px;
+
+  line-height:
+    1.7;
+}
+
+
+.rental-hero-note {
+  display:
+    inline-block;
+
+  margin-top:
+    25px;
+
+  padding:
+    10px 14px;
+
+  border-left:
+    3px solid #d71920;
+
+  background:
+    rgba(255,255,255,.06);
+
+  color:
+    #ffffff;
+
+  font-size:
+    12px;
+
+  font-weight:
+    800;
+}
+
+
+.rental-hero-number {
+  display:
+    grid;
+
+  gap:
+    5px;
+
+  color:
+    rgba(255,255,255,.55);
+
+  font-size:
+    11px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    .12em;
+
+  text-transform:
+    uppercase;
+}
+
+
+.rental-hero-number span {
+  color:
+    #d71920;
+
+  font-size:
+    72px;
+
+  line-height:
+    1;
+}
+
+
+/* ============================================================
+   FORMULARIO
+============================================================ */
+
+.rental-section {
+  padding:
+    80px 0 100px;
+}
+
+
+.rental-grid {
+  display:
+    grid;
+
+  grid-template-columns:
+    minmax(0, .8fr)
+    minmax(420px, 1.2fr);
+
+  gap:
+    80px;
+
+  align-items:
+    start;
+}
+
+
+.rental-info h2 {
+  margin:
+    8px 0 18px;
+
+  color:
+    #111214;
+
+  font-size:
+    clamp(
+      34px,
+      5vw,
+      58px
+    );
+
+  line-height:
+    1;
+
+  text-transform:
+    uppercase;
+}
+
+
+.rental-info > p {
+  max-width:
+    560px;
+
+  color:
+    #666b70;
+
+  line-height:
+    1.7;
+}
+
+
+.rental-process {
+  display:
+    grid;
+
+  margin-top:
+    38px;
+}
+
+
+.rental-process-item {
+  display:
+    grid;
+
+  grid-template-columns:
+    56px 1fr;
+
+  gap:
+    18px;
+
+  padding:
+    20px 0;
+
+  border-bottom:
+    1px solid
+    rgba(18,20,23,.12);
+}
+
+
+.rental-process-item > strong {
+  color:
+    #d71920;
+
+  font-size:
+    20px;
+}
+
+
+.rental-process-item span {
+  display:
+    block;
+
+  margin-bottom:
+    4px;
+
+  color:
+    #111214;
+
+  font-weight:
+    900;
+}
+
+
+.rental-process-item p {
+  margin:
+    0;
+
+  color:
+    #73777c;
+
+  font-size:
+    13px;
+
+  line-height:
+    1.5;
+}
+
+
+/* FORM */
+
+.rental-form {
+  padding:
+    36px;
+
+  background:
+    #ffffff;
+
+  border:
+    1px solid
+    rgba(18,20,23,.12);
+
+  box-shadow:
+    0 24px 60px
+    rgba(0,0,0,.08);
+}
+
+
+.rental-form-heading {
+  margin-bottom:
+    28px;
+}
+
+
+.rental-form-heading span {
+  color:
+    #d71920;
+
+  font-size:
+    10px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    .14em;
+
+  text-transform:
+    uppercase;
+}
+
+
+.rental-form-heading h2 {
+  margin:
+    7px 0 0;
+
+  color:
+    #111214;
+
+  font-size:
+    30px;
+
+  text-transform:
+    uppercase;
+}
+
+
+.rental-field {
+  margin-bottom:
+    18px;
+}
+
+
+.rental-field label {
+  display:
+    block;
+
+  margin-bottom:
+    8px;
+
+  color:
+    #33363a;
+
+  font-size:
+    11px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    .05em;
+
+  text-transform:
+    uppercase;
+}
+
+
+.rental-field label span {
+  color:
+    #999da1;
+
+  font-weight:
+    600;
+
+  text-transform:
+    none;
+}
+
+
+.rental-field input,
+.rental-field select,
+.rental-field textarea {
+  width:
+    100%;
+
+  box-sizing:
+    border-box;
+
+  padding:
+    14px 15px;
+
+  border:
+    1px solid
+    rgba(18,20,23,.15);
+
+  border-radius:
+    0;
+
+  outline:
+    none;
+
+  background:
+    #f8f8f8;
+
+  color:
+    #111214;
+
+  font:
+    inherit;
+
+  transition:
+    .2s ease;
+}
+
+
+.rental-field input:focus,
+.rental-field select:focus,
+.rental-field textarea:focus {
+  border-color:
+    #d71920;
+
+  background:
+    #ffffff;
+}
+
+
+.rental-field textarea {
+  resize:
+    vertical;
+}
+
+
+.rental-fields-2 {
+  display:
+    grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:
+    14px;
+}
+
+
+.rental-model-info {
+  margin:
+    24px 0;
+
+  padding:
+    16px;
+
+  border-left:
+    3px solid #d71920;
+
+  background:
+    #f1f1f1;
+}
+
+
+.rental-model-info strong {
+  display:
+    block;
+
+  margin-bottom:
+    4px;
+
+  color:
+    #111214;
+
+  font-size:
+    12px;
+
+  text-transform:
+    uppercase;
+}
+
+
+.rental-model-info span {
+  color:
+    #696e73;
+
+  font-size:
+    12px;
+}
+
+
+.rental-submit {
+  width:
+    100%;
+
+  min-height:
+    54px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  padding:
+    14px 18px;
+
+  border:
+    0;
+
+  background:
+    #111214;
+
+  color:
+    #ffffff;
+
+  font-size:
+    12px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    .04em;
+
+  text-transform:
+    uppercase;
+
+  cursor:
+    pointer;
+
+  transition:
+    .2s ease;
+}
+
+
+.rental-submit:hover {
+  background:
+    #d71920;
+}
+
+
+.rental-submit span:last-child {
+  font-size:
+    19px;
+}
+
+
+@media
+(max-width: 900px) {
+
+  .rental-grid {
+    grid-template-columns:
+      1fr;
+
+    gap:
+      50px;
+  }
+
+
+  .rental-hero-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .rental-hero-number {
+    display:
+      none;
+  }
+
+}
+
+
+@media
+(max-width: 560px) {
+
+  .rental-hero {
+    padding:
+      55px 0;
+  }
+
+
+  .rental-hero h1 {
+    font-size:
+      48px;
+  }
+
+
+  .rental-section {
+    padding:
+      55px 0 70px;
+  }
+
+
+  .rental-form {
+    padding:
+      24px 20px;
+  }
+
+
+  .rental-fields-2 {
+    grid-template-columns:
+      1fr;
+  }
+
+}
