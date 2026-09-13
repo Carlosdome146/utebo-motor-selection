@@ -2251,3 +2251,58 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
   }
 
 }
+
+/* ============================================================
+   ACCIONES HERO - ALQUILER
+============================================================ */
+
+.hero-actions-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+
+.hero-actions-left {
+  display: grid;
+  gap: 10px;
+}
+
+
+.hero-actions-left .btn {
+  width: 100%;
+}
+
+
+.btn-rental {
+  background: #ffffff;
+  color: #111214;
+  border: 1px solid #ffffff;
+}
+
+
+.btn-rental:hover {
+  background: #d71920;
+  border-color: #d71920;
+  color: #ffffff;
+}
+
+
+@media (max-width: 720px) {
+
+  .hero-actions-main {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+
+  .hero-actions-left {
+    width: 100%;
+  }
+
+
+  .hero-actions-main .btn {
+    width: 100%;
+  }
+
+}
