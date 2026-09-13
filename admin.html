@@ -1413,6 +1413,8 @@ body.modal-open {
     }
 
 
+
+
     /* ======================================================
        REPOSICIONES
     ====================================================== */
@@ -1838,6 +1840,290 @@ body.modal-open {
 
     }
 
+/* ============================================================
+   ALQUILERES
+============================================================ */
+
+.rental-admin-stats {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+
+.rental-admin-section {
+  margin-top: 30px;
+}
+
+
+.rental-admin-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+
+.rental-admin-heading h2 {
+  margin: 6px 0 0;
+  font-size: 24px;
+}
+
+
+.rental-admin-list {
+  display: grid;
+  gap: 14px;
+}
+
+
+.rental-card {
+  display: grid;
+
+  grid-template-columns:
+    minmax(220px, 1.6fr)
+    minmax(180px, 1.2fr)
+    minmax(140px, .8fr)
+    minmax(140px, .8fr)
+    auto;
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 20px;
+
+  background: #ffffff;
+
+  border:
+    1px solid
+    rgba(0,0,0,.10);
+}
+
+
+.rental-card.rental-late {
+  border-left:
+    4px solid #d71920;
+}
+
+
+.rental-card.rental-today {
+  border-left:
+    4px solid #d97706;
+}
+
+
+.rental-card-vehicle strong {
+  display: block;
+
+  margin-bottom: 5px;
+
+  font-size: 16px;
+}
+
+
+.rental-card-vehicle span,
+.rental-card-client span,
+.rental-card-date span {
+  display: block;
+
+  color: #777b80;
+
+  font-size: 11px;
+}
+
+
+.rental-card-client strong,
+.rental-card-date strong {
+  display: block;
+
+  margin-bottom: 4px;
+
+  font-size: 13px;
+}
+
+
+.rental-status {
+  display: inline-flex;
+
+  width: fit-content;
+
+  margin-top: 8px;
+
+  padding:
+    6px 9px;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+
+.rental-status-normal {
+  background: #e8f6ed;
+  color: #166534;
+}
+
+
+.rental-status-today {
+  background: #fff3dc;
+  color: #8a5300;
+}
+
+
+.rental-status-late {
+  background: #fbe9ea;
+  color: #a0181e;
+}
+
+
+.rental-return-button {
+  padding:
+    11px 14px;
+
+  border: 0;
+
+  background: #101113;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.rental-return-button:hover {
+  background: #d71920;
+}
+
+
+/* HISTÓRICO */
+
+.rental-history-section {
+  margin-top: 55px;
+}
+
+
+.rental-history-list {
+  display: grid;
+  gap: 8px;
+}
+
+
+.rental-history-item {
+  display: grid;
+
+  grid-template-columns:
+    1.4fr
+    1.2fr
+    .9fr
+    .9fr;
+
+  gap: 20px;
+
+  padding:
+    15px 18px;
+
+  background: #f4f4f5;
+
+  color: #555;
+
+  font-size: 12px;
+}
+
+
+/* MODALES */
+
+.rental-modal-window {
+  max-width: 700px;
+}
+
+
+.rental-return-window {
+  max-width: 600px;
+}
+
+
+#rentalForm,
+#returnForm {
+  padding:
+    30px;
+}
+
+
+.return-vehicle-info {
+  margin-bottom: 25px;
+
+  padding:
+    17px;
+
+  border-left:
+    3px solid #d71920;
+
+  background: #f3f3f4;
+}
+
+
+.return-vehicle-info strong {
+  display: block;
+
+  margin-bottom: 5px;
+
+  font-size: 16px;
+}
+
+
+.return-vehicle-info span {
+  color: #6d7175;
+
+  font-size: 12px;
+}
+
+
+@media
+(max-width: 950px) {
+
+  .rental-admin-stats {
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+
+  .rental-card {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .rental-history-item {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+}
+
+
+@media
+(max-width: 600px) {
+
+  .rental-admin-stats {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .rental-card,
+  .rental-history-item {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
   </style>
 
 </head>
@@ -1997,6 +2283,14 @@ body.modal-open {
       >
         Analítica
       </button>
+
+          <button
+      id="tabAlquileres"
+      class="admin-tab"
+      type="button"
+    >
+      Alquileres
+    </button>
 
     </div>
 
@@ -2376,9 +2670,492 @@ body.modal-open {
   </div>
 
 </section>
+
+<!-- ==========================================================
+     PANEL ALQUILERES
+========================================================== -->
+
+<section
+  id="panelAlquileres"
+  class="admin-panel"
+>
+
+  <div class="admin-top">
+
+    <div>
+
+      <div class="admin-kicker">
+        Gestión
+      </div>
+
+      <h1>
+        Vehículos alquilados
+      </h1>
+
+      <p>
+        Controla los vehículos actualmente alquilados,
+        sus fechas de devolución y el histórico.
+      </p>
+
+    </div>
+
+
+    <button
+      id="newRentalButton"
+      class="new-vehicle-button"
+      type="button"
+    >
+      + Registrar alquiler
+    </button>
+
+  </div>
+
+
+  <!-- ESTADÍSTICAS -->
+
+  <div class="rental-admin-stats">
+
+    <div class="stat">
+
+      <div class="stat-label">
+        Alquilados ahora
+      </div>
+
+      <div
+        id="rentalStatActive"
+        class="stat-value"
+      >
+        0
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="stat-label">
+        Devuelven hoy
+      </div>
+
+      <div
+        id="rentalStatToday"
+        class="stat-value"
+      >
+        0
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="stat-label">
+        Retrasados
+      </div>
+
+      <div
+        id="rentalStatLate"
+        class="stat-value"
+      >
+        0
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="stat-label">
+        Histórico
+      </div>
+
+      <div
+        id="rentalStatFinished"
+        class="stat-value"
+      >
+        0
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ACTIVOS -->
+
+  <div class="rental-admin-section">
+
+    <div class="rental-admin-heading">
+
+      <div>
+
+        <div class="admin-kicker">
+          En circulación
+        </div>
+
+        <h2>
+          Alquileres activos
+        </h2>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="activeRentals"
+      class="rental-admin-list"
+    >
+
+      <div class="admin-message">
+        Cargando alquileres...
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- HISTÓRICO -->
+
+  <div class="rental-admin-section rental-history-section">
+
+    <div class="rental-admin-heading">
+
+      <div>
+
+        <div class="admin-kicker">
+          Histórico
+        </div>
+
+        <h2>
+          Alquileres finalizados
+        </h2>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="finishedRentals"
+      class="rental-history-list"
+    ></div>
+
+  </div>
+
+</section>
+
   </main>
 
 </section>
+
+<!-- ==========================================================
+     MODAL NUEVO ALQUILER
+========================================================== -->
+
+<div
+  id="rentalModal"
+  class="vehicle-modal"
+>
+
+  <div
+    id="rentalModalBackdrop"
+    class="vehicle-modal-backdrop"
+  ></div>
+
+
+  <div class="vehicle-modal-window rental-modal-window">
+
+    <div class="vehicle-modal-header">
+
+      <div>
+
+        <div class="admin-kicker">
+          Alquiler
+        </div>
+
+        <h2>
+          Registrar alquiler
+        </h2>
+
+      </div>
+
+
+      <button
+        id="rentalModalClose"
+        class="vehicle-modal-close"
+        type="button"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="rentalForm">
+
+
+      <div class="vehicle-form-grid">
+
+
+        <div class="vehicle-form-field full">
+
+          <label for="rentalVehicle">
+            Vehículo *
+          </label>
+
+          <select
+            id="rentalVehicle"
+            required
+          >
+
+            <option value="">
+              Seleccionar vehículo disponible
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="vehicle-form-field full">
+
+          <label for="rentalFullName">
+            Nombre completo *
+          </label>
+
+          <input
+            id="rentalFullName"
+            type="text"
+            required
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="rentalDni">
+            DNI / NIE *
+          </label>
+
+          <input
+            id="rentalDni"
+            type="text"
+            required
+            maxlength="30"
+          >
+
+        </div>
+
+
+        <div></div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="rentalStart">
+            Fecha de salida *
+          </label>
+
+          <input
+            id="rentalStart"
+            type="date"
+            required
+          >
+
+        </div>
+
+
+        <div class="vehicle-form-field">
+
+          <label for="rentalEnd">
+            Fecha prevista de vuelta *
+          </label>
+
+          <input
+            id="rentalEnd"
+            type="date"
+            required
+          >
+
+        </div>
+
+
+      </div>
+
+
+      <div
+        id="rentalFormMessage"
+        class="vehicle-form-message"
+      ></div>
+
+
+      <div class="vehicle-form-actions">
+
+        <button
+          id="rentalFormCancel"
+          class="vehicle-form-cancel"
+          type="button"
+        >
+          Cancelar
+        </button>
+
+        <button
+          id="rentalFormSave"
+          class="vehicle-form-save"
+          type="submit"
+        >
+          Registrar alquiler
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+<!-- ==========================================================
+     MODAL DEVOLUCIÓN
+========================================================== -->
+
+<div
+  id="returnModal"
+  class="vehicle-modal"
+>
+
+  <div
+    id="returnModalBackdrop"
+    class="vehicle-modal-backdrop"
+  ></div>
+
+
+  <div class="vehicle-modal-window rental-return-window">
+
+    <div class="vehicle-modal-header">
+
+      <div>
+
+        <div class="admin-kicker">
+          Devolución
+        </div>
+
+        <h2>
+          Registrar devolución
+        </h2>
+
+      </div>
+
+
+      <button
+        id="returnModalClose"
+        class="vehicle-modal-close"
+        type="button"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="returnForm">
+
+      <input
+        id="returnRentalId"
+        type="hidden"
+      >
+
+
+      <div class="return-vehicle-info">
+
+        <strong
+          id="returnVehicleName"
+        ></strong>
+
+        <span>
+          Selecciona en qué estado queda
+          el vehículo después del alquiler.
+        </span>
+
+      </div>
+
+
+      <div class="vehicle-form-field">
+
+        <label for="returnVehicleStatus">
+          Estado del vehículo
+        </label>
+
+        <select
+          id="returnVehicleStatus"
+          required
+        >
+
+          <option value="Disponible">
+            Disponible
+          </option>
+
+          <option value="En Preparación">
+            En preparación
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div
+        id="returnAvailableDateField"
+        class="vehicle-form-field"
+        style="display:none;"
+      >
+
+        <label for="returnAvailableDate">
+          Disponible a partir del
+        </label>
+
+        <input
+          id="returnAvailableDate"
+          type="date"
+        >
+
+      </div>
+
+
+      <div
+        id="returnFormMessage"
+        class="vehicle-form-message"
+      ></div>
+
+
+      <div class="vehicle-form-actions">
+
+        <button
+          id="returnFormCancel"
+          class="vehicle-form-cancel"
+          type="button"
+        >
+          Cancelar
+        </button>
+
+        <button
+          id="returnFormSave"
+          class="vehicle-form-save"
+          type="submit"
+        >
+          Confirmar devolución
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
 
 <!-- ==========================================================
      MODAL VEHÍCULO
@@ -3252,6 +4029,34 @@ const reposicionesContainer =
     "reposiciones"
   );
 
+  const tabAlquileres =
+  document.getElementById(
+    "tabAlquileres"
+  );
+
+
+const panelAlquileres =
+  document.getElementById(
+    "panelAlquileres"
+  );
+
+
+const activeRentals =
+  document.getElementById(
+    "activeRentals"
+  );
+
+
+const finishedRentals =
+  document.getElementById(
+    "finishedRentals"
+  );
+
+
+const newRentalButton =
+  document.getElementById(
+    "newRentalButton"
+  );
 
 
 // ============================================================
@@ -5200,6 +6005,1102 @@ vehicleDeleteButton.addEventListener(
   }
 );
   
+// ============================================================
+// ALQUILERES
+// ============================================================
+
+let alquileresAdminActuales =
+  [];
+
+
+async function cargarAlquileres() {
+
+  activeRentals.innerHTML = `
+    <div class="admin-message">
+      Cargando alquileres...
+    </div>
+  `;
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/admin/api/alquileres",
+        {
+          credentials:
+            "same-origin",
+
+          cache:
+            "no-store"
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "No se pudieron cargar los alquileres"
+      );
+
+    }
+
+
+    alquileresAdminActuales =
+      data.alquileres || [];
+
+
+    pintarAlquileres(
+      alquileresAdminActuales
+    );
+
+
+  } catch (error) {
+
+    activeRentals.innerHTML = `
+      <div class="admin-message">
+        ${escapar(error.message)}
+      </div>
+    `;
+
+  }
+
+}
+
+
+// ============================================================
+// PINTAR ALQUILERES
+// ============================================================
+
+function pintarAlquileres(
+  alquileres
+) {
+
+  const activos =
+    alquileres.filter(
+      a =>
+        a.estado ===
+        "Activo"
+    );
+
+
+  const finalizados =
+    alquileres.filter(
+      a =>
+        a.estado ===
+        "Finalizado"
+    );
+
+
+  const hoy =
+    obtenerFechaHoyAdmin();
+
+
+  const devuelvenHoy =
+    activos.filter(
+      a =>
+        a.fecha_vuelta === hoy
+    );
+
+
+  const retrasados =
+    activos.filter(
+      a =>
+        a.fecha_vuelta < hoy
+    );
+
+
+  document.getElementById(
+    "rentalStatActive"
+  ).textContent =
+    activos.length;
+
+
+  document.getElementById(
+    "rentalStatToday"
+  ).textContent =
+    devuelvenHoy.length;
+
+
+  document.getElementById(
+    "rentalStatLate"
+  ).textContent =
+    retrasados.length;
+
+
+  document.getElementById(
+    "rentalStatFinished"
+  ).textContent =
+    finalizados.length;
+
+
+  pintarAlquileresActivos(
+    activos,
+    hoy
+  );
+
+
+  pintarHistoricoAlquileres(
+    finalizados
+  );
+
+}
+
+
+// ============================================================
+// ACTIVOS
+// ============================================================
+
+function pintarAlquileresActivos(
+  alquileres,
+  hoy
+) {
+
+  activeRentals.innerHTML =
+    "";
+
+
+  if (!alquileres.length) {
+
+    activeRentals.innerHTML = `
+      <div class="admin-message">
+        No hay ningún vehículo alquilado actualmente.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  alquileres.forEach(
+    alquiler => {
+
+      const retrasado =
+        alquiler.fecha_vuelta <
+        hoy;
+
+
+      const devuelveHoy =
+        alquiler.fecha_vuelta ===
+        hoy;
+
+
+      const article =
+        document.createElement(
+          "article"
+        );
+
+
+      article.className =
+        "rental-card";
+
+
+      if (retrasado) {
+
+        article.classList.add(
+          "rental-late"
+        );
+
+      } else if (devuelveHoy) {
+
+        article.classList.add(
+          "rental-today"
+        );
+
+      }
+
+
+      let claseEstado =
+        "rental-status-normal";
+
+
+      let textoEstado =
+        "En alquiler";
+
+
+      if (devuelveHoy) {
+
+        claseEstado =
+          "rental-status-today";
+
+        textoEstado =
+          "Devuelve hoy";
+
+      }
+
+
+      if (retrasado) {
+
+        claseEstado =
+          "rental-status-late";
+
+        textoEstado =
+          "Devolución atrasada";
+
+      }
+
+
+      article.innerHTML = `
+
+        <div class="rental-card-vehicle">
+
+          <strong>
+            ${escapar(
+              alquiler.vehiculo ||
+              "Vehículo"
+            )}
+          </strong>
+
+          <span>
+            ${escapar(
+              alquiler.marca ||
+              ""
+            )}
+
+            ${escapar(
+              alquiler.modelo ||
+              ""
+            )}
+          </span>
+
+          <span
+            class="
+              rental-status
+              ${claseEstado}
+            "
+          >
+            ${textoEstado}
+          </span>
+
+        </div>
+
+
+        <div class="rental-card-client">
+
+          <strong>
+            ${escapar(
+              alquiler.nombre_completo
+            )}
+          </strong>
+
+          <span>
+            DNI:
+            ${ocultarDni(
+              alquiler.dni
+            )}
+          </span>
+
+        </div>
+
+
+        <div class="rental-card-date">
+
+          <span>
+            Salida
+          </span>
+
+          <strong>
+            ${formatearFechaAdmin(
+              alquiler.fecha_salida
+            )}
+          </strong>
+
+        </div>
+
+
+        <div class="rental-card-date">
+
+          <span>
+            Vuelta prevista
+          </span>
+
+          <strong>
+            ${formatearFechaAdmin(
+              alquiler.fecha_vuelta
+            )}
+          </strong>
+
+        </div>
+
+
+        <button
+          class="rental-return-button"
+          data-rental-return="${alquiler.id}"
+          type="button"
+        >
+          Registrar devolución
+        </button>
+
+      `;
+
+
+      activeRentals.appendChild(
+        article
+      );
+
+    }
+  );
+
+}
+
+
+// ============================================================
+// HISTÓRICO
+// ============================================================
+
+function pintarHistoricoAlquileres(
+  alquileres
+) {
+
+  finishedRentals.innerHTML =
+    "";
+
+
+  if (!alquileres.length) {
+
+    finishedRentals.innerHTML = `
+      <div class="admin-message">
+        Todavía no hay alquileres finalizados.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  alquileres.forEach(
+    alquiler => {
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "rental-history-item";
+
+
+      item.innerHTML = `
+
+        <strong>
+          ${escapar(
+            alquiler.vehiculo ||
+            "Vehículo"
+          )}
+        </strong>
+
+        <span>
+          ${escapar(
+            alquiler.nombre_completo
+          )}
+        </span>
+
+        <span>
+          ${formatearFechaAdmin(
+            alquiler.fecha_salida
+          )}
+          →
+          ${formatearFechaAdmin(
+            alquiler.fecha_vuelta
+          )}
+        </span>
+
+        <span>
+          Devuelto:
+          ${formatearFechaAdmin(
+            alquiler.fecha_devolucion_real
+          )}
+        </span>
+
+      `;
+
+
+      finishedRentals.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+// ============================================================
+// NUEVO ALQUILER
+// ============================================================
+
+const rentalModal =
+  document.getElementById(
+    "rentalModal"
+  );
+
+
+const rentalModalBackdrop =
+  document.getElementById(
+    "rentalModalBackdrop"
+  );
+
+
+const rentalModalClose =
+  document.getElementById(
+    "rentalModalClose"
+  );
+
+
+const rentalForm =
+  document.getElementById(
+    "rentalForm"
+  );
+
+
+const rentalFormCancel =
+  document.getElementById(
+    "rentalFormCancel"
+  );
+
+
+const rentalFormSave =
+  document.getElementById(
+    "rentalFormSave"
+  );
+
+
+const rentalFormMessage =
+  document.getElementById(
+    "rentalFormMessage"
+  );
+
+
+newRentalButton.addEventListener(
+  "click",
+  () => {
+
+    abrirModalAlquiler();
+
+  }
+);
+
+
+function abrirModalAlquiler() {
+
+  rentalForm.reset();
+
+
+  rentalFormMessage.textContent =
+    "";
+
+
+  const selector =
+    document.getElementById(
+      "rentalVehicle"
+    );
+
+
+  selector.innerHTML = `
+    <option value="">
+      Seleccionar vehículo disponible
+    </option>
+  `;
+
+
+  const disponibles =
+    vehiculosAdminActuales.filter(
+      vehiculo =>
+        vehiculo.estado ===
+        "Disponible"
+    );
+
+
+  disponibles.forEach(
+    vehiculo => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        vehiculo.id;
+
+
+      option.textContent =
+        vehiculo.vehiculo;
+
+
+      selector.appendChild(
+        option
+      );
+
+    }
+  );
+
+
+  if (!disponibles.length) {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+
+    option.disabled =
+      true;
+
+
+    option.textContent =
+      "No hay vehículos disponibles";
+
+
+    selector.appendChild(
+      option
+    );
+
+  }
+
+
+  rentalModal.classList.add(
+    "open"
+  );
+
+
+  document.body.classList.add(
+    "modal-open"
+  );
+
+}
+
+
+function cerrarModalAlquiler() {
+
+  rentalModal.classList.remove(
+    "open"
+  );
+
+
+  document.body.classList.remove(
+    "modal-open"
+  );
+
+}
+
+
+rentalModalClose.addEventListener(
+  "click",
+  cerrarModalAlquiler
+);
+
+
+rentalModalBackdrop.addEventListener(
+  "click",
+  cerrarModalAlquiler
+);
+
+
+rentalFormCancel.addEventListener(
+  "click",
+  cerrarModalAlquiler
+);
+
+rentalForm.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    rentalFormMessage.textContent =
+      "";
+
+
+    const datos = {
+
+      vehiculoId:
+        Number(
+          document.getElementById(
+            "rentalVehicle"
+          ).value
+        ),
+
+      nombreCompleto:
+        document.getElementById(
+          "rentalFullName"
+        ).value.trim(),
+
+      dni:
+        document.getElementById(
+          "rentalDni"
+        ).value.trim(),
+
+      fechaSalida:
+        document.getElementById(
+          "rentalStart"
+        ).value,
+
+      fechaVuelta:
+        document.getElementById(
+          "rentalEnd"
+        ).value
+
+    };
+
+
+    if (
+      datos.fechaVuelta <
+      datos.fechaSalida
+    ) {
+
+      rentalFormMessage.textContent =
+        "La fecha de vuelta no puede ser anterior a la fecha de salida.";
+
+      return;
+
+    }
+
+
+    rentalFormSave.disabled =
+      true;
+
+
+    rentalFormSave.textContent =
+      "Registrando...";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/admin/api/alquiler",
+          {
+
+            method:
+              "POST",
+
+            credentials:
+              "same-origin",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify(
+                datos
+              )
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          "No se pudo registrar el alquiler"
+        );
+
+      }
+
+
+      cerrarModalAlquiler();
+
+
+      await cargarVehiculos();
+
+      await cargarAlquileres();
+
+
+    } catch (error) {
+
+      rentalFormMessage.textContent =
+        error.message;
+
+
+    } finally {
+
+      rentalFormSave.disabled =
+        false;
+
+
+      rentalFormSave.textContent =
+        "Registrar alquiler";
+
+    }
+
+  }
+);
+
+rentalForm.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    rentalFormMessage.textContent =
+      "";
+
+
+    const datos = {
+
+      vehiculoId:
+        Number(
+          document.getElementById(
+            "rentalVehicle"
+          ).value
+        ),
+
+      nombreCompleto:
+        document.getElementById(
+          "rentalFullName"
+        ).value.trim(),
+
+      dni:
+        document.getElementById(
+          "rentalDni"
+        ).value.trim(),
+
+      fechaSalida:
+        document.getElementById(
+          "rentalStart"
+        ).value,
+
+      fechaVuelta:
+        document.getElementById(
+          "rentalEnd"
+        ).value
+
+    };
+
+
+    if (
+      datos.fechaVuelta <
+      datos.fechaSalida
+    ) {
+
+      rentalFormMessage.textContent =
+        "La fecha de vuelta no puede ser anterior a la fecha de salida.";
+
+      return;
+
+    }
+
+
+    rentalFormSave.disabled =
+      true;
+
+
+    rentalFormSave.textContent =
+      "Registrando...";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/admin/api/alquiler",
+          {
+
+            method:
+              "POST",
+
+            credentials:
+              "same-origin",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify(
+                datos
+              )
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          "No se pudo registrar el alquiler"
+        );
+
+      }
+
+
+      cerrarModalAlquiler();
+
+
+      await cargarVehiculos();
+
+      await cargarAlquileres();
+
+
+    } catch (error) {
+
+      rentalFormMessage.textContent =
+        error.message;
+
+
+    } finally {
+
+      rentalFormSave.disabled =
+        false;
+
+
+      rentalFormSave.textContent =
+        "Registrar alquiler";
+
+    }
+
+  }
+);
+
+document.getElementById(
+  "returnForm"
+).addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const boton =
+      document.getElementById(
+        "returnFormSave"
+      );
+
+
+    const mensaje =
+      document.getElementById(
+        "returnFormMessage"
+      );
+
+
+    mensaje.textContent =
+      "";
+
+
+    const datos = {
+
+      id:
+        Number(
+          document.getElementById(
+            "returnRentalId"
+          ).value
+        ),
+
+      estadoVehiculo:
+        returnVehicleStatus.value,
+
+      fechaDisponible:
+        document.getElementById(
+          "returnAvailableDate"
+        ).value
+
+    };
+
+
+    boton.disabled =
+      true;
+
+
+    boton.textContent =
+      "Guardando...";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/admin/api/alquiler",
+          {
+
+            method:
+              "PUT",
+
+            credentials:
+              "same-origin",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify(
+                datos
+              )
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.error ||
+          "No se pudo registrar la devolución"
+        );
+
+      }
+
+
+      cerrarModalDevolucion();
+
+
+      await cargarVehiculos();
+
+      await cargarAlquileres();
+
+
+    } catch (error) {
+
+      mensaje.textContent =
+        error.message;
+
+
+    } finally {
+
+      boton.disabled =
+        false;
+
+
+      boton.textContent =
+        "Confirmar devolución";
+
+    }
+
+  }
+);
+
+function obtenerFechaHoyAdmin() {
+
+  const hoy =
+    new Date();
+
+
+  const year =
+    hoy.getFullYear();
+
+
+  const month =
+    String(
+      hoy.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  const day =
+    String(
+      hoy.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  return `${year}-${month}-${day}`;
+
+}
+
+
+function formatearFechaAdmin(
+  fecha
+) {
+
+  if (!fecha) {
+    return "—";
+  }
+
+
+  const soloFecha =
+    String(fecha)
+      .substring(
+        0,
+        10
+      );
+
+
+  const partes =
+    soloFecha.split(
+      "-"
+    );
+
+
+  if (
+    partes.length !== 3
+  ) {
+
+    return fecha;
+
+  }
+
+
+  return (
+    `${partes[2]}/` +
+    `${partes[1]}/` +
+    `${partes[0]}`
+  );
+
+}
+
+
+function ocultarDni(
+  dni
+) {
+
+  const valor =
+    String(
+      dni || ""
+    );
+
+
+  if (
+    valor.length <= 4
+  ) {
+
+    return "****";
+
+  }
+
+
+  return (
+    "*".repeat(
+      Math.max(
+        valor.length - 4,
+        4
+      )
+    ) +
+    valor.slice(-4)
+  );
+
+}
 
 // ============================================================
 // PESTAÑAS VEHÍCULOS / REPOSICIONES
@@ -5236,8 +7137,19 @@ function activarPanelAdmin(
 ) {
 
   const esVehiculos =
-    panel ===
-    "vehiculos";
+    panel === "vehiculos";
+
+
+  const esReposiciones =
+    panel === "reposiciones";
+
+
+  const esAnalitica =
+    panel === "analitica";
+
+
+  const esAlquileres =
+    panel === "alquileres";
 
 
   tabVehiculos.classList.toggle(
@@ -5248,7 +7160,19 @@ function activarPanelAdmin(
 
   tabReposiciones.classList.toggle(
     "active",
-    !esVehiculos
+    esReposiciones
+  );
+
+
+  tabAnalitica.classList.toggle(
+    "active",
+    esAnalitica
+  );
+
+
+  tabAlquileres.classList.toggle(
+    "active",
+    esAlquileres
   );
 
 
@@ -5260,10 +7184,35 @@ function activarPanelAdmin(
 
   panelReposiciones.classList.toggle(
     "active",
-    !esVehiculos
+    esReposiciones
+  );
+
+
+  panelAnalitica.classList.toggle(
+    "active",
+    esAnalitica
+  );
+
+
+  panelAlquileres.classList.toggle(
+    "active",
+    esAlquileres
   );
 
 }
+
+tabAlquileres.addEventListener(
+  "click",
+  async () => {
+
+    activarPanelAdmin(
+      "alquileres"
+    );
+
+    await cargarAlquileres();
+
+  }
+);
 
 
 // ============================================================
