@@ -19,32 +19,6 @@
     Gestión de stock | Utebo Motor Selection
   </title>
 
-  <link
-    rel="icon"
-    type="image/png"
-    href="/favicon.png"
-  >
-
-  <link
-    rel="apple-touch-icon"
-    href="/apple-touch-icon.png"
-  >
-
-  <link
-    rel="preconnect"
-    href="https://fonts.googleapis.com"
-  >
-
-  <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin
-  >
-
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap"
-  >
 
   <style>
 
@@ -5425,6 +5399,8 @@ function pintarFotosAdmin() {
           <img
             src="${foto.url}"
             alt="Fotografía del vehículo"
+            loading="lazy"
+            decoding="async"
           >
 
           ${
@@ -5822,78 +5798,253 @@ async function eliminarFotoAdmin(
 
 
 // ============================================================
-// COMPRESIÓN DE FOTOGRAFÍAS CLIENT-SIDE (RENDIMIENTO & CORE WEB VITALS)
+// OPTIMIZACIÓN DE IMÁGENES ANTES DE SUBIR A R2
 // ============================================================
 
-async function comprimirImagen(archivo, maxDim = 1600, calidad = 0.82) {
-  if (!archivo || !archivo.type || !archivo.type.startsWith("image/") || archivo.type === "image/gif" || archivo.type === "image/svg+xml") {
+const MAX_IMAGE_DIMENSION =
+  1600;
+
+const IMAGE_WEBP_QUALITY =
+  0.82;
+
+
+async function optimizarImagenParaWeb(
+  archivo
+) {
+
+  // Si ya es WebP pequeño, no lo tocamos.
+  if (
+    archivo.type === "image/webp" &&
+    archivo.size <= 450 * 1024
+  ) {
+
     return archivo;
+
   }
 
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onerror = () => resolve(archivo);
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onerror = () => resolve(archivo);
-      img.onload = () => {
-        let width = img.naturalWidth || img.width;
-        let height = img.naturalHeight || img.height;
 
-        if (width > maxDim || height > maxDim) {
-          if (width > height) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          } else {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
+  try {
+
+    const bitmap =
+      await createImageBitmap(
+        archivo,
+        {
+          imageOrientation:
+            "from-image"
         }
+      );
 
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          resolve(archivo);
-          return;
+    const escala =
+      Math.min(
+        1,
+        MAX_IMAGE_DIMENSION /
+          Math.max(
+            bitmap.width,
+            bitmap.height
+          )
+      );
+
+
+    const ancho =
+      Math.max(
+        1,
+        Math.round(
+          bitmap.width * escala
+        )
+      );
+
+
+    const alto =
+      Math.max(
+        1,
+        Math.round(
+          bitmap.height * escala
+        )
+      );
+
+
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
+
+
+    canvas.width =
+      ancho;
+
+    canvas.height =
+      alto;
+
+
+    const context =
+      canvas.getContext(
+        "2d",
+        {
+          alpha: true
         }
+      );
 
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
 
-        canvas.toBlob(
-          (blob) => {
-            if (!blob || blob.size >= archivo.size) {
-              canvas.toBlob(
-                (jpegBlob) => {
-                  if (!jpegBlob || jpegBlob.size >= archivo.size) {
-                    resolve(archivo);
-                  } else {
-                    const nombreBase = archivo.name.replace(/\.[^.]+$/, "");
-                    resolve(new File([jpegBlob], `${nombreBase}.jpg`, { type: "image/jpeg" }));
-                  }
-                },
-                "image/jpeg",
-                calidad
-              );
-              return;
-            }
+    context.drawImage(
+      bitmap,
+      0,
+      0,
+      ancho,
+      alto
+    );
 
-            const nombreBase = archivo.name.replace(/\.[^.]+$/, "");
-            resolve(new File([blob], `${nombreBase}.webp`, { type: "image/webp" }));
-          },
-          "image/webp",
-          calidad
+
+    bitmap.close?.();
+
+
+    const blob =
+      await new Promise(
+        (resolve, reject) => {
+
+          canvas.toBlob(
+            resultado => {
+
+              if (resultado) {
+                resolve(resultado);
+              } else {
+                reject(
+                  new Error(
+                    "No se pudo optimizar la imagen"
+                  )
+                );
+              }
+
+            },
+            "image/webp",
+            IMAGE_WEBP_QUALITY
+          );
+
+        }
+      );
+
+
+    // Si comprimir no aporta mejora y la imagen original
+    // tampoco es enorme, conservamos el archivo original.
+    if (
+      blob.size >= archivo.size &&
+      archivo.size <= 900 * 1024 &&
+      Math.max(
+        bitmap?.width || ancho,
+        bitmap?.height || alto
+      ) <= MAX_IMAGE_DIMENSION
+    ) {
+
+      return archivo;
+
+    }
+
+
+    const nombreBase =
+      archivo.name
+        .replace(
+          /\.[^.]+$/,
+          ""
+        )
+        .replace(
+          /[^a-zA-Z0-9_-]+/g,
+          "-"
         );
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(archivo);
-  });
+
+
+    return new File(
+      [blob],
+      `${nombreBase || "foto"}.webp`,
+      {
+        type:
+          "image/webp",
+
+        lastModified:
+          Date.now()
+      }
+    );
+
+
+  } catch (error) {
+
+    console.warn(
+      "No se pudo optimizar una fotografía. Se subirá el original:",
+      archivo.name,
+      error
+    );
+
+
+    return archivo;
+
+  }
+
 }
+
+
+async function optimizarListaFotos(
+  archivos
+) {
+
+  const originales =
+    Array.from(
+      archivos || []
+    );
+
+
+  const optimizadas =
+    [];
+
+
+  for (
+    let index = 0;
+    index < originales.length;
+    index++
+  ) {
+
+    const archivo =
+      originales[index];
+
+
+    photoSelectionText.textContent =
+      `Optimizando fotografía ${index + 1} de ${originales.length}...`;
+
+
+    const optimizada =
+      await optimizarImagenParaWeb(
+        archivo
+      );
+
+
+    optimizadas.push(
+      optimizada
+    );
+
+  }
+
+
+  return optimizadas;
+
+}
+
+
+function tamanoArchivosMb(
+  archivos
+) {
+
+  const bytes =
+    archivos.reduce(
+      (total, archivo) =>
+        total + archivo.size,
+      0
+    );
+
+
+  return bytes /
+    1024 /
+    1024;
+
+}
+
 
 // ============================================================
 // SUBIR FOTOGRAFÍAS
@@ -5905,9 +6056,7 @@ async function subirFotosAdmin(
 ) {
 
   if (!archivos.length) {
-
     return;
-
   }
 
 
@@ -5922,19 +6071,40 @@ async function subirFotosAdmin(
   }
 
 
-  // Comprimir fotos en el cliente antes de subir a R2
-  const archivosOptimizados = [];
-  for (let i = 0; i < archivos.length; i++) {
-    if (vehicleFormSave) {
-      vehicleFormSave.textContent = `Optimizando foto ${i + 1}/${archivos.length}...`;
-    }
-    const optimizado = await comprimirImagen(archivos[i]);
-    archivosOptimizados.push(optimizado);
+  photoSelectionText.textContent =
+    "Optimizando fotografías para la web...";
+
+
+  const archivosOptimizados =
+    await optimizarListaFotos(
+      archivos
+    );
+
+
+  const tamanoTotal =
+    archivosOptimizados.reduce(
+      (total, archivo) =>
+        total + archivo.size,
+      0
+    );
+
+
+  if (
+    tamanoTotal >
+    50 * 1024 * 1024
+  ) {
+
+    throw new Error(
+      "Las fotografías optimizadas superan los 50 MB"
+    );
+
   }
 
-  if (vehicleFormSave) {
-    vehicleFormSave.textContent = "Subiendo fotos...";
-  }
+
+  photoSelectionText.textContent =
+    `${archivosOptimizados.length} fotografía(s) optimizada(s) · ` +
+    `${tamanoArchivosMb(archivosOptimizados).toFixed(1)} MB`;
+
 
   const formData =
     new FormData();
@@ -5963,7 +6133,8 @@ async function subirFotosAdmin(
       "/admin/api/fotos",
       {
 
-        method: "POST",
+        method:
+          "POST",
 
         credentials:
           "same-origin",
@@ -8693,6 +8864,8 @@ function pintarFotosReposicionAdmin() {
           <img
             src="${foto.url}"
             alt="Fotografía de la reposición"
+            loading="lazy"
+            decoding="async"
           >
 
           ${
@@ -9085,9 +9258,7 @@ async function subirFotosReposicionAdmin(
 ) {
 
   if (!archivos.length) {
-
     return;
-
   }
 
 
@@ -9102,19 +9273,35 @@ async function subirFotosReposicionAdmin(
   }
 
 
-  // Comprimir fotos en el cliente antes de subir a R2
-  const archivosOptimizados = [];
-  for (let i = 0; i < archivos.length; i++) {
-    if (reposicionFormSave) {
-      reposicionFormSave.textContent = `Optimizando foto ${i + 1}/${archivos.length}...`;
-    }
-    const optimizado = await comprimirImagen(archivos[i]);
-    archivosOptimizados.push(optimizado);
+  photoSelectionText.textContent =
+    "Optimizando fotografías para la web...";
+
+
+  const archivosOptimizados =
+    await optimizarListaFotos(
+      archivos
+    );
+
+
+  const tamanoTotal =
+    archivosOptimizados.reduce(
+      (total, archivo) =>
+        total + archivo.size,
+      0
+    );
+
+
+  if (
+    tamanoTotal >
+    50 * 1024 * 1024
+  ) {
+
+    throw new Error(
+      "Las fotografías optimizadas superan los 50 MB"
+    );
+
   }
 
-  if (reposicionFormSave) {
-    reposicionFormSave.textContent = "Subiendo fotos...";
-  }
 
   const formData =
     new FormData();
