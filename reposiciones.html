@@ -21,6 +21,9 @@
   rel="canonical"
   href="https://utebomotorsselection.com/reposiciones.html"
 >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="styles.css">
 
   <style>
@@ -75,7 +78,7 @@
 
 <link
   rel="apple-touch-icon"
-  href="/favicon.png"
+  href="/apple-touch-icon.png"
 >
 
 </head>
@@ -313,10 +316,7 @@
 
         const response =
           await fetch(
-            "/api/reposiciones",
-            {
-              cache: "no-store"
-            }
+            "/api/reposiciones"
           );
 
 
@@ -417,6 +417,7 @@
                     src="${escaparAtributo(fotoPrincipal.url)}"
                     alt="${escaparAtributo(reposicion.nombre)}"
                     loading="lazy"
+                    decoding="async"
                   >
                 </div>
               `

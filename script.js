@@ -146,9 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function cargarVehiculos(container) {
   try {
-    const response = await fetch("/api/vehiculos", {
-      cache: "no-store"
-    });
+    const response = await fetch("/api/vehiculos");
 
     if (!response.ok) {
       throw new Error("No se pudo cargar el catálogo");
@@ -288,6 +286,9 @@ article.dataset.estado =
 
     img.loading =
       "lazy";
+
+    img.decoding =
+      "async";
 
 
     media.appendChild(
