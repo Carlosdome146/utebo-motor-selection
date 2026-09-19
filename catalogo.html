@@ -124,6 +124,11 @@
 
         </div>
 
+        <div id="catalogNoResults" class="catalog-no-results" hidden>
+          No hay vehículos que coincidan con estos filtros.
+          <button type="button" id="clearCatalogFiltersEmpty">Limpiar filtros</button>
+        </div>
+
       </div>
 
     </section>
@@ -171,10 +176,7 @@
           La API obtiene los coches desde Airtable.
         -->
 
-        <div
-  class="catalog-status-filters"
-  id="catalogStatusFilters"
->
+        <div class="catalog-status-filters" id="catalogStatusFilters">
 
   <button
     type="button"
@@ -201,6 +203,52 @@
   </button>
 
 </div>
+
+        <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar vehículos">
+          <label class="catalog-filter-field">
+            <span>Combustible</span>
+            <select id="filterFuel">
+              <option value="">Todos</option>
+              <option value="Gasolina">Gasolina</option>
+              <option value="Diésel">Diésel</option>
+              <option value="Híbrido">Híbrido</option>
+              <option value="Híbrido enchufable">Híbrido enchufable</option>
+              <option value="Eléctrico">Eléctrico</option>
+              <option value="GLP">GLP</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </label>
+
+          <label class="catalog-filter-field">
+            <span>Cambio</span>
+            <select id="filterTransmission">
+              <option value="">Todos</option>
+              <option value="Manual">Manual</option>
+              <option value="Automático">Automático</option>
+            </select>
+          </label>
+
+          <label class="catalog-filter-field">
+            <span>Precio mínimo</span>
+            <input id="filterPriceMin" type="number" min="0" step="500" placeholder="Sin mínimo" inputmode="numeric">
+          </label>
+
+          <label class="catalog-filter-field">
+            <span>Precio máximo</span>
+            <input id="filterPriceMax" type="number" min="0" step="500" placeholder="Sin máximo" inputmode="numeric">
+          </label>
+
+          <label class="catalog-filter-field catalog-filter-range">
+            <span>Kilometraje máximo <output id="filterKmValue" for="filterKmMax">300.000 km</output></span>
+            <input id="filterKmMax" type="range" min="0" max="300000" step="5000" value="300000">
+          </label>
+
+          <button id="clearCatalogFilters" class="catalog-filter-clear" type="button">Limpiar filtros</button>
+        </div>
+
+        <div class="catalog-results" aria-live="polite">
+          <span id="catalogResults">Cargando vehículos...</span>
+        </div>
 
         <div
           id="vehicleGrid"

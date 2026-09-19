@@ -338,6 +338,34 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
 .vehicle-actions { margin-top:20px; display:flex; }
 .vehicle-actions .btn { width:100%; }
 
+/* Advanced catalog filters */
+.catalog-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin: -16px 0 14px;
+  padding: 18px;
+  border: 1px solid rgba(18,20,23,.12);
+  border-radius: 6px;
+  background: rgba(255,255,255,.64);
+}
+.catalog-filter-field { display: grid; gap: 6px; color: #565c62; font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.catalog-filter-field select,
+.catalog-filter-field input[type="number"] { width: 100%; min-height: 42px; border: 1px solid rgba(18,20,23,.16); border-radius: 4px; padding: 10px 11px; background: #fff; color: var(--black); font: inherit; font-size: .84rem; letter-spacing: 0; text-transform: none; }
+.catalog-filter-field select:focus,
+.catalog-filter-field input:focus { outline: 2px solid rgba(215,38,46,.25); border-color: var(--red); }
+.catalog-filter-range { grid-column: span 2; }
+.catalog-filter-range span { display: flex; justify-content: space-between; gap: 12px; }
+.catalog-filter-range output { color: var(--black); letter-spacing: 0; }
+.catalog-filter-range input[type="range"] { width: 100%; accent-color: var(--red); }
+.catalog-filter-clear { min-height: 42px; border: 1px solid rgba(18,20,23,.18); border-radius: 4px; padding: 10px 14px; background: transparent; color: var(--black); cursor: pointer; font: inherit; font-size: .78rem; font-weight: 800; text-transform: uppercase; }
+.catalog-filter-clear:hover { background: var(--black); color: #fff; }
+.catalog-results { min-height: 24px; margin: 0 0 16px; color: #666c72; font-size: .84rem; font-weight: 700; }
+.catalog-no-results { margin-top: 20px; padding: 28px; border: 1px dashed rgba(18,20,23,.20); color: #565c62; text-align: center; }
+.catalog-no-results button { margin-left: 8px; border: 0; background: transparent; color: var(--red); cursor: pointer; font: inherit; font-weight: 800; text-decoration: underline; }
+.vehicle-card[hidden] { display: none; }
+
 /* Products */
 .product-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
 .product-card { border-radius:6px; border:1px solid rgba(18,20,23,.13); background:rgba(255,255,255,.88); padding:24px; transition:.22s ease; }
@@ -431,6 +459,8 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
 }
 
 @media (max-width: 680px) {
+  .catalog-filters { grid-template-columns: 1fr 1fr; }
+  .catalog-filter-range { grid-column: 1 / -1; }
   .container { width:min(100% - 28px, 1220px); }
   .section { padding:78px 0; }
   .section-sm { padding:58px 0; }
