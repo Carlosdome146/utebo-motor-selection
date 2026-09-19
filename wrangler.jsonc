@@ -26,7 +26,8 @@
   "/api/*",
   "/media/*",
   "/admin/api/*",
-  "/vehiculo/*"
+  "/vehiculo/*",
+  "/sitemap.xml"
 ]
   }
 }
