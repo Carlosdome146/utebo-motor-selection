@@ -21,6 +21,7 @@ const transmissionFilter = document.querySelector("#filterTransmission");
 const priceMinFilter = document.querySelector("#filterPriceMin");
 const priceMaxFilter = document.querySelector("#filterPriceMax");
 const kmMaxFilter = document.querySelector("#filterKmMax");
+const kmEnabledFilter = document.querySelector("#filterKmEnabled");
 const kmValue = document.querySelector("#filterKmValue");
 const clearFiltersButton = document.querySelector("#clearCatalogFilters");
 const clearFiltersEmptyButton = document.querySelector("#clearCatalogFiltersEmpty");
@@ -47,13 +48,29 @@ function formatearFiltroKm(valor) {
   return `${new Intl.NumberFormat("es-ES").format(Number(valor))} km`;
 }
 
+function actualizarLimiteKilometraje(vehiculos) {
+  if (!kmMaxFilter) return;
+  const kilometrajes = vehiculos
+    .map(vehiculo => Number(vehiculo.kilometros))
+    .filter(Number.isFinite);
+  const maxReal = kilometrajes.length ? Math.max(...kilometrajes) : 0;
+  const maxSlider = Math.max(300000, Math.ceil(maxReal / 50000) * 50000);
+  kmMaxFilter.max = String(maxSlider);
+  kmMaxFilter.value = String(maxSlider);
+  if (kmEnabledFilter) {
+    kmEnabledFilter.checked = false;
+    kmEnabledFilter.disabled = kilometrajes.length === 0;
+  }
+  if (kmValue) kmValue.textContent = "Sin límite";
+}
+
 function aplicarFiltrosCatalogo() {
   const textoBusqueda = normalizarTexto(search?.value);
   const combustible = normalizarTexto(fuelFilter?.value);
   const cambio = normalizarTexto(transmissionFilter?.value);
   const precioMinimo = leerNumero(priceMinFilter);
   const precioMaximo = leerNumero(priceMaxFilter);
-  const kilometrajeMaximo = leerNumero(kmMaxFilter);
+  const kilometrajeMaximo = kmEnabledFilter?.checked ? leerNumero(kmMaxFilter) : null;
   let visibles = 0;
 
   document.querySelectorAll(".vehicle-card").forEach(card => {
@@ -83,7 +100,7 @@ function aplicarFiltrosCatalogo() {
       : `${visibles} vehículos encontrados`;
   }
   if (noResults) noResults.hidden = visibles !== 0;
-  if (kmValue && kilometrajeMaximo !== null) kmValue.textContent = formatearFiltroKm(kilometrajeMaximo);
+  if (kmValue) kmValue.textContent = kilometrajeMaximo === null ? "Sin límite" : formatearFiltroKm(kilometrajeMaximo);
 }
 
 function limpiarFiltrosCatalogo() {
@@ -92,7 +109,13 @@ function limpiarFiltrosCatalogo() {
   if (transmissionFilter) transmissionFilter.value = "";
   if (priceMinFilter) priceMinFilter.value = "";
   if (priceMaxFilter) priceMaxFilter.value = "";
+  if (kmEnabledFilter) {
+    kmEnabledFilter.checked = false;
+    kmEnabledFilter.disabled = false;
+  }
+  if (kmMaxFilter) kmMaxFilter.disabled = true;
   if (kmMaxFilter) kmMaxFilter.value = kmMaxFilter.max;
+  if (kmValue) kmValue.textContent = "Sin límite";
   estadoCatalogoActual = "Todos";
   statusButtons.forEach(button => button.classList.toggle("active", button.dataset.status === "Todos"));
   aplicarFiltrosCatalogo();
@@ -103,6 +126,13 @@ if (search) search.addEventListener("input", aplicarFiltrosCatalogo);
   .filter(Boolean)
   .forEach(elemento => elemento.addEventListener("input", aplicarFiltrosCatalogo));
 
+if (kmEnabledFilter) {
+  kmEnabledFilter.addEventListener("change", () => {
+    if (kmMaxFilter) kmMaxFilter.disabled = !kmEnabledFilter.checked;
+    aplicarFiltrosCatalogo();
+  });
+}
+
 statusButtons.forEach(button => {
   button.addEventListener("click", () => {
     estadoCatalogoActual = button.dataset.status || "Todos";
@@ -110,6 +140,13 @@ statusButtons.forEach(button => {
     aplicarFiltrosCatalogo();
   });
 });
+
+[clearFiltersButton, clearFiltersEmptyButton]
+  .filter(Boolean)
+  .forEach(button => button.addEventListener("click", event => {
+    event.preventDefault();
+    limpiarFiltrosCatalogo();
+  }));
 
 // ============================================================
 // CATÁLOGO DINÁMICO - UTEBO MOTOR SELECTION
@@ -147,6 +184,8 @@ async function cargarVehiculos(container) {
       mostrarCatalogoVacio(container);
       return;
     }
+
+    actualizarLimiteKilometraje(data.vehiculos);
 
     data.vehiculos.forEach((vehiculo) => {
       const card = crearTarjetaVehiculo(vehiculo);
