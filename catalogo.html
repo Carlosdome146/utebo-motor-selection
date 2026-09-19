@@ -238,10 +238,14 @@
             <input id="filterPriceMax" type="number" min="0" step="500" placeholder="Sin máximo" inputmode="numeric">
           </label>
 
-          <label class="catalog-filter-field catalog-filter-range">
-            <span>Kilometraje máximo <output id="filterKmValue" for="filterKmMax">300.000 km</output></span>
-            <input id="filterKmMax" type="range" min="0" max="300000" step="5000" value="300000">
-          </label>
+          <div class="catalog-filter-field catalog-filter-range">
+            <label class="catalog-filter-check">
+              <input id="filterKmEnabled" type="checkbox">
+              <span>Filtrar por kilometraje máximo</span>
+            </label>
+            <span><output id="filterKmValue" for="filterKmMax">Sin límite</output></span>
+            <input id="filterKmMax" type="range" min="0" max="300000" step="5000" value="300000" disabled>
+          </div>
 
           <button id="clearCatalogFilters" class="catalog-filter-clear" type="button">Limpiar filtros</button>
         </div>

@@ -355,6 +355,9 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
 .catalog-filter-field input[type="number"] { width: 100%; min-height: 42px; border: 1px solid rgba(18,20,23,.16); border-radius: 4px; padding: 10px 11px; background: #fff; color: var(--black); font: inherit; font-size: .84rem; letter-spacing: 0; text-transform: none; }
 .catalog-filter-field select:focus,
 .catalog-filter-field input:focus { outline: 2px solid rgba(215,38,46,.25); border-color: var(--red); }
+.catalog-filter-check { display: flex; align-items: center; gap: 8px; color: #565c62; cursor: pointer; }
+.catalog-filter-check input { width: 16px; height: 16px; accent-color: var(--red); }
+.catalog-filter-check span { letter-spacing: .06em; }
 .catalog-filter-range { grid-column: span 2; }
 .catalog-filter-range span { display: flex; justify-content: space-between; gap: 12px; }
 .catalog-filter-range output { color: var(--black); letter-spacing: 0; }
