@@ -14,121 +14,102 @@ document.querySelectorAll('.nav-links a').forEach(link => {
 // FILTROS DEL CATÁLOGO
 // ============================================================
 
-const search =
-  document.querySelector(
-    "#vehicleSearch"
-  );
+const search = document.querySelector("#vehicleSearch");
+const statusButtons = document.querySelectorAll(".catalog-status-filter");
+const fuelFilter = document.querySelector("#filterFuel");
+const transmissionFilter = document.querySelector("#filterTransmission");
+const priceMinFilter = document.querySelector("#filterPriceMin");
+const priceMaxFilter = document.querySelector("#filterPriceMax");
+const kmMaxFilter = document.querySelector("#filterKmMax");
+const kmValue = document.querySelector("#filterKmValue");
+const clearFiltersButton = document.querySelector("#clearCatalogFilters");
+const clearFiltersEmptyButton = document.querySelector("#clearCatalogFiltersEmpty");
+const resultsLabel = document.querySelector("#catalogResults");
+const noResults = document.querySelector("#catalogNoResults");
 
+let estadoCatalogoActual = "Todos";
 
-const statusButtons =
-  document.querySelectorAll(
-    ".catalog-status-filter"
-  );
+function normalizarTexto(valor) {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
 
+function leerNumero(elemento) {
+  if (!elemento || elemento.value === "") return null;
+  const numero = Number(elemento.value);
+  return Number.isFinite(numero) ? numero : null;
+}
 
-let estadoCatalogoActual =
-  "Todos";
-
+function formatearFiltroKm(valor) {
+  return `${new Intl.NumberFormat("es-ES").format(Number(valor))} km`;
+}
 
 function aplicarFiltrosCatalogo() {
+  const textoBusqueda = normalizarTexto(search?.value);
+  const combustible = normalizarTexto(fuelFilter?.value);
+  const cambio = normalizarTexto(transmissionFilter?.value);
+  const precioMinimo = leerNumero(priceMinFilter);
+  const precioMaximo = leerNumero(priceMaxFilter);
+  const kilometrajeMaximo = leerNumero(kmMaxFilter);
+  let visibles = 0;
 
-  const textoBusqueda =
-    search
-      ? search.value
-          .trim()
-          .toLowerCase()
-      : "";
+  document.querySelectorAll(".vehicle-card").forEach(card => {
+    const precio = card.dataset.precio === "" ? null : Number(card.dataset.precio);
+    const kilometros = card.dataset.kilometros === "" ? null : Number(card.dataset.kilometros);
+    const textoTarjeta = normalizarTexto(card.dataset.busqueda || card.innerText);
+    const estado = normalizarTexto(card.dataset.estado || "Disponible");
+    const tarjetaCombustible = normalizarTexto(card.dataset.combustible);
+    const tarjetaCambio = normalizarTexto(card.dataset.cambio);
 
+    const coincide =
+      (!textoBusqueda || textoTarjeta.includes(textoBusqueda)) &&
+      (estadoCatalogoActual === "Todos" || estado === normalizarTexto(estadoCatalogoActual)) &&
+      (!combustible || tarjetaCombustible === combustible) &&
+      (!cambio || tarjetaCambio === cambio) &&
+      (precioMinimo === null || (Number.isFinite(precio) && precio >= precioMinimo)) &&
+      (precioMaximo === null || (Number.isFinite(precio) && precio <= precioMaximo)) &&
+      (kilometrajeMaximo === null || !Number.isFinite(kilometros) || kilometros <= kilometrajeMaximo);
 
-  document
-    .querySelectorAll(
-      ".vehicle-card"
-    )
-    .forEach(
-      card => {
+    card.hidden = !coincide;
+    if (coincide) visibles++;
+  });
 
-        const textoTarjeta =
-          card.innerText
-            .toLowerCase();
-
-
-        const coincideBusqueda =
-          !textoBusqueda ||
-          textoTarjeta.includes(
-            textoBusqueda
-          );
-
-
-        const estadoTarjeta =
-          card.dataset.estado ||
-          "Disponible";
-
-
-        const coincideEstado =
-          estadoCatalogoActual ===
-            "Todos"
-
-          ||
-
-          estadoTarjeta ===
-            estadoCatalogoActual;
-
-
-        card.style.display =
-          coincideBusqueda &&
-          coincideEstado
-
-            ? ""
-
-            : "none";
-
-      }
-    );
-
-}
-
-
-if (search) {
-
-  search.addEventListener(
-    "input",
-    aplicarFiltrosCatalogo
-  );
-
-}
-
-
-statusButtons.forEach(
-  button => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        estadoCatalogoActual =
-          button.dataset.status;
-
-
-        statusButtons.forEach(
-          item =>
-            item.classList.remove(
-              "active"
-            )
-        );
-
-
-        button.classList.add(
-          "active"
-        );
-
-
-        aplicarFiltrosCatalogo();
-
-      }
-    );
-
+  if (resultsLabel) {
+    resultsLabel.textContent = visibles === 1
+      ? "1 vehículo encontrado"
+      : `${visibles} vehículos encontrados`;
   }
-);
+  if (noResults) noResults.hidden = visibles !== 0;
+  if (kmValue && kilometrajeMaximo !== null) kmValue.textContent = formatearFiltroKm(kilometrajeMaximo);
+}
+
+function limpiarFiltrosCatalogo() {
+  if (search) search.value = "";
+  if (fuelFilter) fuelFilter.value = "";
+  if (transmissionFilter) transmissionFilter.value = "";
+  if (priceMinFilter) priceMinFilter.value = "";
+  if (priceMaxFilter) priceMaxFilter.value = "";
+  if (kmMaxFilter) kmMaxFilter.value = kmMaxFilter.max;
+  estadoCatalogoActual = "Todos";
+  statusButtons.forEach(button => button.classList.toggle("active", button.dataset.status === "Todos"));
+  aplicarFiltrosCatalogo();
+}
+
+if (search) search.addEventListener("input", aplicarFiltrosCatalogo);
+[fuelFilter, transmissionFilter, priceMinFilter, priceMaxFilter, kmMaxFilter]
+  .filter(Boolean)
+  .forEach(elemento => elemento.addEventListener("input", aplicarFiltrosCatalogo));
+
+statusButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    estadoCatalogoActual = button.dataset.status || "Todos";
+    statusButtons.forEach(item => item.classList.toggle("active", item === button));
+    aplicarFiltrosCatalogo();
+  });
+});
 
 // ============================================================
 // CATÁLOGO DINÁMICO - UTEBO MOTOR SELECTION
@@ -216,6 +197,17 @@ article.dataset.estado =
   const nombreVehiculo =
     v.vehiculo ||
     `${v.marca || ""} ${v.modelo || ""} ${v.version || ""}`.trim();
+
+  article.dataset.precio =
+    v.precio === null || v.precio === undefined ? "" : String(v.precio);
+  article.dataset.kilometros =
+    v.kilometros === null || v.kilometros === undefined ? "" : String(v.kilometros);
+  article.dataset.combustible = v.combustible || "";
+  article.dataset.cambio = v.cambio || "";
+  article.dataset.busqueda = [
+    nombreVehiculo, v.marca, v.modelo, v.version, v.combustible,
+    v.cambio, v.procedencia, v.ano, v.kilometros, v.precio
+  ].filter(Boolean).join(" ");
 
 
   // ==========================================================
