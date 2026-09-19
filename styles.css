@@ -1,4 +1,4 @@
-/* Google Fonts are preconnected and loaded asynchronously in HTML <head> to eliminate render-blocking @import */
+@import url('https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap');
 
 :root {
   --red: #d7262e;

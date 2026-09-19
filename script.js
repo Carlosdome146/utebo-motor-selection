@@ -10,16 +10,125 @@ document.querySelectorAll('.nav-links a').forEach(link => {
   if (href === current) link.classList.add('active');
 });
 
-const search = document.querySelector('#vehicleSearch');
-if (search) {
-  search.addEventListener('input', e => {
-    const q = e.target.value.trim().toLowerCase();
-    document.querySelectorAll('.vehicle-card').forEach(card => {
-      const text = card.innerText.toLowerCase();
-      card.style.display = text.includes(q) ? '' : 'none';
-    });
-  });
+// ============================================================
+// FILTROS DEL CATÁLOGO
+// ============================================================
+
+const search =
+  document.querySelector(
+    "#vehicleSearch"
+  );
+
+
+const statusButtons =
+  document.querySelectorAll(
+    ".catalog-status-filter"
+  );
+
+
+let estadoCatalogoActual =
+  "Todos";
+
+
+function aplicarFiltrosCatalogo() {
+
+  const textoBusqueda =
+    search
+      ? search.value
+          .trim()
+          .toLowerCase()
+      : "";
+
+
+  document
+    .querySelectorAll(
+      ".vehicle-card"
+    )
+    .forEach(
+      card => {
+
+        const textoTarjeta =
+          card.innerText
+            .toLowerCase();
+
+
+        const coincideBusqueda =
+          !textoBusqueda ||
+          textoTarjeta.includes(
+            textoBusqueda
+          );
+
+
+        const estadoTarjeta =
+          card.dataset.estado ||
+          "Disponible";
+
+
+        const coincideEstado =
+          estadoCatalogoActual ===
+            "Todos"
+
+          ||
+
+          estadoTarjeta ===
+            estadoCatalogoActual;
+
+
+        card.style.display =
+          coincideBusqueda &&
+          coincideEstado
+
+            ? ""
+
+            : "none";
+
+      }
+    );
+
 }
+
+
+if (search) {
+
+  search.addEventListener(
+    "input",
+    aplicarFiltrosCatalogo
+  );
+
+}
+
+
+statusButtons.forEach(
+  button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        estadoCatalogoActual =
+          button.dataset.status;
+
+
+        statusButtons.forEach(
+          item =>
+            item.classList.remove(
+              "active"
+            )
+        );
+
+
+        button.classList.add(
+          "active"
+        );
+
+
+        aplicarFiltrosCatalogo();
+
+      }
+    );
+
+  }
+);
 
 // ============================================================
 // CATÁLOGO DINÁMICO - UTEBO MOTOR SELECTION
@@ -37,7 +146,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function cargarVehiculos(container) {
   try {
-    const response = await fetch("/api/vehiculos");
+    const response = await fetch("/api/vehiculos", {
+      cache: "no-store"
+    });
 
     if (!response.ok) {
       throw new Error("No se pudo cargar el catálogo");
@@ -61,6 +172,8 @@ async function cargarVehiculos(container) {
       container.appendChild(card);
     });
 
+    aplicarFiltrosCatalogo();
+
   } catch (error) {
     console.error("Error cargando vehículos:", error);
 
@@ -76,221 +189,623 @@ async function cargarVehiculos(container) {
 
 function crearTarjetaVehiculo(v) {
 
-  const article = document.createElement("article");
-  article.className = "vehicle-card";
-
-  if (v.destacado) {
-    article.classList.add("vehicle-featured");
-  }
-
-// ----------------------------------------------------------
-// IMAGEN / GALERÍA
-// ----------------------------------------------------------
-
-const media = document.createElement("div");
-media.className = "vehicle-media";
-
-if (v.fotos && v.fotos.length > 0) {
-
-  const img = document.createElement("img");
-
-  img.src = v.fotos[0].url;
-  img.alt = v.vehiculo || `${v.marca} ${v.modelo}`;
-  img.loading = "lazy";
-  img.decoding = "async";
-
-  media.appendChild(img);
-
-  // Si hay fotografías, permitimos abrir la galería
-  media.classList.add("vehicle-media-clickable");
-
-  media.addEventListener("click", () => {
-    abrirGaleriaVehiculo(
-      v.fotos,
-      v.vehiculo || `${v.marca} ${v.modelo}`
+  const article =
+    document.createElement(
+      "article"
     );
-  });
 
-  // Indicador del número de fotografías
-  if (v.fotos.length > 1) {
+  article.className =
+    "vehicle-card";
 
-    const photoCount = document.createElement("span");
+article.dataset.estado =
+  v.estado ||
+  "Disponible";
 
-    photoCount.className = "vehicle-photo-count";
-
-    photoCount.innerHTML = `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 6.5h3l1.5-2h7l1.5 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Zm8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/>
-      </svg>
-
-      ${v.fotos.length} fotos
-    `;
-
-    media.appendChild(photoCount);
-  }
-
-} else {
-
-  const noImage = document.createElement("div");
-
-  noImage.className = "vehicle-no-image";
-
-  noImage.textContent = "UTEBO MOTOR SELECTION";
-
-  media.appendChild(noImage);
-}
-
-  // ----------------------------------------------------------
-  // ESTADO
-  // ----------------------------------------------------------
-
-  const estado = document.createElement("span");
-
-  estado.className =
-    "vehicle-status " +
-    (v.estado === "Reservado"
-      ? "vehicle-status-reserved"
-      : "vehicle-status-available");
-
-  estado.textContent = v.estado;
-
-  media.appendChild(estado);
-
-  // ----------------------------------------------------------
-  // DESTACADO
-  // ----------------------------------------------------------
 
   if (v.destacado) {
-    const destacado = document.createElement("span");
-    destacado.className = "vehicle-highlight";
-    destacado.textContent = "DESTACADO";
-
-    media.appendChild(destacado);
+    article.classList.add(
+      "vehicle-featured"
+    );
   }
 
-  article.appendChild(media);
 
-  // ----------------------------------------------------------
-  // CONTENIDO
-  // ----------------------------------------------------------
+  // ==========================================================
+  // NOMBRE DEL VEHÍCULO
+  // ==========================================================
 
-  const content = document.createElement("div");
-  content.className = "vehicle-content";
-
-  const title = document.createElement("h2");
-  title.className = "vehicle-title";
-  title.textContent =
+  const nombreVehiculo =
     v.vehiculo ||
     `${v.marca || ""} ${v.modelo || ""} ${v.version || ""}`.trim();
 
-  content.appendChild(title);
 
-  // ----------------------------------------------------------
-  // PRECIO
-  // ----------------------------------------------------------
+  // ==========================================================
+  // SLUG + URL FICHA
+  // ==========================================================
 
-  const price = document.createElement("div");
-  price.className = "vehicle-price";
+  const slug =
+    String(
+      nombreVehiculo ||
+      "vehiculo"
+    )
 
-  if (v.precio !== null) {
-    price.textContent = formatearPrecio(v.precio);
+      .normalize(
+        "NFD"
+      )
+
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      )
+
+      .toLowerCase()
+
+      .replace(
+        /[^a-z0-9]+/g,
+        "-"
+      )
+
+      .replace(
+        /^-+|-+$/g,
+        ""
+      );
+
+
+  const fichaUrl =
+    `/vehiculo/${v.id}-${slug}`;
+
+
+  // ==========================================================
+  // IMAGEN / GALERÍA
+  // ==========================================================
+
+  const media =
+    document.createElement(
+      "div"
+    );
+
+  media.className =
+    "vehicle-media";
+
+
+  if (
+    v.fotos &&
+    v.fotos.length > 0
+  ) {
+
+    const img =
+      document.createElement(
+        "img"
+      );
+
+
+    img.src =
+      v.fotos[0].url;
+
+
+    img.alt =
+      nombreVehiculo;
+
+
+    img.loading =
+      "lazy";
+
+
+    media.appendChild(
+      img
+    );
+
+
+    // Abrir galería al pulsar la foto
+
+    media.classList.add(
+      "vehicle-media-clickable"
+    );
+
+
+    media.addEventListener(
+      "click",
+      () => {
+
+        abrirGaleriaVehiculo(
+          v.fotos,
+          nombreVehiculo
+        );
+
+      }
+    );
+
+
+    // Número de fotografías
+
+    if (
+      v.fotos.length > 1
+    ) {
+
+      const photoCount =
+        document.createElement(
+          "span"
+        );
+
+
+      photoCount.className =
+        "vehicle-photo-count";
+
+
+      photoCount.innerHTML = `
+
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+
+          <path
+            d="M4 6.5h3l1.5-2h7l1.5 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Zm8 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-2a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"
+          />
+
+        </svg>
+
+        ${v.fotos.length} fotos
+
+      `;
+
+
+      media.appendChild(
+        photoCount
+      );
+
+    }
+
   } else {
-    price.textContent = "Consultar precio";
+
+    const noImage =
+      document.createElement(
+        "div"
+      );
+
+
+    noImage.className =
+      "vehicle-no-image";
+
+
+    noImage.textContent =
+      "UTEBO MOTOR SELECTION";
+
+
+    media.appendChild(
+      noImage
+    );
+
   }
 
-  content.appendChild(price);
 
-  // ----------------------------------------------------------
-  // DATOS PRINCIPALES
-  // ----------------------------------------------------------
+// ==========================================================
+// ESTADO
+// ==========================================================
 
-  const specs = document.createElement("div");
-  specs.className = "vehicle-specs";
+const estado =
+  document.createElement(
+    "span"
+  );
 
-  const datos = [
-    v.ano ? `${v.ano}` : null,
 
-    v.kilometros !== null
-      ? `${formatearNumero(v.kilometros)} km`
-      : null,
+let claseEstado =
+  "vehicle-status-available";
 
-    v.combustible || null,
 
-    v.cambio || null,
+if (
+  v.estado ===
+  "Reservado"
+) {
 
-    v.potencia
-      ? `${v.potencia} CV`
-      : null
-  ].filter(Boolean);
+  claseEstado =
+    "vehicle-status-reserved";
 
-  datos.forEach((dato) => {
-    const item = document.createElement("span");
-    item.textContent = dato;
-
-    specs.appendChild(item);
-  });
-
-  content.appendChild(specs);
-
-  // ----------------------------------------------------------
-  // PROCEDENCIA
-  // ----------------------------------------------------------
-
-  if (v.procedencia) {
-    const origin = document.createElement("div");
-    origin.className = "vehicle-origin";
-
-    origin.textContent =
-      v.procedencia === "Alemania"
-        ? "Importación Alemania"
-        : v.procedencia;
-
-    content.appendChild(origin);
-  }
-
-  // ----------------------------------------------------------
-  // DESCRIPCIÓN
-  // ----------------------------------------------------------
-
-  if (v.descripcion) {
-    const description = document.createElement("p");
-    description.className = "vehicle-description";
-    description.textContent = v.descripcion;
-
-    content.appendChild(description);
-  }
-
-  // ----------------------------------------------------------
-  // WHATSAPP
-  // ----------------------------------------------------------
-
-  const whatsapp = document.createElement("a");
-
-  whatsapp.className = "vehicle-whatsapp";
-  whatsapp.target = "_blank";
-  whatsapp.rel = "noopener noreferrer";
-
-  const mensaje =
-    `Hola, estoy interesado/a en el vehículo ` +
-    `${title.textContent} que tenéis anunciado en vuestra web.`;
-
-  whatsapp.href =
-    "https://wa.me/34614601189?text=" +
-    encodeURIComponent(mensaje);
-
-  whatsapp.innerHTML = `
-    <span>Consultar por WhatsApp</span>
-    <span class="vehicle-whatsapp-arrow">→</span>
-  `;
-
-  content.appendChild(whatsapp);
-
-  article.appendChild(content);
-
-  return article;
 }
 
 
+if (
+  v.estado ===
+  "En Preparación"
+) {
+
+  claseEstado =
+    "vehicle-status-preparing";
+
+}
+
+
+estado.className =
+  "vehicle-status " +
+  claseEstado;
+
+
+estado.textContent =
+  v.estado;
+
+
+media.appendChild(
+  estado
+);
+
+
+  // ==========================================================
+  // DESTACADO
+  // ==========================================================
+
+  if (v.destacado) {
+
+    const destacado =
+      document.createElement(
+        "span"
+      );
+
+
+    destacado.className =
+      "vehicle-highlight";
+
+
+    destacado.textContent =
+      "DESTACADO";
+
+
+    media.appendChild(
+      destacado
+    );
+
+  }
+
+
+  article.appendChild(
+    media
+  );
+
+
+  // ==========================================================
+  // CONTENIDO
+  // ==========================================================
+
+  const content =
+    document.createElement(
+      "div"
+    );
+
+
+  content.className =
+    "vehicle-content";
+
+
+  // ==========================================================
+  // TÍTULO
+  // ==========================================================
+
+  const title =
+    document.createElement(
+      "h2"
+    );
+
+
+  title.className =
+    "vehicle-title";
+
+
+  title.textContent =
+    nombreVehiculo;
+
+
+  content.appendChild(
+    title
+  );
+
+
+  // ==========================================================
+  // PRECIO
+  // ==========================================================
+
+  const price =
+    document.createElement(
+      "div"
+    );
+
+
+  price.className =
+    "vehicle-price";
+
+
+  if (
+    v.precio !== null &&
+    v.precio !== undefined
+  ) {
+
+    price.textContent =
+      formatearPrecio(
+        v.precio
+      );
+
+  } else {
+
+    price.textContent =
+      "Consultar precio";
+
+  }
+
+
+  content.appendChild(
+    price
+  );
+
+
+  // ==========================================================
+  // DATOS PRINCIPALES
+  // ==========================================================
+
+  const specs =
+    document.createElement(
+      "div"
+    );
+
+
+  specs.className =
+    "vehicle-specs";
+
+
+  const datos = [
+
+    v.ano
+      ? `${v.ano}`
+      : null,
+
+
+    v.kilometros !== null &&
+    v.kilometros !== undefined
+
+      ? `${formatearNumero(
+          v.kilometros
+        )} km`
+
+      : null,
+
+
+    v.combustible ||
+    null,
+
+
+    v.cambio ||
+    null,
+
+
+    v.potencia
+
+      ? `${v.potencia} CV`
+
+      : null
+
+  ].filter(
+    Boolean
+  );
+
+
+  datos.forEach(
+    dato => {
+
+      const item =
+        document.createElement(
+          "span"
+        );
+
+
+      item.textContent =
+        dato;
+
+
+      specs.appendChild(
+        item
+      );
+
+    }
+  );
+
+
+  content.appendChild(
+    specs
+  );
+
+
+  // ==========================================================
+  // PROCEDENCIA
+  // ==========================================================
+
+  if (v.procedencia) {
+
+    const origin =
+      document.createElement(
+        "div"
+      );
+
+
+    origin.className =
+      "vehicle-origin";
+
+
+    origin.textContent =
+
+      v.procedencia ===
+      "Alemania"
+
+        ? "Importación Alemania"
+
+        : v.procedencia;
+
+
+    content.appendChild(
+      origin
+    );
+
+  }
+
+  // ==========================================================
+// FECHA DISPONIBLE
+// ==========================================================
+
+if (
+  v.estado ===
+    "En Preparación" &&
+  v.fecha_disponible
+) {
+
+  const availability =
+    document.createElement(
+      "div"
+    );
+
+
+  availability.className =
+    "vehicle-preparation-date";
+
+
+  availability.innerHTML = `
+
+    <span>
+      Disponible a partir del
+    </span>
+
+    <strong>
+      ${formatearFechaDisponible(
+        v.fecha_disponible
+      )}
+    </strong>
+
+  `;
+
+
+  content.appendChild(
+    availability
+  );
+
+}
+
+  // ==========================================================
+  // ACCIONES
+  // ==========================================================
+
+  const actions =
+    document.createElement(
+      "div"
+    );
+
+
+  actions.className =
+    "vehicle-card-actions";
+
+
+  // ==========================================================
+  // VER VEHÍCULO
+  // ==========================================================
+
+  const verVehiculo =
+    document.createElement(
+      "a"
+    );
+
+
+  verVehiculo.className =
+    "vehicle-detail-link";
+
+
+  verVehiculo.href =
+    fichaUrl;
+
+
+  verVehiculo.innerHTML = `
+
+    <span>
+      Ver vehículo
+    </span>
+
+    <span
+      class="vehicle-detail-arrow"
+    >
+      →
+    </span>
+
+  `;
+
+
+  actions.appendChild(
+    verVehiculo
+  );
+
+
+  // ==========================================================
+  // WHATSAPP
+  // ==========================================================
+
+  const whatsapp =
+    document.createElement(
+      "a"
+    );
+
+
+  whatsapp.className =
+    "vehicle-whatsapp";
+
+
+  whatsapp.target =
+    "_blank";
+
+
+  whatsapp.rel =
+    "noopener noreferrer";
+
+
+  const mensaje =
+    `Hola, estoy interesado/a en el vehículo ` +
+    `${nombreVehiculo} que tenéis anunciado en vuestra web.`;
+
+
+  whatsapp.href =
+    "https://wa.me/34614601189?text=" +
+    encodeURIComponent(
+      mensaje
+    );
+
+
+  whatsapp.innerHTML = `
+
+    <span>
+      Consultar por WhatsApp
+    </span>
+
+    <span
+      class="vehicle-whatsapp-arrow"
+    >
+      →
+    </span>
+
+  `;
+
+
+  actions.appendChild(
+    whatsapp
+  );
+
+
+  // ==========================================================
+  // AÑADIR ACCIONES
+  // ==========================================================
+
+  content.appendChild(
+    actions
+  );
+
+
+  article.appendChild(
+    content
+  );
+
+
+  return article;
+
+}
 function mostrarCatalogoVacio(container) {
   container.innerHTML = `
     <div class="catalog-empty">
@@ -328,6 +843,44 @@ function formatearPrecio(numero) {
 
 function formatearNumero(numero) {
   return new Intl.NumberFormat("es-ES").format(numero);
+}
+
+// ============================================================
+// CREAR SLUG PARA FICHA DE VEHÍCULO
+// ============================================================
+
+function crearSlugCatalogo(
+  texto
+) {
+
+  return String(
+    texto || "vehiculo"
+  )
+
+    .normalize(
+      "NFD"
+    )
+
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+
+    .toLowerCase()
+
+    .replace(
+      /[^a-z0-9]+/g,
+      "-"
+    )
+
+    .replace(
+      /^-+|-+$/g,
+      ""
+    )
+
+    ||
+    "vehiculo";
+
 }
 
 // ============================================================
@@ -464,8 +1017,6 @@ function abrirGaleriaVehiculo(fotos, tituloVehiculo) {
     const thumbImg = document.createElement("img");
 
     thumbImg.src = foto.url;
-    thumbImg.loading = "lazy";
-    thumbImg.decoding = "async";
     thumbImg.alt =
       `${tituloVehiculo} - fotografía ${index + 1}`;
 
@@ -493,7 +1044,6 @@ function abrirGaleriaVehiculo(fotos, tituloVehiculo) {
     const foto = fotos[indiceActual];
 
     imagen.src = foto.url;
-    imagen.decoding = "async";
 
     imagen.alt =
       `${tituloVehiculo} - fotografía ${indiceActual + 1}`;
@@ -706,5 +1256,37 @@ function abrirGaleriaVehiculo(fotos, tituloVehiculo) {
   // ----------------------------------------------------------
 
   mostrarFoto();
+
+}
+
+function formatearFechaDisponible(
+  fecha
+) {
+
+  if (!fecha) {
+    return "";
+  }
+
+
+  const partes =
+    fecha.split(
+      "-"
+    );
+
+
+  if (
+    partes.length !== 3
+  ) {
+
+    return fecha;
+
+  }
+
+
+  return (
+    `${partes[2]}/` +
+    `${partes[1]}/` +
+    `${partes[0]}`
+  );
 
 }

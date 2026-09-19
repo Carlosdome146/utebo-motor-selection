@@ -5399,8 +5399,6 @@ function pintarFotosAdmin() {
           <img
             src="${foto.url}"
             alt="Fotografía del vehículo"
-            loading="lazy"
-            decoding="async"
           >
 
           ${
@@ -5798,255 +5796,6 @@ async function eliminarFotoAdmin(
 
 
 // ============================================================
-// OPTIMIZACIÓN DE IMÁGENES ANTES DE SUBIR A R2
-// ============================================================
-
-const MAX_IMAGE_DIMENSION =
-  1600;
-
-const IMAGE_WEBP_QUALITY =
-  0.82;
-
-
-async function optimizarImagenParaWeb(
-  archivo
-) {
-
-  // Si ya es WebP pequeño, no lo tocamos.
-  if (
-    archivo.type === "image/webp" &&
-    archivo.size <= 450 * 1024
-  ) {
-
-    return archivo;
-
-  }
-
-
-  try {
-
-    const bitmap =
-      await createImageBitmap(
-        archivo,
-        {
-          imageOrientation:
-            "from-image"
-        }
-      );
-
-
-    const escala =
-      Math.min(
-        1,
-        MAX_IMAGE_DIMENSION /
-          Math.max(
-            bitmap.width,
-            bitmap.height
-          )
-      );
-
-
-    const ancho =
-      Math.max(
-        1,
-        Math.round(
-          bitmap.width * escala
-        )
-      );
-
-
-    const alto =
-      Math.max(
-        1,
-        Math.round(
-          bitmap.height * escala
-        )
-      );
-
-
-    const canvas =
-      document.createElement(
-        "canvas"
-      );
-
-
-    canvas.width =
-      ancho;
-
-    canvas.height =
-      alto;
-
-
-    const context =
-      canvas.getContext(
-        "2d",
-        {
-          alpha: true
-        }
-      );
-
-
-    context.drawImage(
-      bitmap,
-      0,
-      0,
-      ancho,
-      alto
-    );
-
-
-    bitmap.close?.();
-
-
-    const blob =
-      await new Promise(
-        (resolve, reject) => {
-
-          canvas.toBlob(
-            resultado => {
-
-              if (resultado) {
-                resolve(resultado);
-              } else {
-                reject(
-                  new Error(
-                    "No se pudo optimizar la imagen"
-                  )
-                );
-              }
-
-            },
-            "image/webp",
-            IMAGE_WEBP_QUALITY
-          );
-
-        }
-      );
-
-
-    // Si comprimir no aporta mejora y la imagen original
-    // tampoco es enorme, conservamos el archivo original.
-    if (
-      blob.size >= archivo.size &&
-      archivo.size <= 900 * 1024 &&
-      Math.max(
-        bitmap?.width || ancho,
-        bitmap?.height || alto
-      ) <= MAX_IMAGE_DIMENSION
-    ) {
-
-      return archivo;
-
-    }
-
-
-    const nombreBase =
-      archivo.name
-        .replace(
-          /\.[^.]+$/,
-          ""
-        )
-        .replace(
-          /[^a-zA-Z0-9_-]+/g,
-          "-"
-        );
-
-
-    return new File(
-      [blob],
-      `${nombreBase || "foto"}.webp`,
-      {
-        type:
-          "image/webp",
-
-        lastModified:
-          Date.now()
-      }
-    );
-
-
-  } catch (error) {
-
-    console.warn(
-      "No se pudo optimizar una fotografía. Se subirá el original:",
-      archivo.name,
-      error
-    );
-
-
-    return archivo;
-
-  }
-
-}
-
-
-async function optimizarListaFotos(
-  archivos
-) {
-
-  const originales =
-    Array.from(
-      archivos || []
-    );
-
-
-  const optimizadas =
-    [];
-
-
-  for (
-    let index = 0;
-    index < originales.length;
-    index++
-  ) {
-
-    const archivo =
-      originales[index];
-
-
-    photoSelectionText.textContent =
-      `Optimizando fotografía ${index + 1} de ${originales.length}...`;
-
-
-    const optimizada =
-      await optimizarImagenParaWeb(
-        archivo
-      );
-
-
-    optimizadas.push(
-      optimizada
-    );
-
-  }
-
-
-  return optimizadas;
-
-}
-
-
-function tamanoArchivosMb(
-  archivos
-) {
-
-  const bytes =
-    archivos.reduce(
-      (total, archivo) =>
-        total + archivo.size,
-      0
-    );
-
-
-  return bytes /
-    1024 /
-    1024;
-
-}
-
-
-// ============================================================
 // SUBIR FOTOGRAFÍAS
 // ============================================================
 
@@ -6056,7 +5805,9 @@ async function subirFotosAdmin(
 ) {
 
   if (!archivos.length) {
+
     return;
+
   }
 
 
@@ -6071,18 +5822,8 @@ async function subirFotosAdmin(
   }
 
 
-  photoSelectionText.textContent =
-    "Optimizando fotografías para la web...";
-
-
-  const archivosOptimizados =
-    await optimizarListaFotos(
-      archivos
-    );
-
-
   const tamanoTotal =
-    archivosOptimizados.reduce(
+    archivos.reduce(
       (total, archivo) =>
         total + archivo.size,
       0
@@ -6095,15 +5836,10 @@ async function subirFotosAdmin(
   ) {
 
     throw new Error(
-      "Las fotografías optimizadas superan los 50 MB"
+      "Las fotografías superan los 50 MB"
     );
 
   }
-
-
-  photoSelectionText.textContent =
-    `${archivosOptimizados.length} fotografía(s) optimizada(s) · ` +
-    `${tamanoArchivosMb(archivosOptimizados).toFixed(1)} MB`;
 
 
   const formData =
@@ -6116,7 +5852,7 @@ async function subirFotosAdmin(
   );
 
 
-  archivosOptimizados.forEach(
+  archivos.forEach(
     archivo => {
 
       formData.append(
@@ -6133,8 +5869,7 @@ async function subirFotosAdmin(
       "/admin/api/fotos",
       {
 
-        method:
-          "POST",
+        method: "POST",
 
         credentials:
           "same-origin",
@@ -8864,8 +8599,6 @@ function pintarFotosReposicionAdmin() {
           <img
             src="${foto.url}"
             alt="Fotografía de la reposición"
-            loading="lazy"
-            decoding="async"
           >
 
           ${
@@ -9258,7 +8991,9 @@ async function subirFotosReposicionAdmin(
 ) {
 
   if (!archivos.length) {
+
     return;
+
   }
 
 
@@ -9273,18 +9008,8 @@ async function subirFotosReposicionAdmin(
   }
 
 
-  photoSelectionText.textContent =
-    "Optimizando fotografías para la web...";
-
-
-  const archivosOptimizados =
-    await optimizarListaFotos(
-      archivos
-    );
-
-
   const tamanoTotal =
-    archivosOptimizados.reduce(
+    archivos.reduce(
       (total, archivo) =>
         total + archivo.size,
       0
@@ -9297,7 +9022,7 @@ async function subirFotosReposicionAdmin(
   ) {
 
     throw new Error(
-      "Las fotografías optimizadas superan los 50 MB"
+      "Las fotografías superan los 50 MB"
     );
 
   }
@@ -9313,7 +9038,7 @@ async function subirFotosReposicionAdmin(
   );
 
 
-  archivosOptimizados.forEach(
+  archivos.forEach(
     archivo => {
 
       formData.append(

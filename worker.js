@@ -5,35 +5,8 @@
 export default {
 
   async fetch(request, env) {
-    const response = await handleWorkerRequest(request, env);
-    return aplicarCabecerasSeguridad(response);
-  }
 
-};
-
-function aplicarCabecerasSeguridad(response) {
-  if (!response) return response;
-  const headers = new Headers(response.headers);
-  if (!headers.has("X-Content-Type-Options")) {
-    headers.set("X-Content-Type-Options", "nosniff");
-  }
-  if (!headers.has("X-Frame-Options")) {
-    headers.set("X-Frame-Options", "SAMEORIGIN");
-  }
-  if (!headers.has("Referrer-Policy")) {
-    headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  }
-  const body = (response.status === 204 || response.status === 304) ? null : response.body;
-  return new Response(body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  });
-}
-
-async function handleWorkerRequest(request, env) {
-
-  const url = new URL(request.url);
+    const url = new URL(request.url);
 
 // ============================================================
 // ADMIN
@@ -1019,12 +992,14 @@ if (url.pathname === "/api/reposiciones") {
 // ============================================================
 
 if (url.pathname.startsWith("/media/")) {
-  return servirImagenR2(url, env, request);
+  return servirImagenR2(url, env);
 }
     
     return env.ASSETS.fetch(request);
 
   }
+
+};
 
 // ============================================================
 // ADMIN - LISTAR ALQUILERES
@@ -2057,7 +2032,7 @@ async function obtenerVehiculosD1(env) {
       {
         headers: {
           "Cache-Control":
-            "public, max-age=60, stale-while-revalidate=300"
+            "no-store"
         }
       }
     );
@@ -2227,7 +2202,7 @@ async function obtenerReposicionesD1(env) {
       {
         headers: {
           "Cache-Control":
-            "public, max-age=60, stale-while-revalidate=300"
+            "no-store"
         }
       }
     );
@@ -2259,7 +2234,7 @@ async function obtenerReposicionesD1(env) {
 // SERVIR IMÁGENES DESDE R2
 // ============================================================
 
-async function servirImagenR2(url, env, request) {
+async function servirImagenR2(url, env) {
 
   try {
 
@@ -2332,23 +2307,6 @@ async function servirImagenR2(url, env, request) {
         "public, max-age=31536000, immutable"
       );
 
-    }
-
-
-    // 304 Not Modified para evitar transferencias innecesarias
-    if (request) {
-      const ifNoneMatch = request.headers.get("if-none-match");
-      if (
-        ifNoneMatch &&
-        (ifNoneMatch === objeto.httpEtag ||
-          ifNoneMatch === `"${objeto.httpEtag}"` ||
-          ifNoneMatch === `W/"${objeto.httpEtag}"`)
-      ) {
-        return new Response(null, {
-          status: 304,
-          headers
-        });
-      }
     }
 
 
@@ -6621,33 +6579,6 @@ async function servirFichaVehiculo(
 
 
   <link
-    rel="preconnect"
-    href="https://fonts.googleapis.com"
-  >
-
-  <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin
-  >
-
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap"
-  >
-
-  <link
-    rel="icon"
-    type="image/png"
-    href="/favicon.png"
-  >
-
-  <link
-    rel="apple-touch-icon"
-    href="/apple-touch-icon.png"
-  >
-
-  <link
     rel="stylesheet"
     href="/styles.css"
   >
@@ -7179,8 +7110,6 @@ async function servirFichaVehiculo(
               alt="${escaparAtributoFicha(
                 vehiculo.vehiculo
               )}"
-              fetchpriority="high"
-              decoding="async"
             >
 
           </div>
@@ -7530,7 +7459,7 @@ async function servirFichaVehiculo(
             "text/html; charset=UTF-8",
 
           "Cache-Control":
-            "public, max-age=120, stale-while-revalidate=600"
+            "no-store"
 
         }
       }
