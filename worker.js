@@ -8,6 +8,10 @@ export default {
 
     const url = new URL(request.url);
 
+    if (url.pathname === "/sitemap.xml") {
+      return servirSitemap(request, env);
+    }
+
 // ============================================================
 // ADMIN
 // ============================================================
@@ -7642,4 +7646,70 @@ function normalizarFechaDisponible(
 
   return fecha;
 
+}
+
+// ============================================================
+// SITEMAP - PÁGINAS GENERALES Y VEHÍCULOS PUBLICABLES
+// ============================================================
+
+async function servirSitemap(request, env) {
+  if (!["GET", "HEAD"].includes(request.method)) {
+    return new Response(null, {
+      status: 405,
+      headers: { Allow: "GET, HEAD" }
+    });
+  }
+
+  try {
+    const paginas = [
+      "/",
+      "/catalogo.html",
+      "/alquiler.html",
+      "/servicios.html",
+      "/reposiciones.html",
+      "/nosotros.html"
+    ];
+
+    const resultado = await env.DB.prepare(`
+      SELECT id, vehiculo
+      FROM vehiculos
+      WHERE publicado = 1
+        AND (estado IS NULL OR estado NOT IN ("Vendido", "Alquilado"))
+      ORDER BY id ASC
+    `).all();
+
+    const urls = paginas.concat(
+      (resultado.results || []).map(vehiculo =>
+        `/vehiculo/${vehiculo.id}-${crearSlugVehiculo(vehiculo.vehiculo)}`
+      )
+    );
+
+    const xmlUrls = urls.map(ruta =>
+      `  <url><loc>https://utebomotorsselection.com${escaparHtmlFicha(ruta)}</loc></url>`
+    ).join("\n");
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${xmlUrls}
+</urlset>
+`;
+
+    return new Response(request.method === "HEAD" ? null : xml, {
+      headers: {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+        "X-Content-Type-Options": "nosniff"
+      }
+    });
+  } catch (error) {
+    console.error("Generar sitemap:", error);
+    return new Response(request.method === "HEAD" ? null : "Sitemap temporalmente no disponible", {
+      status: 503,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+        "Retry-After": "300"
+      }
+    });
+  }
 }
