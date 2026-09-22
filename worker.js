@@ -2350,23 +2350,132 @@ async function adminLogin(
   env
 ) {
 
-  if (request.method !== "POST") {
+  if (
+    request.method !== "POST"
+  ) {
 
-    return Response.json(
+    return respuestaLoginAdmin(
       {
         ok: false,
         error:
           "Método no permitido"
       },
-      {
-        status: 405
-      }
+      405
     );
 
   }
 
 
   try {
+
+    if (
+      !env.ADMIN_PASSWORD ||
+      !env.ADMIN_SESSION_SECRET
+    ) {
+
+      return respuestaLoginAdmin(
+        {
+          ok: false,
+          error:
+            "Administración no configurada"
+        },
+        500
+      );
+
+    }
+
+
+    // ========================================================
+    // IDENTIFICAR IP
+    // ========================================================
+
+    const ip =
+      request.headers.get(
+        "CF-Connecting-IP"
+      ) ||
+      "IP_DESCONOCIDA";
+
+
+    // No almacenamos la IP real.
+    // Guardamos un HMAC irreversible para identificarla.
+
+    const ipHash =
+      await hashIpAdmin(
+        ip,
+        env.ADMIN_SESSION_SECRET
+      );
+
+
+    const ahora =
+      Math.floor(
+        Date.now() / 1000
+      );
+
+
+    // ========================================================
+    // COMPROBAR BLOQUEO EXISTENTE
+    // ========================================================
+
+    const seguridad =
+      await env.DB
+        .prepare(`
+          SELECT
+            fase,
+            fallos,
+            bloqueado_hasta,
+            actualizado_en
+          FROM admin_login_guard
+          WHERE ip_hash = ?
+        `)
+        .bind(
+          ipHash
+        )
+        .first();
+
+
+    if (
+      seguridad &&
+      Number(
+        seguridad.bloqueado_hasta || 0
+      ) > ahora
+    ) {
+
+      const segundosRestantes =
+        Math.max(
+          1,
+          Number(
+            seguridad.bloqueado_hasta
+          ) - ahora
+        );
+
+
+      return respuestaLoginAdmin(
+        {
+          ok: false,
+
+          error:
+            mensajeBloqueoAdmin(
+              segundosRestantes
+            ),
+
+          retryAfter:
+            segundosRestantes
+        },
+        429,
+        {
+          "Retry-After":
+            String(
+              segundosRestantes
+            )
+        }
+      );
+
+    }
+
+
+    // ========================================================
+    // LEER CONTRASEÑA
+    // ========================================================
 
     const body =
       await request.json();
@@ -2378,25 +2487,6 @@ async function adminLogin(
       );
 
 
-    if (
-      !env.ADMIN_PASSWORD ||
-      !env.ADMIN_SESSION_SECRET
-    ) {
-
-      return Response.json(
-        {
-          ok: false,
-          error:
-            "Administración no configurada"
-        },
-        {
-          status: 500
-        }
-      );
-
-    }
-
-
     const correcto =
       await compararSeguro(
         password,
@@ -2404,88 +2494,496 @@ async function adminLogin(
       );
 
 
-    if (!correcto) {
+    // ========================================================
+    // LOGIN CORRECTO
+    // ========================================================
 
-      return Response.json(
+    if (correcto) {
+
+      // Un login correcto borra completamente
+      // el contador y los bloqueos de esa IP.
+
+      await env.DB
+        .prepare(`
+          DELETE FROM
+            admin_login_guard
+          WHERE
+            ip_hash = ?
+        `)
+        .bind(
+          ipHash
+        )
+        .run();
+
+
+      const expira =
+        Date.now() +
+        (
+          8 *
+          60 *
+          60 *
+          1000
+        );
+
+
+      const payload =
+        String(
+          expira
+        );
+
+
+      const firma =
+        await firmarAdmin(
+          payload,
+          env.ADMIN_SESSION_SECRET
+        );
+
+
+      const cookie =
+        `utebo_admin=` +
+        `${payload}.${firma}; ` +
+        `Path=/admin; ` +
+        `HttpOnly; ` +
+        `Secure; ` +
+        `SameSite=Strict; ` +
+        `Max-Age=28800`;
+
+
+      return respuestaLoginAdmin(
         {
-          ok: false,
-          error:
-            "Contraseña incorrecta"
+          ok: true
         },
+        200,
         {
-          status: 401
+          "Set-Cookie":
+            cookie
         }
       );
 
     }
 
 
-    const expira =
-      Date.now() +
-      (
-        8 *
-        60 *
-        60 *
-        1000
-      );
+    // ========================================================
+    // CONTRASEÑA INCORRECTA
+    // ========================================================
+
+    const bloqueo1Minuto =
+      ahora + 60;
 
 
-    const payload =
-      String(expira);
+    const bloqueo5Minutos =
+      ahora + 300;
 
 
-    const firma =
-      await firmarAdmin(
-        payload,
-        env.ADMIN_SESSION_SECRET
-      );
+    /*
+      Toda esta operación se realiza como batch:
+
+      1. Crear registro si no existe.
+      2. Incrementar fallo.
+      3. Comprobar si corresponde bloqueo.
+      4. Recuperar estado final.
+
+      FASE 0:
+        5 fallos -> bloqueo 60 segundos.
+
+      FASE 1:
+        3 fallos -> bloqueo 300 segundos.
+    */
+
+    const resultado =
+      await env.DB.batch([
+
+        env.DB
+          .prepare(`
+            INSERT OR IGNORE INTO
+              admin_login_guard
+            (
+              ip_hash,
+              fase,
+              fallos,
+              bloqueado_hasta,
+              actualizado_en
+            )
+            VALUES (
+              ?,
+              0,
+              0,
+              0,
+              ?
+            )
+          `)
+          .bind(
+            ipHash,
+            ahora
+          ),
 
 
-    const cookie =
-      `utebo_admin=` +
-      `${payload}.${firma}; ` +
-      `Path=/admin; ` +
-      `HttpOnly; ` +
-      `Secure; ` +
-      `SameSite=Strict; ` +
-      `Max-Age=28800`;
+        env.DB
+          .prepare(`
+            UPDATE
+              admin_login_guard
+
+            SET
+              fallos =
+                fallos + 1,
+
+              actualizado_en =
+                ?
+
+            WHERE
+              ip_hash = ?
+          `)
+          .bind(
+            ahora,
+            ipHash
+          ),
 
 
-    return Response.json(
-      {
-        ok: true
-      },
-      {
-        headers: {
-          "Set-Cookie":
-            cookie,
+        env.DB
+          .prepare(`
+            UPDATE
+              admin_login_guard
 
-          "Cache-Control":
-            "no-store"
+            SET
+
+              bloqueado_hasta =
+                CASE
+
+                  WHEN
+                    fase = 0
+                    AND
+                    fallos >= 5
+
+                  THEN
+                    ?
+
+                  WHEN
+                    fase >= 1
+                    AND
+                    fallos >= 3
+
+                  THEN
+                    ?
+
+                  ELSE
+                    bloqueado_hasta
+
+                END,
+
+
+              fase =
+                CASE
+
+                  WHEN
+                    fase = 0
+                    AND
+                    fallos >= 5
+
+                  THEN
+                    1
+
+                  ELSE
+                    fase
+
+                END,
+
+
+              fallos =
+                CASE
+
+                  WHEN
+                    fase = 0
+                    AND
+                    fallos >= 5
+
+                  THEN
+                    0
+
+                  WHEN
+                    fase >= 1
+                    AND
+                    fallos >= 3
+
+                  THEN
+                    0
+
+                  ELSE
+                    fallos
+
+                END,
+
+
+              actualizado_en =
+                ?
+
+            WHERE
+              ip_hash = ?
+          `)
+          .bind(
+            bloqueo1Minuto,
+            bloqueo5Minutos,
+            ahora,
+            ipHash
+          ),
+
+
+        env.DB
+          .prepare(`
+            SELECT
+              fase,
+              fallos,
+              bloqueado_hasta,
+              actualizado_en
+            FROM
+              admin_login_guard
+            WHERE
+              ip_hash = ?
+          `)
+          .bind(
+            ipHash
+          )
+
+      ]);
+
+
+    /*
+      El SELECT es la cuarta operación
+      del batch.
+    */
+
+    const estadoFinal =
+      resultado?.[3]
+        ?.results?.[0];
+
+
+    // ========================================================
+    // ACABA DE ACTIVARSE UN BLOQUEO
+    // ========================================================
+
+    if (
+      estadoFinal &&
+      Number(
+        estadoFinal.bloqueado_hasta || 0
+      ) > ahora
+    ) {
+
+      const segundosRestantes =
+        Math.max(
+          1,
+          Number(
+            estadoFinal.bloqueado_hasta
+          ) - ahora
+        );
+
+
+      return respuestaLoginAdmin(
+        {
+          ok: false,
+
+          error:
+            mensajeBloqueoAdmin(
+              segundosRestantes
+            ),
+
+          retryAfter:
+            segundosRestantes
+        },
+        429,
+        {
+          "Retry-After":
+            String(
+              segundosRestantes
+            )
         }
-      }
+      );
+
+    }
+
+
+    // ========================================================
+    // TODAVÍA QUEDAN INTENTOS
+    // ========================================================
+
+    return respuestaLoginAdmin(
+      {
+        ok: false,
+        error:
+          "Contraseña incorrecta"
+      },
+      401
     );
 
 
   } catch (error) {
 
-    return Response.json(
+    console.error(
+      "Error login admin:",
+      error
+    );
+
+
+    return respuestaLoginAdmin(
       {
         ok: false,
         error:
           "Error iniciando sesión"
       },
-      {
-        status: 500
-      }
+      500
     );
 
   }
 
 }
 
+// ============================================================
+// ADMIN LOGIN - RESPUESTA SEGURA
+// ============================================================
+
+function respuestaLoginAdmin(
+  body,
+  status = 200,
+  extraHeaders = {}
+) {
+
+  const headers =
+    new Headers(
+      extraHeaders
+    );
 
 
+  headers.set(
+    "Cache-Control",
+    "no-store"
+  );
+
+
+  headers.set(
+    "Pragma",
+    "no-cache"
+  );
+
+
+  return Response.json(
+    body,
+    {
+      status,
+      headers
+    }
+  );
+
+}
+
+
+// ============================================================
+// ADMIN LOGIN - HASH DE IP
+// ============================================================
+
+async function hashIpAdmin(
+  ip,
+  secret
+) {
+
+  const encoder =
+    new TextEncoder();
+
+
+  const key =
+    await crypto.subtle.importKey(
+      "raw",
+
+      encoder.encode(
+        secret
+      ),
+
+      {
+        name:
+          "HMAC",
+
+        hash:
+          "SHA-256"
+      },
+
+      false,
+
+      [
+        "sign"
+      ]
+    );
+
+
+  const signature =
+    await crypto.subtle.sign(
+
+      "HMAC",
+
+      key,
+
+      encoder.encode(
+        String(ip)
+      )
+
+    );
+
+
+  return Array
+    .from(
+      new Uint8Array(
+        signature
+      )
+    )
+
+    .map(
+      byte =>
+        byte
+          .toString(16)
+          .padStart(
+            2,
+            "0"
+          )
+    )
+
+    .join("");
+
+}
+
+
+// ============================================================
+// ADMIN LOGIN - MENSAJE DE BLOQUEO
+// ============================================================
+
+function mensajeBloqueoAdmin(
+  segundos
+) {
+
+  if (
+    segundos >= 60
+  ) {
+
+    const minutos =
+      Math.ceil(
+        segundos / 60
+      );
+
+
+    return (
+      "Demasiados intentos fallidos. " +
+      `Acceso bloqueado durante ${minutos} ` +
+      (
+        minutos === 1
+          ? "minuto."
+          : "minutos."
+      )
+    );
+
+  }
+
+
+  return (
+    "Demasiados intentos fallidos. " +
+    `Vuelve a intentarlo en ${segundos} segundos.`
+  );
+
+}
 // ============================================================
 // ADMIN - LOGOUT
 // ============================================================
