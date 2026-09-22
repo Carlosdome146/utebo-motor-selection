@@ -2361,4 +2361,97 @@ h1, h2, h3, .nav-links, .btn, .section-kicker, .page-tag, .price, .footer-title 
 .opening-banner + .hero .hero-grid {
   padding-top: 0 !important;
   margin-top: 0 !important;
+  /* ============================================================
+   VEHÍCULOS DESTACADOS - HOME
+============================================================ */
+
+.home-featured-section {
+  padding-top: 95px;
+  padding-bottom: 105px;
+}
+
+
+.home-featured-header {
+  display: flex;
+
+  justify-content:
+    space-between;
+
+  align-items:
+    flex-end;
+
+  gap: 40px;
+
+  margin-bottom:
+    42px;
+}
+
+
+.home-featured-header
+.section-copy {
+  max-width:
+    680px;
+}
+
+
+.home-featured-all {
+  flex:
+    0 0 auto;
+
+  white-space:
+    nowrap;
+}
+
+
+.home-featured-grid {
+  margin-top:
+    0;
+}
+
+
+/* Un poco más de presencia a los
+   destacados de la portada */
+
+.home-featured-grid
+.vehicle-card {
+  box-shadow:
+    0 20px 55px
+    rgba(
+      0,
+      0,
+      0,
+      .09
+    );
+}
+
+
+.home-featured-grid
+.vehicle-featured {
+  border-top:
+    4px solid
+    #d71920;
+}
+
+
+@media
+(max-width: 800px) {
+
+  .home-featured-header {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+
+    gap:
+      24px;
+  }
+
+
+  .home-featured-all {
+    width:
+      100%;
+  }
+
+}
 }

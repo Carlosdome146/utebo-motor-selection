@@ -161,6 +161,169 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarVehiculos(vehicleGrid);
 });
 
+// ============================================================
+// VEHÍCULOS DESTACADOS - INICIO
+// ============================================================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    const featuredContainer =
+      document.getElementById(
+        "featuredVehicles"
+      );
+
+
+    if (!featuredContainer) {
+      return;
+    }
+
+
+    cargarVehiculosDestacados(
+      featuredContainer
+    );
+
+  }
+);
+
+
+// ============================================================
+// CARGAR DESTACADOS
+// ============================================================
+
+async function cargarVehiculosDestacados(
+  container
+) {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/vehiculos",
+        {
+          cache: "no-store"
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "No se pudieron cargar los vehículos"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !data.ok ||
+      !Array.isArray(
+        data.vehiculos
+      )
+    ) {
+
+      throw new Error(
+        "Respuesta incorrecta del catálogo"
+      );
+
+    }
+
+
+    // Solo vehículos marcados como DESTACADO
+
+    const destacados =
+      data.vehiculos
+        .filter(
+          vehiculo =>
+            Boolean(
+              vehiculo.destacado
+            )
+        )
+        .slice(
+          0,
+          3
+        );
+
+
+    // Si no hay destacados,
+    // ocultamos toda la sección
+
+    if (
+      destacados.length === 0
+    ) {
+
+      const section =
+        document.getElementById(
+          "featuredVehiclesSection"
+        );
+
+
+      if (section) {
+
+        section.style.display =
+          "none";
+
+      }
+
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      "";
+
+
+    destacados.forEach(
+      vehiculo => {
+
+        const card =
+          crearTarjetaVehiculo(
+            vehiculo
+          );
+
+
+        container.appendChild(
+          card
+        );
+
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Error cargando destacados:",
+      error
+    );
+
+
+    container.innerHTML = `
+      <div class="catalog-error">
+
+        <strong>
+          No hemos podido cargar
+          los vehículos destacados.
+        </strong>
+
+        <span>
+          Puedes consultar todo nuestro
+          stock en el catálogo.
+        </span>
+
+      </div>
+    `;
+
+  }
+
+}
 
 async function cargarVehiculos(container) {
   try {
