@@ -4,8 +4,16 @@
   // CONFIGURACIÓN
   // ============================================================
 
-  const STORAGE_KEY =
-    "utebo_cookie_consent_v1";
+const STORAGE_KEY =
+  "utebo_cookie_consent_v2";
+
+
+const GA_MEASUREMENT_ID =
+  "G-E4LHH6K7FS";
+
+
+let googleAnalyticsCargado =
+  false;
 
 
   // ============================================================
@@ -44,6 +52,143 @@
 
   }
 
+// ============================================================
+// GOOGLE ANALYTICS + CONSENT MODE V2
+// ============================================================
+
+function actualizarConsentimientoGoogle(
+  valor
+) {
+
+  if (
+    typeof window.gtag !==
+    "function"
+  ) {
+
+    return;
+
+  }
+
+
+  const analiticaAceptada =
+    valor === "all";
+
+
+  window.gtag(
+    "consent",
+    "update",
+    {
+
+      analytics_storage:
+        analiticaAceptada
+          ? "granted"
+          : "denied",
+
+      ad_storage:
+        "denied",
+
+      ad_user_data:
+        "denied",
+
+      ad_personalization:
+        "denied"
+
+    }
+  );
+
+}
+
+
+function cargarGoogleAnalytics() {
+
+  if (
+    googleAnalyticsCargado
+  ) {
+
+    return;
+
+  }
+
+
+  googleAnalyticsCargado =
+    true;
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+  script.async =
+    true;
+
+
+  script.src =
+    "https://www.googletagmanager.com/gtag/js?id=" +
+    encodeURIComponent(
+      GA_MEASUREMENT_ID
+    );
+
+
+  document.head.appendChild(
+    script
+  );
+
+
+  window.gtag(
+    "js",
+    new Date()
+  );
+
+
+  window.gtag(
+    "config",
+    GA_MEASUREMENT_ID,
+    {
+      send_page_view:
+        true
+    }
+  );
+
+}
+
+
+function borrarCookiesGoogleAnalytics() {
+
+  const cookies =
+    document.cookie
+      .split(";")
+      .map(
+        cookie =>
+          cookie.trim()
+      );
+
+
+  cookies
+    .filter(
+      cookie =>
+        cookie.startsWith(
+          "_ga"
+        )
+    )
+    .forEach(
+      cookie => {
+
+        const nombre =
+          cookie.split("=")[0];
+
+
+        document.cookie =
+          `${nombre}=; ` +
+          "expires=Thu, 01 Jan 1970 00:00:00 GMT; " +
+          "path=/; " +
+          "SameSite=Lax";
+
+      }
+    );
+
+}
 
   // ============================================================
   // ESTILOS
@@ -614,31 +759,49 @@
   // ACEPTAR / RECHAZAR
   // ============================================================
 
-  function seleccionar(
+function seleccionar(
+  valor
+) {
+
+  guardarPreferencia(
     valor
+  );
+
+
+  actualizarConsentimientoGoogle(
+    valor
+  );
+
+
+  if (
+    valor === "all"
   ) {
 
-    guardarPreferencia(
-      valor
-    );
+    cargarGoogleAnalytics();
 
+  } else {
 
-    cerrarTodo();
-
-
-    window.dispatchEvent(
-      new CustomEvent(
-        "utebo-cookie-consent",
-        {
-          detail: {
-            value:
-              valor
-          }
-        }
-      )
-    );
+    borrarCookiesGoogleAnalytics();
 
   }
+
+
+  cerrarTodo();
+
+
+  window.dispatchEvent(
+    new CustomEvent(
+      "utebo-cookie-consent",
+      {
+        detail: {
+          value:
+            valor
+        }
+      }
+    )
+  );
+
+}
 
 
   // ============================================================
@@ -756,33 +919,36 @@
 
 
         <div
-          class="utebo-cookie-row"
-        >
+  class="utebo-cookie-row"
+>
 
-          <div>
+  <div>
 
-            <strong>
-              Cookies analíticas
-            </strong>
+    <strong>
+      Cookies analíticas
+    </strong>
 
-            <p>
+    <p>
 
-              Actualmente Utebo Motor
-              Selection no utiliza
-              cookies analíticas.
+      Utilizamos Google Analytics
+      para conocer de forma agregada
+      cómo se utiliza la web.
 
-            </p>
+      Solo se activará si das
+      tu consentimiento.
 
-          </div>
+    </p>
+
+  </div>
 
 
-          <span
-            class="utebo-cookie-status"
-          >
-            No utilizadas
-          </span>
+  <span
+    class="utebo-cookie-status"
+  >
+    Opcionales
+  </span>
 
-        </div>
+</div>
 
 
         <div
@@ -959,13 +1125,18 @@
 
           <p>
 
-            Utilizamos cookies técnicas
-            necesarias para el correcto
-            funcionamiento de la web.
+           Utilizamos cookies técnicas
+          necesarias para el correcto
+          funcionamiento de la web.
 
-            Actualmente no utilizamos
-            cookies analíticas ni
-            publicitarias.
+          También podemos utilizar
+          cookies analíticas de Google
+          Analytics para conocer cómo
+          se utiliza la web.
+
+          Las cookies analíticas solo
+          se activarán si das tu
+          consentimiento.
 
             Puedes aceptar, rechazar
             o revisar la configuración.
@@ -1154,15 +1325,39 @@
   // INICIAR
   // ============================================================
 
-  function iniciar() {
+function iniciar() {
 
-    cargarEstilos();
+  cargarEstilos();
 
-    anadirEnlaceFooter();
+  anadirEnlaceFooter();
 
-    mostrarBanner();
+
+  const preferencia =
+    obtenerPreferencia();
+
+
+  if (
+    preferencia === "all"
+  ) {
+
+    actualizarConsentimientoGoogle(
+      "all"
+    );
+
+    cargarGoogleAnalytics();
+
+  } else {
+
+    actualizarConsentimientoGoogle(
+      "necessary"
+    );
 
   }
+
+
+  mostrarBanner();
+
+}
 
 
   // ============================================================

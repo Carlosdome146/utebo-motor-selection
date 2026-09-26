@@ -7030,6 +7030,43 @@ async function servirFichaVehiculo(
     content="width=device-width, initial-scale=1"
   >
 
+    <!-- GOOGLE CONSENT MODE V2 - ESTADO POR DEFECTO -->
+  <script>
+
+    window.dataLayer =
+      window.dataLayer || [];
+
+
+    function gtag() {
+
+      dataLayer.push(
+        arguments
+      );
+
+    }
+
+
+    gtag(
+      "consent",
+      "default",
+      {
+
+        analytics_storage:
+          "denied",
+
+        ad_storage:
+          "denied",
+
+        ad_user_data:
+          "denied",
+
+        ad_personalization:
+          "denied"
+
+      }
+    );
+
+  </script>
 
   <title>
     ${nombre} de segunda mano en Utebo | Utebo Motor Selection
